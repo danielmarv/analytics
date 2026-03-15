@@ -3,9 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import pandas as pd
 
-from ..bars import plot_bar
+from ..bars import plot_bar, plot_stacked_bar
 from ..lines import plot_line
-from ..stacked_bars import plot_stacked_bar
 
 
 def plot_label_yearly_trend(

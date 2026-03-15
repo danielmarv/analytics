@@ -14,7 +14,7 @@ from hiero_analytics.data_sources.github_client import GitHubClient
 from hiero_analytics.data_sources.github_ingest import fetch_repo_issues_graphql
 
 from hiero_analytics.data_sources.models import IssueRecord
-from hiero_analytics.metrics.plotting.pie import plot_pie
+from hiero_analytics.plotting.pie import plot_pie
 from hiero_analytics.config.paths import ensure_output_dirs, DATA_DIR, CHARTS_DIR
 from hiero_analytics.transform.save import save_dataframe
 

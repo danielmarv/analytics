@@ -30,8 +30,8 @@ from hiero_analytics.domain.labels import (
 from hiero_analytics.metrics.label_metrics import label_metrics
 from hiero_analytics.metrics.onboarding import build_gfi_pipeline
 from hiero_analytics.metrics.onboarding import build_onboarding_repo_pipeline
-from hiero_analytics.metrics.plotting.domain.pipeline import plot_onboarding_by_repo
-from hiero_analytics.metrics.plotting.domain.pipeline import (
+from hiero_analytics.plotting.domain.pipeline import plot_onboarding_by_repo
+from hiero_analytics.plotting.domain.pipeline import (
     plot_label_yearly_trend,
     plot_label_total_by_repo,
     plot_label_yearly_distribution,
