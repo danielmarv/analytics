@@ -93,13 +93,29 @@ Utility function:
 
 ## Environment Variables
 
-The module reads the following environment variable from a .env file at project root:
+The module reads the following environment variables from a `.env` file at project root:
 
 ```
 GITHUB_TOKEN
+LOG_LEVEL
+LOG_MODULES
 ```
 
-This token is optional but recommended for higher GitHub API rate limits.
+`GITHUB_TOKEN` is optional but recommended for higher GitHub API rate limits.
+
+`LOG_LEVEL` is optional and controls the verbosity used by `setup_logging()`.
+Examples: `DEBUG`, `INFO`, `WARNING`, or an integer level such as `20`.
+
+`LOG_MODULES` is optional and accepts a comma-separated list of module prefixes.
+When set, `setup_logging()` keeps warnings and errors from any logger visible,
+while focusing info/debug output on the selected modules.
+
+Example:
+
+```bash
+LOG_LEVEL=DEBUG
+LOG_MODULES=hiero_analytics.data_sources.github_ingest,hiero_analytics.data_sources.github_client
+```
 
 ---
 

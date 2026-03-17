@@ -160,7 +160,14 @@ def fetch_org_issues_graphql(
     Returns:
         A combined list of issue records across the organization.
     """
+    logger.info(
+        "Fetching organization issues for %s (states=%s, max_workers=%d)",
+        org,
+        states or "ALL",
+        max_workers,
+    )
     repos = fetch_org_repos_graphql(client, org)
+    logger.info("Found %d repositories in %s", len(repos), org)
 
     all_issues: list[IssueRecord] = []
 
@@ -196,6 +203,7 @@ def fetch_org_issues_graphql(
                     e,
                 )
 
+    logger.info("Collected %d issues across %s", len(all_issues), org)
     return all_issues
 
 
@@ -286,7 +294,13 @@ def fetch_org_merged_pr_difficulty_graphql(
     Returns:
         A combined list of merged PR difficulty records.
     """
+    logger.info(
+        "Fetching merged PR difficulty records for %s (max_workers=%d)",
+        org,
+        max_workers,
+    )
     repos = fetch_org_repos_graphql(client, org)
+    logger.info("Found %d repositories in %s", len(repos), org)
     all_records: list[PullRequestDifficultyRecord] = []
 
     def fetch(repo: RepositoryRecord) -> list[PullRequestDifficultyRecord]:
@@ -309,7 +323,8 @@ def fetch_org_merged_pr_difficulty_graphql(
                     repo.full_name,
                     exc,
                 )
-    
+
+    logger.info("Collected %d merged PR difficulty records across %s", len(all_records), org)
     return all_records
 
 

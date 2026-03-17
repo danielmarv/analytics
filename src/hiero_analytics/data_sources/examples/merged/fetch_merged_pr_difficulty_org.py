@@ -1,18 +1,23 @@
-"""
-Example script: collect merged pull request difficulty metrics
-"""
+"""Example script for collecting merged pull request difficulty metrics."""
 
 from hiero_analytics.config.logging import setup_logging
 from hiero_analytics.config.paths import ORG
 from hiero_analytics.data_sources.github_client import GitHubClient
 from hiero_analytics.data_sources.github_ingest import fetch_org_merged_pr_difficulty_graphql
 
-setup_logging()
+setup_logging(
+    modules=(
+        "hiero_analytics.data_sources.github_client",
+        "hiero_analytics.data_sources.github_ingest",
+        "hiero_analytics.data_sources.pagination",
+        "hiero_analytics.data_sources.rate_limit",
+    )
+)
 
 ORGANIZATION = ORG
 
 def main() -> None:
-
+    """Fetch merged PR difficulty records across the configured organization."""
     client = GitHubClient()
 
     records = fetch_org_merged_pr_difficulty_graphql(

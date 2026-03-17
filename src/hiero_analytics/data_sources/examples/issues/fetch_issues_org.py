@@ -1,18 +1,23 @@
-"""
-Example script: fetch all issues across an organization
-"""
+"""Example script for fetching all issues across an organization."""
 
 from hiero_analytics.config.logging import setup_logging
 from hiero_analytics.config.paths import ORG
 from hiero_analytics.data_sources.github_client import GitHubClient
 from hiero_analytics.data_sources.github_ingest import fetch_org_issues_graphql
 
-setup_logging()
+setup_logging(
+    modules=(
+        "hiero_analytics.data_sources.github_client",
+        "hiero_analytics.data_sources.github_ingest",
+        "hiero_analytics.data_sources.pagination",
+        "hiero_analytics.data_sources.rate_limit",
+    )
+)
 
 ORGANIZATION = ORG
 
 def main() -> None:
-
+    """Fetch and report issue counts for the configured organization."""
     client = GitHubClient()
 
     issues = fetch_org_issues_graphql(

@@ -1,19 +1,24 @@
-"""
-Example script: fetch open and closed issues from a repository
-"""
+"""Example script for fetching open and closed issues from a repository."""
 
 from hiero_analytics.config.logging import setup_logging
 from hiero_analytics.config.paths import ORG, REPO
 from hiero_analytics.data_sources.github_client import GitHubClient
 from hiero_analytics.data_sources.github_ingest import fetch_repo_issues_graphql
 
-setup_logging()
+setup_logging(
+    modules=(
+        "hiero_analytics.data_sources.github_client",
+        "hiero_analytics.data_sources.github_ingest",
+        "hiero_analytics.data_sources.pagination",
+        "hiero_analytics.data_sources.rate_limit",
+    )
+)
 
 REPOSITORY = REPO
 ORGANIZATION = ORG
 
 def fetch_issues_in_repo() -> None:
-
+    """Fetch and report open and closed issue counts for one repository."""
     client = GitHubClient()
 
     open_issues = fetch_repo_issues_graphql(
