@@ -1,3 +1,5 @@
+"""Label group definitions used throughout analytics classification."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -5,24 +7,21 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class LabelSpec:
-    """
-    Represents a logical label group used for analytics.
-    """
+    """Represent a logical label group used for analytics."""
 
     name: str
     labels: set[str]
 
     def __post_init__(self):
+        """Normalize labels for case-insensitive matching."""
         object.__setattr__(
             self,
             "labels",
-            {l.lower() for l in self.labels},
+            {label.lower() for label in self.labels},
         )
 
     def __or__(self, other: LabelSpec) -> LabelSpec:
-        """
-        Combine label groups.
-        """
+        """Combine label groups."""
         return LabelSpec(
             name=f"{self.name} + {other.name}",
             labels=self.labels | other.labels,
@@ -31,10 +30,11 @@ class LabelSpec:
     def matches(self, labels: set[str]) -> bool:
         """
         Return True if any of the given labels matches this spec's labels.
+
         The input is a set of label names; matching is case-insensitive and
         succeeds when there is at least one common label.
         """
-        normalized = {l.lower() for l in labels}
+        normalized = {label.lower() for label in labels}
         return bool(normalized & self.labels)
 
 
@@ -72,6 +72,7 @@ DIFFICULTY_BEGINNER = LabelSpec(
     name="Beginner",
     labels={
         "beginner",
+        "skill: beginner",
     },
 )
 
@@ -79,6 +80,7 @@ DIFFICULTY_INTERMEDIATE = LabelSpec(
     name="Intermediate",
     labels={
         "intermediate",
+        "skill: intermediate",
     },
 )
 
@@ -86,6 +88,7 @@ DIFFICULTY_ADVANCED = LabelSpec(
     name="Advanced",
     labels={
         "advanced",
+        "skill: advanced",
     },
 )
 
