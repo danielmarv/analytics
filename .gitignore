@@ -37,3 +37,4 @@ src/hiero_sdk_python/hapi
 uv.lock
 pdm.lock
 pubkey.asc
+outputs/cache/

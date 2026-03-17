@@ -216,6 +216,46 @@ Both helpers provide:
 
 ---
 
+# Caching
+
+GraphQL ingestion helpers support a small file-backed cache for normalized records.
+This reduces repeated API fetches when multiple scripts use the same underlying data.
+
+By default:
+
+- cache is enabled
+- cache files are written under `outputs/cache/github/`
+- entries expire after 900 seconds
+
+Environment variables:
+
+```bash
+GITHUB_CACHE_ENABLED=true
+GITHUB_CACHE_TTL_SECONDS=900
+```
+
+You can also override caching per call:
+
+```python
+issues = fetch_org_issues_graphql(
+    client,
+    org="hiero-ledger",
+    cache_ttl_seconds=300,
+)
+```
+
+Or force a refresh while still replacing the cached copy:
+
+```python
+issues = fetch_org_issues_graphql(
+    client,
+    org="hiero-ledger",
+    refresh=True,
+)
+```
+
+---
+
 # Typical Workflow
 
 A typical analytics ingestion pipeline looks like:

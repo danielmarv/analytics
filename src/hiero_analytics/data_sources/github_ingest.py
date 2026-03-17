@@ -13,6 +13,10 @@ import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
+from .cache import (
+    load_records_cache,
+    save_records_cache,
+)
 from .github_client import GitHubClient
 from .github_queries import (
     ISSUES_QUERY,
@@ -28,6 +32,25 @@ from .pagination import paginate_cursor
 
 logger = logging.getLogger(__name__)
 
+
+def _cache_kwargs(
+    use_cache: bool | None,
+    cache_ttl_seconds: int | None,
+    refresh: bool,
+) -> dict[str, object]:
+    """Build keyword arguments for nested cache-aware fetch calls."""
+    kwargs: dict[str, object] = {}
+
+    if use_cache is not None:
+        kwargs["use_cache"] = use_cache
+    if cache_ttl_seconds is not None:
+        kwargs["cache_ttl_seconds"] = cache_ttl_seconds
+    if refresh:
+        kwargs["refresh"] = True
+
+    return kwargs
+
+
 def _parse_dt(value: str | None) -> datetime | None:
     if value is None:
         return None
@@ -40,6 +63,10 @@ def _parse_dt(value: str | None) -> datetime | None:
 def fetch_org_repos_graphql(
     client: GitHubClient,
     org: str,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
 ) -> list[RepositoryRecord]:
     """
     Fetch all repository full names for an organization using GraphQL.
@@ -47,11 +74,27 @@ def fetch_org_repos_graphql(
     Args:
         client: Authenticated GitHub client.
         org: GitHub organization name.
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
 
     Returns:
         A list of repository full names, for example:
         ["hiero-ledger/analytics", "hiero-ledger/sdk"]
     """
+    cache_parameters = {"org": org}
+    cached = load_records_cache(
+        "org_repos",
+        org,
+        cache_parameters,
+        RepositoryRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
     def page(cursor: str | None) -> tuple[list[RepositoryRecord], str | None, bool]:
         data = client.graphql(
             REPOS_QUERY,
@@ -73,8 +116,16 @@ def fetch_org_repos_graphql(
         has_next = repo_data["pageInfo"]["hasNextPage"]
 
         return items, next_cursor, has_next
-
-    return paginate_cursor(page)
+    records = paginate_cursor(page)
+    save_records_cache(
+        "org_repos",
+        org,
+        cache_parameters,
+        RepositoryRecord,
+        records,
+        use_cache=use_cache,
+    )
+    return records
 
 
 # --------------------------------------------------------
@@ -86,6 +137,10 @@ def fetch_repo_issues_graphql(
     owner: str,
     repo: str,
     states: list[str] | None = None,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
 ) -> list[IssueRecord]:
     """
     Fetch all issues for a repository using GraphQL.
@@ -95,6 +150,9 @@ def fetch_repo_issues_graphql(
         owner: Repository owner or organization name.
         repo: Repository name only, not full_name.
         states: Optional list of states (e.g. ["OPEN","CLOSED"])
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
 
     Returns:
         A list of normalized issue records.
@@ -102,6 +160,24 @@ def fetch_repo_issues_graphql(
     normalized_states = None
     if states:
         normalized_states = [s.upper() for s in states]
+
+    scope = f"{owner}_{repo}"
+    cache_parameters = {
+        "owner": owner,
+        "repo": repo,
+        "states": sorted(normalized_states or []),
+    }
+    cached = load_records_cache(
+        "repo_issues",
+        scope,
+        cache_parameters,
+        IssueRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
 
     def page(cursor: str | None) -> tuple[list[IssueRecord], str | None, bool]:
 
@@ -134,8 +210,16 @@ def fetch_repo_issues_graphql(
         has_next = issue_data["pageInfo"]["hasNextPage"]
 
         return items, next_cursor, has_next
-
-    return paginate_cursor(page)
+    records = paginate_cursor(page)
+    save_records_cache(
+        "repo_issues",
+        scope,
+        cache_parameters,
+        IssueRecord,
+        records,
+        use_cache=use_cache,
+    )
+    return records
 
 
 # --------------------------------------------------------
@@ -147,6 +231,10 @@ def fetch_org_issues_graphql(
     org: str,
     states: list[str] | None = None,
     max_workers: int = 5,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
 ) -> list[IssueRecord]:
     """
     Fetch all issues across all repositories in an organization.
@@ -156,6 +244,9 @@ def fetch_org_issues_graphql(
         org: GitHub organization login.
         states: Optional issue states filter.
         max_workers: Number of worker threads for parallel repository fetches.
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
 
     Returns:
         A combined list of issue records across the organization.
@@ -166,7 +257,28 @@ def fetch_org_issues_graphql(
         states or "ALL",
         max_workers,
     )
-    repos = fetch_org_repos_graphql(client, org)
+    normalized_states = [state.upper() for state in states] if states else []
+    cache_parameters = {
+        "org": org,
+        "states": sorted(normalized_states),
+    }
+    cached = load_records_cache(
+        "org_issues",
+        org,
+        cache_parameters,
+        IssueRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
+    repos = fetch_org_repos_graphql(
+        client,
+        org,
+        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+    )
     logger.info("Found %d repositories in %s", len(repos), org)
 
     all_issues: list[IssueRecord] = []
@@ -179,6 +291,7 @@ def fetch_org_issues_graphql(
             owner=repo.owner,
             repo=repo.name,
             states=states,
+            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
         )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -204,6 +317,14 @@ def fetch_org_issues_graphql(
                 )
 
     logger.info("Collected %d issues across %s", len(all_issues), org)
+    save_records_cache(
+        "org_issues",
+        org,
+        cache_parameters,
+        IssueRecord,
+        all_issues,
+        use_cache=use_cache,
+    )
     return all_issues
 
 
@@ -215,6 +336,10 @@ def fetch_repo_merged_pr_difficulty_graphql(
     client: GitHubClient,
     owner: str,
     repo: str,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
 ) -> list[PullRequestDifficultyRecord]:
     """
     Fetch merged pull requests and their linked closing issues for a repository.
@@ -223,10 +348,30 @@ def fetch_repo_merged_pr_difficulty_graphql(
         client: Authenticated GitHub client.
         owner: Repository owner or organization name.
         repo: Repository name only, not full_name.
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
 
     Returns:
         A list of normalized records linking merged PRs to issues they close.
     """
+    scope = f"{owner}_{repo}"
+    cache_parameters = {
+        "owner": owner,
+        "repo": repo,
+    }
+    cached = load_records_cache(
+        "repo_merged_pr_difficulty",
+        scope,
+        cache_parameters,
+        PullRequestDifficultyRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
     def page(cursor: str | None) -> tuple[list[PullRequestDifficultyRecord], str | None, bool]:
 
         data = client.graphql(
@@ -271,8 +416,16 @@ def fetch_repo_merged_pr_difficulty_graphql(
         has_next = pr_data["pageInfo"]["hasNextPage"]
 
         return items, next_cursor, has_next
-
-    return paginate_cursor(page)
+    records = paginate_cursor(page)
+    save_records_cache(
+        "repo_merged_pr_difficulty",
+        scope,
+        cache_parameters,
+        PullRequestDifficultyRecord,
+        records,
+        use_cache=use_cache,
+    )
+    return records
 
 # --------------------------------------------------------
 # FETCH MERGED PR DIFFICULTY ACROSS AN ORG (PARALLEL)
@@ -282,6 +435,10 @@ def fetch_org_merged_pr_difficulty_graphql(
     client: GitHubClient,
     org: str,
     max_workers: int = 5,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
 ) -> list[PullRequestDifficultyRecord]:
     """
     Fetch merged pull request difficulty records across all repositories in an organization.
@@ -290,6 +447,9 @@ def fetch_org_merged_pr_difficulty_graphql(
         client: Authenticated GitHub client.
         org: GitHub organization login.
         max_workers: Number of worker threads for parallel repository fetches.
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
 
     Returns:
         A combined list of merged PR difficulty records.
@@ -299,13 +459,35 @@ def fetch_org_merged_pr_difficulty_graphql(
         org,
         max_workers,
     )
-    repos = fetch_org_repos_graphql(client, org)
+    cache_parameters = {"org": org}
+    cached = load_records_cache(
+        "org_merged_pr_difficulty",
+        org,
+        cache_parameters,
+        PullRequestDifficultyRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
+    repos = fetch_org_repos_graphql(
+        client,
+        org,
+        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+    )
     logger.info("Found %d repositories in %s", len(repos), org)
     all_records: list[PullRequestDifficultyRecord] = []
 
     def fetch(repo: RepositoryRecord) -> list[PullRequestDifficultyRecord]:
         logger.info("Scanning merged PRs for repository %s", repo.full_name)
-        return fetch_repo_merged_pr_difficulty_graphql(client, owner=repo.owner, repo=repo.name)
+        return fetch_repo_merged_pr_difficulty_graphql(
+            client,
+            owner=repo.owner,
+            repo=repo.name,
+            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(fetch, repo): repo for repo in repos}
@@ -325,6 +507,14 @@ def fetch_org_merged_pr_difficulty_graphql(
                 )
 
     logger.info("Collected %d merged PR difficulty records across %s", len(all_records), org)
+    save_records_cache(
+        "org_merged_pr_difficulty",
+        org,
+        cache_parameters,
+        PullRequestDifficultyRecord,
+        all_records,
+        use_cache=use_cache,
+    )
     return all_records
 
 
