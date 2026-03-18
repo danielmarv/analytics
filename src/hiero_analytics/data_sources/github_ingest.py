@@ -56,9 +56,11 @@ def _parse_dt(value: str | None) -> datetime | None:
         return None
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
+
 # --------------------------------------------------------
 # FETCH REPOSITORIES
 # --------------------------------------------------------
+
 
 def fetch_org_repos_graphql(
     client: GitHubClient,
@@ -116,6 +118,7 @@ def fetch_org_repos_graphql(
         has_next = repo_data["pageInfo"]["hasNextPage"]
 
         return items, next_cursor, has_next
+
     records = paginate_cursor(page)
     save_records_cache(
         "org_repos",
@@ -131,6 +134,7 @@ def fetch_org_repos_graphql(
 # --------------------------------------------------------
 # FETCH ISSUES FOR ONE REPOSITORY
 # --------------------------------------------------------
+
 
 def fetch_repo_issues_graphql(
     client: GitHubClient,
@@ -199,8 +203,8 @@ def fetch_repo_issues_graphql(
                 number=issue["number"],
                 title=issue["title"],
                 state=issue["state"],
-                created_at=_parse_dt(issue["createdAt"]), #type: ignore
-                closed_at=_parse_dt(issue["closedAt"]), #type: ignore
+                created_at=_parse_dt(issue["createdAt"]),  # type: ignore
+                closed_at=_parse_dt(issue["closedAt"]),  # type: ignore
                 labels=[label["name"].lower() for label in issue["labels"]["nodes"]],
             )
             for issue in issue_data["nodes"]
@@ -210,6 +214,7 @@ def fetch_repo_issues_graphql(
         has_next = issue_data["pageInfo"]["hasNextPage"]
 
         return items, next_cursor, has_next
+
     records = paginate_cursor(page)
     save_records_cache(
         "repo_issues",
@@ -225,6 +230,7 @@ def fetch_repo_issues_graphql(
 # --------------------------------------------------------
 # FETCH ALL ISSUES ACROSS AN ORG (PARALLEL)
 # --------------------------------------------------------
+
 
 def fetch_org_issues_graphql(
     client: GitHubClient,
@@ -257,10 +263,10 @@ def fetch_org_issues_graphql(
         states or "ALL",
         max_workers,
     )
-    normalized_states = [state.upper() for state in states] if states else []
+    normalized_states = sorted(state.upper() for state in states) if states else []
     cache_parameters = {
         "org": org,
-        "states": sorted(normalized_states),
+        "states": normalized_states,
     }
     cached = load_records_cache(
         "org_issues",
@@ -295,14 +301,9 @@ def fetch_org_issues_graphql(
         )
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-
-        futures = {
-            executor.submit(fetch, repo): repo
-            for repo in repos
-        }
+        futures = {executor.submit(fetch, repo): repo for repo in repos}
 
         for future in as_completed(futures):
-
             repo = futures[future]
 
             try:
@@ -331,6 +332,7 @@ def fetch_org_issues_graphql(
 # --------------------------------------------------------
 # FETCH MERGED PR DIFFICULTY FOR ONE REPOSITORY
 # --------------------------------------------------------
+
 
 def fetch_repo_merged_pr_difficulty_graphql(
     client: GitHubClient,
@@ -388,22 +390,17 @@ def fetch_repo_merged_pr_difficulty_graphql(
         items: list[PullRequestDifficultyRecord] = []
 
         for pr in pr_data["nodes"]:
-
             issues = pr["closingIssuesReferences"]["nodes"]
 
             for issue in issues:
-
-                labels = [
-                    label["name"]
-                    for label in issue["labels"]["nodes"]
-                ]
+                labels = [label["name"] for label in issue["labels"]["nodes"]]
 
                 items.append(
                     PullRequestDifficultyRecord(
                         repo=f"{owner}/{repo}",
                         pr_number=pr["number"],
-                        pr_created_at=_parse_dt(pr["createdAt"]), #type: ignore
-                        pr_merged_at=_parse_dt(pr["mergedAt"]), #type: ignore
+                        pr_created_at=_parse_dt(pr["createdAt"]),  # type: ignore
+                        pr_merged_at=_parse_dt(pr["mergedAt"]),  # type: ignore
                         pr_additions=pr["additions"],
                         pr_deletions=pr["deletions"],
                         pr_changed_files=pr["changedFiles"],
@@ -416,6 +413,7 @@ def fetch_repo_merged_pr_difficulty_graphql(
         has_next = pr_data["pageInfo"]["hasNextPage"]
 
         return items, next_cursor, has_next
+
     records = paginate_cursor(page)
     save_records_cache(
         "repo_merged_pr_difficulty",
@@ -427,9 +425,11 @@ def fetch_repo_merged_pr_difficulty_graphql(
     )
     return records
 
+
 # --------------------------------------------------------
 # FETCH MERGED PR DIFFICULTY ACROSS AN ORG (PARALLEL)
 # --------------------------------------------------------
+
 
 def fetch_org_merged_pr_difficulty_graphql(
     client: GitHubClient,
@@ -493,7 +493,6 @@ def fetch_org_merged_pr_difficulty_graphql(
         futures = {executor.submit(fetch, repo): repo for repo in repos}
 
         for future in as_completed(futures):
-
             repo = futures[future]
 
             try:
@@ -516,5 +515,3 @@ def fetch_org_merged_pr_difficulty_graphql(
         use_cache=use_cache,
     )
     return all_records
-
-

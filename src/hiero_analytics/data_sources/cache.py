@@ -10,6 +10,8 @@ import re
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
+from tempfile import NamedTemporaryFile
+from typing import TypeVar
 
 from hiero_analytics.config.paths import OUTPUTS_DIR
 
@@ -32,6 +34,12 @@ _DATETIME_FIELDS: dict[type[object], tuple[str, ...]] = {
     IssueRecord: ("created_at", "closed_at"),
     PullRequestDifficultyRecord: ("pr_created_at", "pr_merged_at"),
 }
+RecordType = TypeVar(
+    "RecordType",
+    RepositoryRecord,
+    IssueRecord,
+    PullRequestDifficultyRecord,
+)
 
 
 def _env_bool(name: str, default: bool) -> bool:
@@ -90,25 +98,21 @@ def _serialize_value(value: object) -> object:
     if isinstance(value, list):
         return [_serialize_value(item) for item in value]
     if isinstance(value, dict):
-        return {
-            key: _serialize_value(item)
-            for key, item in value.items()
-        }
+        return {key: _serialize_value(item) for key, item in value.items()}
     return value
 
 
-def _serialize_record[RecordType: (RepositoryRecord, IssueRecord, PullRequestDifficultyRecord)](
+# PEP 695 type parameters are intentionally avoided here because the package
+# supports Python 3.11.
+def _serialize_record(  # noqa: UP047
     record: RecordType,
 ) -> dict[str, object]:
     """Serialize a normalized record into a JSON-compatible mapping."""
     payload = asdict(record)
-    return {
-        key: _serialize_value(value)
-        for key, value in payload.items()
-    }
+    return {key: _serialize_value(value) for key, value in payload.items()}
 
 
-def _deserialize_record[RecordType: (RepositoryRecord, IssueRecord, PullRequestDifficultyRecord)](
+def _deserialize_record(  # noqa: UP047
     record_type: type[RecordType],
     payload: dict[str, object],
 ) -> RecordType:
@@ -121,6 +125,13 @@ def _deserialize_record[RecordType: (RepositoryRecord, IssueRecord, PullRequestD
             restored[field_name] = datetime.fromisoformat(str(raw_value))
 
     return record_type(**restored)  # type: ignore[arg-type]
+
+
+def _normalize_cached_at(cached_at: datetime) -> datetime:
+    """Ensure cached timestamps are offset-aware and normalized to UTC."""
+    if cached_at.tzinfo is None:
+        return cached_at.replace(tzinfo=UTC)
+    return cached_at.astimezone(UTC)
 
 
 def _cache_path(
@@ -136,7 +147,7 @@ def _cache_path(
     return GITHUB_CACHE_DIR / f"{kind}_{_slugify(scope)}_{fingerprint}.json"
 
 
-def load_records_cache[RecordType: (RepositoryRecord, IssueRecord, PullRequestDifficultyRecord)](
+def load_records_cache(  # noqa: UP047
     kind: str,
     scope: str,
     parameters: dict[str, object],
@@ -174,7 +185,7 @@ def load_records_cache[RecordType: (RepositoryRecord, IssueRecord, PullRequestDi
         return None
 
     try:
-        cached_at = datetime.fromisoformat(cached_at_raw)
+        cached_at = _normalize_cached_at(datetime.fromisoformat(cached_at_raw))
     except ValueError:
         logger.info("Ignoring cache file with invalid timestamp: %s", cache_path)
         return None
@@ -199,7 +210,7 @@ def load_records_cache[RecordType: (RepositoryRecord, IssueRecord, PullRequestDi
     ]
 
 
-def save_records_cache[RecordType: (RepositoryRecord, IssueRecord, PullRequestDifficultyRecord)](
+def save_records_cache(  # noqa: UP047
     kind: str,
     scope: str,
     parameters: dict[str, object],
@@ -225,10 +236,24 @@ def save_records_cache[RecordType: (RepositoryRecord, IssueRecord, PullRequestDi
         "records": [_serialize_record(record) for record in records],
     }
 
-    temp_path = cache_path.with_suffix(".tmp")
-    temp_path.write_text(
-        json.dumps(payload, indent=2, sort_keys=True),
-        encoding="utf-8",
-    )
-    temp_path.replace(cache_path)
+    temp_path: Path | None = None
+    try:
+        with NamedTemporaryFile(
+            "w",
+            encoding="utf-8",
+            dir=cache_path.parent,
+            prefix=f"{cache_path.stem}_",
+            suffix=".tmp",
+            delete=False,
+        ) as temp_file:
+            temp_path = Path(temp_file.name)
+            json.dump(payload, temp_file, indent=2, sort_keys=True)
+            temp_file.write("\n")
+
+        os.replace(temp_path, cache_path)
+    except Exception:
+        if temp_path is not None:
+            temp_path.unlink(missing_ok=True)
+        raise
+
     logger.info("Cached %d records for %s (%s)", len(records), kind, scope)

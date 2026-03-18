@@ -101,6 +101,47 @@ def test_stale_cache_entry_is_ignored(_temp_cache_dir):
     assert loaded is None
 
 
+def test_naive_cached_at_is_treated_as_utc(_temp_cache_dir):
+    """Naive cache timestamps should be normalized to UTC instead of failing."""
+    records = [
+        IssueRecord(
+            repo="org/repo",
+            number=1,
+            title="Issue A",
+            state="OPEN",
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+            closed_at=None,
+            labels=["bug"],
+        )
+    ]
+    parameters = {"owner": "org", "repo": "repo", "states": []}
+
+    cache.save_records_cache(
+        "repo_issues",
+        "org_repo",
+        parameters,
+        IssueRecord,
+        records,
+        use_cache=True,
+    )
+
+    cache_path = cache._cache_path("repo_issues", "org_repo", parameters)
+    payload = json.loads(cache_path.read_text(encoding="utf-8"))
+    payload["cached_at"] = datetime.now(UTC).replace(tzinfo=None).isoformat()
+    cache_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    loaded = cache.load_records_cache(
+        "repo_issues",
+        "org_repo",
+        parameters,
+        IssueRecord,
+        use_cache=True,
+        ttl_seconds=60,
+    )
+
+    assert loaded == records
+
+
 def test_fetch_repo_issues_graphql_uses_cache(monkeypatch, _temp_cache_dir):
     """A second repo-issues fetch should reuse cached normalized records."""
     mock_client = Mock()
@@ -190,6 +231,51 @@ def test_fetch_org_issues_graphql_uses_cached_dataset(monkeypatch, _temp_cache_d
     second = ingest.fetch_org_issues_graphql(
         mock_client,
         "org",
+        use_cache=True,
+        cache_ttl_seconds=300,
+    )
+
+    fetch_org_repos.assert_not_called()
+    fetch_repo_issues.assert_not_called()
+    assert second == first
+
+
+def test_fetch_org_issues_graphql_sorts_states_for_cache_key(monkeypatch, _temp_cache_dir):
+    """Org cache entries should be reused regardless of state filter order."""
+    mock_client = Mock()
+    repos = [Mock(owner="org", name="repo", full_name="org/repo")]
+    issues = [
+        IssueRecord(
+            repo="org/repo",
+            number=1,
+            title="Issue A",
+            state="OPEN",
+            created_at=datetime(2024, 1, 1, tzinfo=UTC),
+            closed_at=None,
+            labels=["bug"],
+        )
+    ]
+
+    fetch_org_repos = Mock(return_value=repos)
+    fetch_repo_issues = Mock(return_value=issues)
+    monkeypatch.setattr(ingest, "fetch_org_repos_graphql", fetch_org_repos)
+    monkeypatch.setattr(ingest, "fetch_repo_issues_graphql", fetch_repo_issues)
+
+    first = ingest.fetch_org_issues_graphql(
+        mock_client,
+        "org",
+        states=["closed", "open"],
+        use_cache=True,
+        cache_ttl_seconds=300,
+    )
+
+    fetch_org_repos.reset_mock()
+    fetch_repo_issues.reset_mock()
+
+    second = ingest.fetch_org_issues_graphql(
+        mock_client,
+        "org",
+        states=["OPEN", "CLOSED"],
         use_cache=True,
         cache_ttl_seconds=300,
     )
