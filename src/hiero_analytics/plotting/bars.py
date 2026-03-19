@@ -1,12 +1,124 @@
+"""Bar chart primitives with a shared analytics house style."""
+
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
-import matplotlib.cm as cm
-import numpy as np
 import pandas as pd
+from matplotlib.axes import Axes
+from matplotlib.patches import FancyBboxPatch, Patch, Rectangle
+
+from hiero_analytics.config.charts import PRIMARY_PALETTE
 
 from .base import create_figure, finalize_chart, prepare_dataframe
+
+
+def _build_palette(size: int) -> list[str]:
+    """Repeat the house palette as needed for multi-category charts."""
+    return [PRIMARY_PALETTE[index % len(PRIMARY_PALETTE)] for index in range(size)]
+
+
+def _is_numeric_or_datetime(series: pd.Series) -> bool:
+    """Return whether a series should keep a vertical quantitative axis."""
+    return bool(
+        pd.api.types.is_numeric_dtype(series)
+        or pd.api.types.is_datetime64_any_dtype(series)
+        or isinstance(series.dtype, pd.PeriodDtype)
+    )
+
+
+def _should_use_horizontal(df: pd.DataFrame, x_col: str, rotate_x: int | None) -> bool:
+    """Use horizontal bars for crowded categorical charts."""
+    if _is_numeric_or_datetime(df[x_col]):
+        return False
+
+    # Repo names and other long categorical labels are much easier to scan in a
+    # horizontal layout, especially once the chart has many rows.
+    labels = df[x_col].astype(str)
+    return len(df) >= 8 or rotate_x is not None or int(labels.str.len().max()) > 12
+
+
+def _format_value(value: float) -> str:
+    """Format chart values without noisy trailing decimals."""
+    return f"{int(value):,}" if float(value).is_integer() else f"{value:,.1f}"
+
+
+def _annotate_bar_totals(
+    ax: Axes,
+    patches: list[Rectangle],
+    values: pd.Series,
+    *,
+    horizontal: bool,
+) -> None:
+    """Add clean total labels to the ends of bars."""
+    if values.empty:
+        return
+
+    max_value = float(values.max())
+    padding = max(max_value * 0.015, 0.75)
+
+    for patch, value in zip(patches, values, strict=True):
+        if value <= 0:
+            continue
+
+        if horizontal:
+            ax.text(
+                float(value) + padding,
+                patch.get_y() + patch.get_height() / 2,
+                _format_value(float(value)),
+                va="center",
+                ha="left",
+                fontsize=10,
+                color="#0F172A",
+                fontweight="semibold",
+                zorder=4,
+            )
+        else:
+            ax.text(
+                patch.get_x() + patch.get_width() / 2,
+                float(value) + padding,
+                _format_value(float(value)),
+                va="bottom",
+                ha="center",
+                fontsize=10,
+                color="#0F172A",
+                fontweight="semibold",
+                zorder=4,
+            )
+
+
+def _round_bar_patches(
+    ax: Axes,
+    patches: list[Rectangle],
+    *,
+    rounding_ratio: float = 0.18,
+) -> None:
+    """Replace default bar rectangles with softly rounded patches."""
+    for patch in patches:
+        width = patch.get_width()
+        height = patch.get_height()
+
+        if width == 0 or height == 0:
+            continue
+
+        rounding = min(abs(width), abs(height)) * rounding_ratio
+        rounded = FancyBboxPatch(
+            (patch.get_x(), patch.get_y()),
+            width,
+            height,
+            boxstyle=f"round,pad=0,rounding_size={rounding}",
+            facecolor=patch.get_facecolor(),
+            edgecolor="none",
+            linewidth=0,
+            mutation_aspect=1,
+            transform=ax.transData,
+            zorder=patch.get_zorder(),
+        )
+        rounded.set_clip_on(True)
+        rounded.set_clip_path(ax.patch)
+        ax.add_patch(rounded)
+        patch.set_visible(False)
 
 
 def plot_bar(
@@ -18,39 +130,67 @@ def plot_bar(
     rotate_x: int | None = None,
     colors: dict[str, str] | None = None,
 ) -> None:
-    """
-    Plot a standard bar chart.
-    """
+    """Plot a standard bar chart."""
     df = prepare_dataframe(df, x_col, y_col).copy()
 
-    if pd.api.types.is_numeric_dtype(df[x_col]):
-        df = df.sort_values(x_col)
-    else:
-        df = df.sort_values(y_col, ascending=False)
+    df = (
+        df.sort_values(x_col)
+        if _is_numeric_or_datetime(df[x_col])
+        else df.sort_values(y_col, ascending=False)
+    )
+    # Auto-switch to a more report-like horizontal layout for crowded categories.
+    horizontal = _should_use_horizontal(df, x_col, rotate_x)
 
     fig, ax = create_figure()
 
-    if colors:
-        bar_colors = [colors.get(str(x), "#4C78A8") for x in df[x_col]]
-    else:
-        bar_colors = cm.tab20(np.linspace(0, 1, len(df)))
-
-    ax.bar(
-        df[x_col],
-        df[y_col],
-        color=bar_colors,
+    bar_colors = (
+        [colors.get(str(x), PRIMARY_PALETTE[0]) for x in df[x_col]]
+        if colors
+        else [PRIMARY_PALETTE[2]] * len(df)
     )
+
+    bars = (
+        ax.barh(
+            df[x_col].astype(str),
+            df[y_col],
+            color=bar_colors,
+            height=0.68,
+            linewidth=0,
+            zorder=3,
+        )
+        if horizontal
+        else ax.bar(
+            df[x_col],
+            df[y_col],
+            color=bar_colors,
+            width=0.62,
+            linewidth=0,
+            zorder=3,
+        )
+    )
+    _round_bar_patches(ax, list(bars.patches))
+    _annotate_bar_totals(ax, cast(list[Rectangle], list(bars.patches)), df[y_col], horizontal=horizontal)
+
+    if horizontal:
+        ax.invert_yaxis()
+        # Leave room for end labels on the right.
+        ax.margins(y=0.04, x=0.08)
+        ax.set_xlim(0, float(df[y_col].max()) * 1.12)
+    else:
+        ax.margins(x=0.04, y=0.08)
 
     finalize_chart(
         fig=fig,
         ax=ax,
         title=title,
-        xlabel=x_col,
-        ylabel=y_col,
+        xlabel=y_col if horizontal else x_col,
+        ylabel="" if horizontal else y_col,
         output_path=output_path,
-        rotate_x=rotate_x,
+        rotate_x=None if horizontal else rotate_x,
+        grid_axis="x" if horizontal else "y",
     )
-    
+
+
 def plot_stacked_bar(
     df: pd.DataFrame,
     x_col: str,
@@ -98,41 +238,79 @@ def plot_stacked_bar(
     # Choose sorting strategy based on x-axis type:
     # - For numeric/datetime-like x_col, preserve natural/chronological order.
     # - For categorical x_col, sort bars by total size for readability.
-    is_numeric_x = pd.api.types.is_numeric_dtype(df[x_col])
-    is_datetime_x = (
-        pd.api.types.is_datetime64_any_dtype(df[x_col])
-        or pd.api.types.is_period_dtype(df[x_col])
-    )
-    if is_numeric_x or is_datetime_x:
+    if _is_numeric_or_datetime(df[x_col]):
         df = df.sort_values(x_col)
     else:
+        # Repo-level comparisons are easier to read when ordered by total volume.
         df["total"] = df[stack_cols].sum(axis=1)
         df = df.sort_values("total", ascending=False)
+    horizontal = _should_use_horizontal(df, x_col, rotate_x)
+
     fig, ax = create_figure()
 
-    bottom = np.zeros(len(df))
+    offsets = pd.Series(0, index=df.index, dtype=float)
+    totals = df[stack_cols].sum(axis=1)
+    palette = _build_palette(len(stack_cols))
+    legend_handles: list[Patch] = []
 
-    for col, label in zip(stack_cols, labels):
+    for index, (col, label) in enumerate(zip(stack_cols, labels, strict=True)):
+        color = colors.get(label) if colors else palette[index]
+        legend_handles.append(Patch(facecolor=color, edgecolor="none", label=label))
 
-        color = colors.get(label) if colors else None
-
-        ax.bar(
-            df[x_col],
-            df[col],
-            bottom=bottom,
-            label=label,
-            color=color,
+        bars = (
+            ax.barh(
+                df[x_col].astype(str),
+                df[col],
+                left=offsets,
+                label=label,
+                color=color,
+                height=0.68,
+                linewidth=0,
+                alpha=0.98,
+                zorder=3,
+            )
+            if horizontal
+            else ax.bar(
+                df[x_col],
+                df[col],
+                bottom=offsets,
+                label=label,
+                color=color,
+                width=0.62,
+                linewidth=0,
+                alpha=0.98,
+                zorder=3,
+            )
         )
+        offsets = offsets.add(df[col], fill_value=0)
 
-        bottom += df[col].to_numpy()
+    if horizontal:
+        ax.invert_yaxis()
+        # Place the legend in reserved top whitespace and keep totals at the end
+        # of each stack rather than inside the bars.
+        _annotate_bar_totals(ax, cast(list[Rectangle], list(bars.patches)), totals, horizontal=True)
+        ax.margins(y=0.04, x=0.08)
+        ax.set_xlim(0, float(totals.max()) * 1.12 if not totals.empty else 1)
+    else:
+        if len(df) <= 12:
+            _annotate_bar_totals(ax, cast(list[Rectangle], list(bars.patches)), totals, horizontal=False)
+        ax.margins(x=0.04, y=0.08)
 
     finalize_chart(
         fig=fig,
         ax=ax,
         title=title,
-        xlabel=x_col,
-        ylabel="count",
+        xlabel="count" if horizontal else x_col,
+        ylabel="" if horizontal else "count",
         output_path=output_path,
         legend=True,
-        rotate_x=rotate_x,
+        rotate_x=None if horizontal else rotate_x,
+        grid_axis="x" if horizontal else "y",
+        legend_handles=legend_handles,
+        legend_labels=labels,
+        legend_loc="upper right",
+        legend_bbox_to_anchor=(1, 1.14),
+        legend_ncol=min(len(labels), 3),
+        legend_kwargs={"borderaxespad": 0.0},
+        layout_rect=(0, 0, 1, 0.92),
     )

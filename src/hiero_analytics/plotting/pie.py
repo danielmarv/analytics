@@ -1,12 +1,25 @@
+"""Pie and donut chart helpers for analytics summaries."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import pandas as pd
 
+from hiero_analytics.config.charts import MUTED_TEXT_COLOR, PLOT_BACKGROUND_COLOR, TITLE_COLOR
 from hiero_analytics.domain.labels import DIFFICULTY_ORDER
 
-from .base import create_figure, finalize_chart, prepare_dataframe
+from .base import create_figure, finalize_chart, prepare_dataframe, style_legend
+
+
+def _format_donut_pct(pct: float) -> str:
+    """Show only meaningful percentage labels to reduce clutter."""
+    return f"{pct:.0f}%" if pct >= 5 else ""
+
+
+def _format_count(value: float) -> str:
+    """Format legend counts without trailing decimals."""
+    return f"{int(value):,}" if float(value).is_integer() else f"{value:,.1f}"
 
 
 def plot_pie(
@@ -58,23 +71,67 @@ def plot_pie(
 
     fig, ax = create_figure()
 
+    total = float(data[value_col].sum())
+    percentages = data[value_col] / total * 100
+    # Put the detailed breakdown into the legend so the donut stays visually
+    # clean while still showing counts and percentages.
+    legend_labels = [
+        f"{label}  {_format_count(value)} ({pct:.0f}%)"
+        for label, value, pct in zip(data[label_col], data[value_col], percentages, strict=True)
+    ]
+    center_x = -0.18
+
     wedges, _, _ = ax.pie(
         data[value_col],
-        autopct="%1.1f%%",
-        startangle=90,
+        autopct=_format_donut_pct,
+        pctdistance=0.8,
+        startangle=110,
         colors=slice_colors,
+        radius=0.92,
+        center=(center_x, 0),
+        wedgeprops={
+            "width": 0.34,
+            "edgecolor": PLOT_BACKGROUND_COLOR,
+            "linewidth": 2,
+        },
+        textprops={
+            "color": TITLE_COLOR,
+            "fontsize": 10,
+            "fontweight": "semibold",
+        },
     )
 
-    # Use legend instead of slice labels to avoid overlap
-    ax.legend(
+    legend = ax.legend(
         wedges,
-        data[label_col],
+        legend_labels,
         title="Category",
         loc="center left",
-        bbox_to_anchor=(1, 0.5),
+        bbox_to_anchor=(0.95, 0.5),
+    )
+    style_legend(legend)
+
+    ax.text(
+        center_x,
+        0.08,
+        f"{int(total):,}",
+        ha="center",
+        va="center",
+        fontsize=20,
+        fontweight="semibold",
+        color=TITLE_COLOR,
+    )
+    ax.text(
+        center_x,
+        -0.11,
+        "Open issues",
+        ha="center",
+        va="center",
+        fontsize=10,
+        color=MUTED_TEXT_COLOR,
     )
 
     ax.set_aspect("equal")
+    ax.set_xlim(-1.45, 1.5)
 
     finalize_chart(
         fig=fig,
@@ -83,4 +140,5 @@ def plot_pie(
         xlabel="",
         ylabel="",
         output_path=output_path,
+        grid_axis=None,
     )
