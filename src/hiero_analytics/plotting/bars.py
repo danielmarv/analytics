@@ -14,6 +14,21 @@ from hiero_analytics.config.charts import ANNOTATION_FONT_SIZE, FONT_WEIGHT_SEMI
 from .base import create_figure, finalize_chart, prepare_dataframe
 from .primitives import build_palette, format_chart_value, is_numeric_or_datetime
 
+BAR_HEIGHT = 0.68
+BAR_WIDTH = 0.62
+BAR_ROUNDING_RATIO = 0.18
+ANNOTATION_PADDING_RATIO = 0.015
+ANNOTATION_MIN_PADDING = 0.75
+HORIZONTAL_AXIS_LIMIT_RATIO = 1.12
+HORIZONTAL_AXIS_MIN_EXTRA = 0.5
+HORIZONTAL_X_MARGIN = 0.08
+HORIZONTAL_Y_MARGIN = 0.04
+VERTICAL_X_MARGIN = 0.04
+VERTICAL_Y_MARGIN = 0.08
+STACKED_BAR_ALPHA = 0.98
+BAR_ZORDER = 3
+ANNOTATION_ZORDER = 4
+
 
 def _should_use_horizontal(df: pd.DataFrame, x_col: str, rotate_x: int | None) -> bool:
     """Use horizontal bars for crowded categorical charts."""
@@ -24,6 +39,22 @@ def _should_use_horizontal(df: pd.DataFrame, x_col: str, rotate_x: int | None) -
     # horizontal layout, especially once the chart has many rows.
     labels = df[x_col].astype(str)
     return len(df) >= 8 or rotate_x is not None or int(labels.str.len().max()) > 12
+
+
+def _compute_annotation_padding(max_value: float) -> float:
+    """Return label padding with a small fixed floor for low-count charts."""
+    return max(max_value * ANNOTATION_PADDING_RATIO, ANNOTATION_MIN_PADDING)
+
+
+def _compute_horizontal_axis_limit(max_value: float, annotation_padding: float) -> float:
+    """Leave enough room for labels while keeping the horizontal axis compact."""
+    if max_value <= 0:
+        return 1.0
+
+    return max(
+        max_value * HORIZONTAL_AXIS_LIMIT_RATIO,
+        max_value + annotation_padding + HORIZONTAL_AXIS_MIN_EXTRA,
+    )
 
 
 def _annotate_bar_totals(
@@ -38,7 +69,7 @@ def _annotate_bar_totals(
         return
 
     max_value = float(values.max())
-    padding = max(max_value * 0.015, 0.75)
+    padding = _compute_annotation_padding(max_value)
 
     for patch, value in zip(patches, values, strict=True):
         if value <= 0:
@@ -54,7 +85,7 @@ def _annotate_bar_totals(
                 fontsize=ANNOTATION_FONT_SIZE,
                 color=TITLE_COLOR,
                 fontweight=FONT_WEIGHT_SEMIBOLD,
-                zorder=4,
+                zorder=ANNOTATION_ZORDER,
             )
         else:
             ax.text(
@@ -66,7 +97,7 @@ def _annotate_bar_totals(
                 fontsize=ANNOTATION_FONT_SIZE,
                 color=TITLE_COLOR,
                 fontweight=FONT_WEIGHT_SEMIBOLD,
-                zorder=4,
+                zorder=ANNOTATION_ZORDER,
             )
 
 
@@ -74,7 +105,7 @@ def _round_bar_patches(
     ax: Axes,
     patches: list[Rectangle],
     *,
-    rounding_ratio: float = 0.18,
+    rounding_ratio: float = BAR_ROUNDING_RATIO,
 ) -> None:
     """Replace default bar rectangles with softly rounded patches."""
     for patch in patches:
@@ -130,30 +161,33 @@ def plot_bar(
             df[x_col].astype(str),
             df[y_col],
             color=bar_colors,
-            height=0.68,
+            height=BAR_HEIGHT,
             linewidth=0,
-            zorder=3,
+            zorder=BAR_ZORDER,
         )
         if horizontal
         else ax.bar(
             df[x_col],
             df[y_col],
             color=bar_colors,
-            width=0.62,
+            width=BAR_WIDTH,
             linewidth=0,
-            zorder=3,
+            zorder=BAR_ZORDER,
         )
     )
-    _round_bar_patches(ax, list(bars.patches))
-    _annotate_bar_totals(ax, cast(list[Rectangle], list(bars.patches)), df[y_col], horizontal=horizontal)
+    patches = cast(list[Rectangle], list(bars.patches))
+    _round_bar_patches(ax, patches)
+    _annotate_bar_totals(ax, patches, df[y_col], horizontal=horizontal)
 
     if horizontal:
         ax.invert_yaxis()
         # Leave room for end labels on the right.
-        ax.margins(y=0.04, x=0.08)
-        ax.set_xlim(0, float(df[y_col].max()) * 1.12)
+        max_value = float(df[y_col].max())
+        padding = _compute_annotation_padding(max_value)
+        ax.margins(y=HORIZONTAL_Y_MARGIN, x=HORIZONTAL_X_MARGIN)
+        ax.set_xlim(0, _compute_horizontal_axis_limit(max_value, padding))
     else:
-        ax.margins(x=0.04, y=0.08)
+        ax.margins(x=VERTICAL_X_MARGIN, y=VERTICAL_Y_MARGIN)
 
     finalize_chart(
         fig=fig,
@@ -228,6 +262,7 @@ def plot_stacked_bar(
     totals = df[stack_cols].sum(axis=1)
     palette = build_palette(len(stack_cols))
     legend_handles: list[Patch] = []
+    patches: list[Rectangle] = []
 
     for index, (col, label) in enumerate(zip(stack_cols, labels, strict=True)):
         color = colors.get(label) if colors else palette[index]
@@ -240,10 +275,10 @@ def plot_stacked_bar(
                 left=offsets,
                 label=label,
                 color=color,
-                height=0.68,
+                height=BAR_HEIGHT,
                 linewidth=0,
-                alpha=0.98,
-                zorder=3,
+                alpha=STACKED_BAR_ALPHA,
+                zorder=BAR_ZORDER,
             )
             if horizontal
             else ax.bar(
@@ -252,25 +287,28 @@ def plot_stacked_bar(
                 bottom=offsets,
                 label=label,
                 color=color,
-                width=0.62,
+                width=BAR_WIDTH,
                 linewidth=0,
-                alpha=0.98,
-                zorder=3,
+                alpha=STACKED_BAR_ALPHA,
+                zorder=BAR_ZORDER,
             )
         )
+        patches = cast(list[Rectangle], list(bars.patches))
         offsets = offsets.add(df[col], fill_value=0)
 
     if horizontal:
         ax.invert_yaxis()
         # Place the legend in reserved top whitespace and keep totals at the end
         # of each stack rather than inside the bars.
-        _annotate_bar_totals(ax, cast(list[Rectangle], list(bars.patches)), totals, horizontal=True)
-        ax.margins(y=0.04, x=0.08)
-        ax.set_xlim(0, float(totals.max()) * 1.12 if not totals.empty else 1)
+        max_total = float(totals.max()) if not totals.empty else 0.0
+        padding = _compute_annotation_padding(max_total)
+        _annotate_bar_totals(ax, patches, totals, horizontal=True)
+        ax.margins(y=HORIZONTAL_Y_MARGIN, x=HORIZONTAL_X_MARGIN)
+        ax.set_xlim(0, _compute_horizontal_axis_limit(max_total, padding))
     else:
         if len(df) <= 12:
-            _annotate_bar_totals(ax, cast(list[Rectangle], list(bars.patches)), totals, horizontal=False)
-        ax.margins(x=0.04, y=0.08)
+            _annotate_bar_totals(ax, patches, totals, horizontal=False)
+        ax.margins(x=VERTICAL_X_MARGIN, y=VERTICAL_Y_MARGIN)
 
     finalize_chart(
         fig=fig,

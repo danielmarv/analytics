@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 import hiero_analytics.plotting.pie as pie_module
-from hiero_analytics.plotting.bars import _round_bar_patches, plot_bar
+from hiero_analytics.plotting.bars import _compute_annotation_padding, _round_bar_patches, plot_bar
 from hiero_analytics.plotting.base import create_figure, style_axes
 from hiero_analytics.plotting.lines import plot_multiline
 from hiero_analytics.plotting.pie import plot_pie
@@ -45,6 +45,12 @@ def test_round_bar_patches_replaces_default_rectangles():
     assert not any(bar.get_visible() for bar in bars.patches)
 
     plt.close(fig)
+
+
+def test_compute_annotation_padding_uses_ratio_with_floor():
+    """Bar annotations should keep a minimum offset on small charts."""
+    assert _compute_annotation_padding(10) == pytest.approx(0.75)
+    assert _compute_annotation_padding(100) == pytest.approx(1.5)
 
 
 def test_plotters_write_chart_files(tmp_path):
