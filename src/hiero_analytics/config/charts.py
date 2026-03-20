@@ -17,6 +17,9 @@ TITLE_FONT_SIZE: int = 16
 LABEL_FONT_SIZE: int = 11
 TICK_FONT_SIZE: int = 10
 LEGEND_FONT_SIZE: int = 10
+ANNOTATION_FONT_SIZE: int = 10
+CENTER_TOTAL_FONT_SIZE: int = 20
+FONT_WEIGHT_SEMIBOLD: str = "semibold"
 
 # --------------------------------------------------
 # Surface + typography colors
@@ -43,6 +46,21 @@ GRID_LINE_WIDTH: float = 0.8
 # --------------------------------------------------
 LEGEND_BACKGROUND_COLOR = "#FFFFFF"
 LEGEND_EDGE_COLOR = "#E2E8F0"
+LEGEND_BOX_STYLE = "round,pad=0.35,rounding_size=1.4"
+
+# --------------------------------------------------
+# Annotation styling
+# --------------------------------------------------
+ENDPOINT_LABEL_BOX_STYLE = "round,pad=0.28,rounding_size=0.8"
+
+# --------------------------------------------------
+# Donut / pie styling
+# --------------------------------------------------
+DONUT_START_ANGLE = 110
+DONUT_RADIUS = 0.92
+DONUT_WIDTH = 0.34
+DONUT_PERCENTAGE_DISTANCE = 0.8
+DONUT_EDGE_LINE_WIDTH = 2.0
 
 # --------------------------------------------------
 # Accent palette for charts without a domain-specific color mapping

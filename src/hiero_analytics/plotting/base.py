@@ -22,6 +22,7 @@ from hiero_analytics.config.charts import (
     GRID_COLOR,
     GRID_LINE_WIDTH,
     LEGEND_BACKGROUND_COLOR,
+    LEGEND_BOX_STYLE,
     LEGEND_EDGE_COLOR,
     MUTED_TEXT_COLOR,
     PLOT_BACKGROUND_COLOR,
@@ -102,9 +103,8 @@ def style_axes(ax: Axes, *, grid_axis: str | None = "y") -> None:
         return
 
     # Only show the grid on the informative axis so the chart stays readable.
+    ax.grid(False)
     ax.grid(axis=grid_axis, color=GRID_COLOR, linewidth=GRID_LINE_WIDTH)
-    ax.xaxis.grid(grid_axis == "x")
-    ax.yaxis.grid(grid_axis == "y")
 
     for side in ("top", "right", "left", "bottom"):
         ax.spines[side].set_visible(False)
@@ -127,7 +127,7 @@ def style_legend(legend: Legend | None) -> None:
     frame.set_linewidth(0.9)
 
     with suppress(AttributeError):
-        frame.set_boxstyle("round,pad=0.35,rounding_size=1.4")
+        frame.set_boxstyle(LEGEND_BOX_STYLE)
 
     title = legend.get_title()
     if title.get_text():

@@ -10,42 +10,7 @@ import pandas as pd
 from hiero_analytics.config.charts import FIGURE_BACKGROUND_COLOR, PRIMARY_PALETTE
 
 from .base import create_figure, finalize_chart, prepare_dataframe
-
-
-def _format_value(value: float) -> str:
-    """Format line values without unnecessary decimal places."""
-    return f"{int(value):,}" if float(value).is_integer() else f"{value:,.1f}"
-
-
-def _annotate_endpoint(
-    ax,
-    *,
-    x: float,
-    y: float,
-    label: str,
-    color: str,
-    y_offset: int,
-) -> None:
-    """Label the final point of a series with a lightweight pill."""
-    # Put the series label where the reader naturally finishes scanning: the
-    # latest point on the right edge of the chart.
-    ax.annotate(
-        f"{label} {_format_value(y)}",
-        xy=(x, y),
-        xytext=(10, y_offset),
-        textcoords="offset points",
-        ha="left",
-        va="center",
-        fontsize=9,
-        color=color,
-        bbox={
-            "boxstyle": "round,pad=0.28,rounding_size=0.8",
-            "fc": "#FFFFFF",
-            "ec": "#DCE5EF",
-            "lw": 0.9,
-        },
-        zorder=5,
-    )
+from .primitives import annotate_endpoint_badge, build_palette, format_chart_value
 
 
 def plot_line(
@@ -89,11 +54,11 @@ def plot_line(
         alpha=0.08,
         zorder=2,
     )
-    _annotate_endpoint(
+    annotate_endpoint_badge(
         ax,
         x=float(data[x_col].iloc[-1]),
         y=float(data[y_col].iloc[-1]),
-        label=str(y_col),
+        text=f"{y_col} {format_chart_value(float(data[y_col].iloc[-1]))}",
         color=PRIMARY_PALETTE[2],
         y_offset=-4,
     )
@@ -156,11 +121,7 @@ def plot_multiline(
     """
     df = prepare_dataframe(df, x_col, y_col, group_col).copy()
 
-    pivot = (
-        df
-        .pivot_table(index=x_col, columns=group_col, values=y_col, aggfunc="sum")
-        .sort_index()
-    )
+    pivot = df.pivot_table(index=x_col, columns=group_col, values=y_col, aggfunc="sum").sort_index()
 
     if pivot.empty:
         raise ValueError("Pivot produced an empty dataset")
@@ -173,7 +134,7 @@ def plot_multiline(
         raise ValueError("No valid numeric x-axis values")
 
     fig, ax = create_figure()
-    palette = [PRIMARY_PALETTE[index % len(PRIMARY_PALETTE)] for index in range(len(pivot.columns))]
+    palette = build_palette(len(pivot.columns))
     endpoint_offsets = [-14, 0, 14, 28, 42]
 
     for index, column in enumerate(pivot.columns):
@@ -205,11 +166,11 @@ def plot_multiline(
                 alpha=0.08,
                 zorder=2,
             )
-        _annotate_endpoint(
+        annotate_endpoint_badge(
             ax,
             x=float(series.index[-1]),
             y=float(series.iloc[-1]),
-            label=str(column),
+            text=f"{column} {format_chart_value(float(series.iloc[-1]))}",
             color=color,
             y_offset=endpoint_offsets[index % len(endpoint_offsets)],
         )

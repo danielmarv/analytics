@@ -9,39 +9,21 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.patches import FancyBboxPatch, Patch, Rectangle
 
-from hiero_analytics.config.charts import PRIMARY_PALETTE
+from hiero_analytics.config.charts import ANNOTATION_FONT_SIZE, FONT_WEIGHT_SEMIBOLD, PRIMARY_PALETTE, TITLE_COLOR
 
 from .base import create_figure, finalize_chart, prepare_dataframe
-
-
-def _build_palette(size: int) -> list[str]:
-    """Repeat the house palette as needed for multi-category charts."""
-    return [PRIMARY_PALETTE[index % len(PRIMARY_PALETTE)] for index in range(size)]
-
-
-def _is_numeric_or_datetime(series: pd.Series) -> bool:
-    """Return whether a series should keep a vertical quantitative axis."""
-    return bool(
-        pd.api.types.is_numeric_dtype(series)
-        or pd.api.types.is_datetime64_any_dtype(series)
-        or isinstance(series.dtype, pd.PeriodDtype)
-    )
+from .primitives import build_palette, format_chart_value, is_numeric_or_datetime
 
 
 def _should_use_horizontal(df: pd.DataFrame, x_col: str, rotate_x: int | None) -> bool:
     """Use horizontal bars for crowded categorical charts."""
-    if _is_numeric_or_datetime(df[x_col]):
+    if is_numeric_or_datetime(df[x_col]):
         return False
 
     # Repo names and other long categorical labels are much easier to scan in a
     # horizontal layout, especially once the chart has many rows.
     labels = df[x_col].astype(str)
     return len(df) >= 8 or rotate_x is not None or int(labels.str.len().max()) > 12
-
-
-def _format_value(value: float) -> str:
-    """Format chart values without noisy trailing decimals."""
-    return f"{int(value):,}" if float(value).is_integer() else f"{value:,.1f}"
 
 
 def _annotate_bar_totals(
@@ -66,24 +48,24 @@ def _annotate_bar_totals(
             ax.text(
                 float(value) + padding,
                 patch.get_y() + patch.get_height() / 2,
-                _format_value(float(value)),
+                format_chart_value(float(value)),
                 va="center",
                 ha="left",
-                fontsize=10,
-                color="#0F172A",
-                fontweight="semibold",
+                fontsize=ANNOTATION_FONT_SIZE,
+                color=TITLE_COLOR,
+                fontweight=FONT_WEIGHT_SEMIBOLD,
                 zorder=4,
             )
         else:
             ax.text(
                 patch.get_x() + patch.get_width() / 2,
                 float(value) + padding,
-                _format_value(float(value)),
+                format_chart_value(float(value)),
                 va="bottom",
                 ha="center",
-                fontsize=10,
-                color="#0F172A",
-                fontweight="semibold",
+                fontsize=ANNOTATION_FONT_SIZE,
+                color=TITLE_COLOR,
+                fontweight=FONT_WEIGHT_SEMIBOLD,
                 zorder=4,
             )
 
@@ -133,20 +115,14 @@ def plot_bar(
     """Plot a standard bar chart."""
     df = prepare_dataframe(df, x_col, y_col).copy()
 
-    df = (
-        df.sort_values(x_col)
-        if _is_numeric_or_datetime(df[x_col])
-        else df.sort_values(y_col, ascending=False)
-    )
+    df = df.sort_values(x_col) if is_numeric_or_datetime(df[x_col]) else df.sort_values(y_col, ascending=False)
     # Auto-switch to a more report-like horizontal layout for crowded categories.
     horizontal = _should_use_horizontal(df, x_col, rotate_x)
 
     fig, ax = create_figure()
 
     bar_colors = (
-        [colors.get(str(x), PRIMARY_PALETTE[0]) for x in df[x_col]]
-        if colors
-        else [PRIMARY_PALETTE[2]] * len(df)
+        [colors.get(str(x), PRIMARY_PALETTE[0]) for x in df[x_col]] if colors else [PRIMARY_PALETTE[2]] * len(df)
     )
 
     bars = (
@@ -238,7 +214,7 @@ def plot_stacked_bar(
     # Choose sorting strategy based on x-axis type:
     # - For numeric/datetime-like x_col, preserve natural/chronological order.
     # - For categorical x_col, sort bars by total size for readability.
-    if _is_numeric_or_datetime(df[x_col]):
+    if is_numeric_or_datetime(df[x_col]):
         df = df.sort_values(x_col)
     else:
         # Repo-level comparisons are easier to read when ordered by total volume.
@@ -250,7 +226,7 @@ def plot_stacked_bar(
 
     offsets = pd.Series(0, index=df.index, dtype=float)
     totals = df[stack_cols].sum(axis=1)
-    palette = _build_palette(len(stack_cols))
+    palette = build_palette(len(stack_cols))
     legend_handles: list[Patch] = []
 
     for index, (col, label) in enumerate(zip(stack_cols, labels, strict=True)):
