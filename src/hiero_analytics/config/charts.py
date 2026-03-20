@@ -1,70 +1,97 @@
-"""
-Defines configuration constants for styling and formatting charts in the analytics module. 
-Includes default figure settings and grid styling for consistent visual presentation across all charts.
-"""
+"""Shared chart styling constants for the analytics plotting layer."""
+
 from __future__ import annotations
 
 # --------------------------------------------------
 # Figure configuration
 # --------------------------------------------------
-"""
-DPI is the resolution of the figure in dots per inch, which affects the clarity and quality of the saved charts.
-FIGSIZE is the default size of the figure in inches, defined as a tuple (width, height). 
-These settings ensure that all charts have a consistent appearance and are of high quality when saved or displayed."""
 DEFAULT_DPI: int = 300
 DEFAULT_FIGSIZE: tuple[int, int] = (12, 7)
 
-
 # --------------------------------------------------
-# Style configuration
+# Base style
 # --------------------------------------------------
-"""
-DEFAULT_STYLE is the default style for all charts, which defines the overall look and feel of the charts (e.g., colors, grid, background).
-seaborn-v0_8-whitegrid is a clean and modern style that includes a white background and gridlines, making it suitable for data visualization in the analytics module.
-"""
-DEFAULT_STYLE: str = "seaborn-v0_8-whitegrid"
-
-"""
-Title font size is the size of the font used for chart titles
-Label font size is the size of the font used for axis labels and legend text.
-Tick font size is the size of the font used for axis tick labels.
-Legend font size is the size of the font used for legend text.
-These settings ensure that all text elements in the charts are legible and consistent across different charts.
-"""
-TITLE_FONT_SIZE: int = 14
+DEFAULT_STYLE: str = "default"
+FONT_FAMILY: str = "DejaVu Sans"
+TITLE_FONT_SIZE: int = 16
 LABEL_FONT_SIZE: int = 11
 TICK_FONT_SIZE: int = 10
 LEGEND_FONT_SIZE: int = 10
-
+ANNOTATION_FONT_SIZE: int = 10
+CENTER_TOTAL_FONT_SIZE: int = 20
+FONT_WEIGHT_SEMIBOLD: str = "semibold"
 
 # --------------------------------------------------
-# Grid configuration
+# Surface + typography colors
 # --------------------------------------------------
-"""
-GRID_ENABLED is a boolean that indicates whether gridlines should be displayed on the charts.
-GRID_ALPHA is the transparency level of the gridlines, where 0 is fully transparent and 1 is fully opaque.
-GRID_STYLE defines the line style of the gridlines (e.g., solid, dashed, dotted).
-These settings ensure that gridlines are consistently styled across all charts, enhancing readability
-"""
+FIGURE_BACKGROUND_COLOR = "#F6F8FB"
+PLOT_BACKGROUND_COLOR = "#FFFFFF"
+TITLE_COLOR = "#0F172A"
+TEXT_COLOR = "#334155"
+MUTED_TEXT_COLOR = "#64748B"
+AXIS_LINE_COLOR = "#D7E0EA"
+CARD_BORDER_COLOR = "#DCE5EF"
+
+# --------------------------------------------------
+# Grid styling
+# --------------------------------------------------
 GRID_ENABLED: bool = True
-GRID_ALPHA: float = 0.4
-GRID_STYLE: str = "--"
+GRID_ALPHA: float = 1.0
+GRID_STYLE: str = "-"
+GRID_COLOR: str = "#E8EEF5"
+GRID_LINE_WIDTH: float = 0.8
 
+# --------------------------------------------------
+# Legend styling
+# --------------------------------------------------
+LEGEND_BACKGROUND_COLOR = "#FFFFFF"
+LEGEND_EDGE_COLOR = "#E2E8F0"
+LEGEND_BOX_STYLE = "round,pad=0.35,rounding_size=1.4"
+
+# --------------------------------------------------
+# Annotation styling
+# --------------------------------------------------
+ENDPOINT_LABEL_BOX_STYLE = "round,pad=0.28,rounding_size=0.8"
+
+# --------------------------------------------------
+# Donut / pie styling
+# --------------------------------------------------
+DONUT_START_ANGLE = 110
+DONUT_RADIUS = 0.92
+DONUT_WIDTH = 0.34
+DONUT_PERCENTAGE_DISTANCE = 0.8
+DONUT_EDGE_LINE_WIDTH = 2.0
+
+# --------------------------------------------------
+# Accent palette for charts without a domain-specific color mapping
+# --------------------------------------------------
+PRIMARY_PALETTE = [
+    "#F97316",
+    "#14B8A6",
+    "#0EA5E9",
+    "#F59E0B",
+    "#EF4444",
+]
+
+# Preserve the original domain colors for the analytics charts that already
+# have established meaning in project discussions and screenshots.
 DIFFICULTY_COLORS = {
-    "Advanced": "#E78AC3",         # pink
-    "Intermediate": "#FFD92F",     # yellow
-    "Beginner": "#8DA0CB",         # purple / lavender
-    "Good First Issue": "#66C2A5", # light green
-    "Unknown": "#B3B3B3",          # neutral grey
+    "Advanced": "#E78AC3",
+    "Intermediate": "#FFD92F",
+    "Beginner": "#8DA0CB",
+    "Good First Issue": "#66C2A5",
+    "Unknown": "#B3B3B3",
 }
 
+# Onboarding charts already use these colors across the existing exports.
 ONBOARDING_COLORS = {
-    "Good First Issues": "#2E749F",            # navy
-    "Good First Issue Candidates": "#D8A251",  # dark pink
+    "Good First Issues": "#2E749F",
+    "Good First Issue Candidates": "#D8A251",
 }
 
+# State lines keep their original semantic mapping as well.
 STATE_COLORS = {
-    "total": "#3D3D3D", # dark grey
-    "closed": "#28A197",# turquoise
-    "open": "#F46A25",  # orange
+    "total": "#3D3D3D",
+    "closed": "#28A197",
+    "open": "#F46A25",
 }
