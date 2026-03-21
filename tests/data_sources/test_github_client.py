@@ -4,6 +4,8 @@ import pytest
 
 import hiero_analytics.data_sources.github_client as github_client
 
+import threading 
+import requests
 # ---------------------------------------------------------
 # FIXTURE: disable sleeping
 # ---------------------------------------------------------
@@ -34,7 +36,6 @@ def test_client_without_token(monkeypatch):
 
     assert "Authorization" not in client.session.headers
 
-
 # ---------------------------------------------------------
 # BASIC GET
 # ---------------------------------------------------------
@@ -64,6 +65,24 @@ def test_get_success(monkeypatch, mock_sleep):
     assert result == {"hello": "world"}
     assert client.requests_made == 1
 
+def test_no_retry_on_401(monkeypatch, mock_sleep):
+    """Verify the client fails immediately on 401 Unauthorized."""
+    client = github_client.GitHubClient()
+
+    mock_response = Mock()
+    mock_response.status_code = 401
+    mock_response.ok = False
+    mock_response.headers = {}
+   
+    mock_response.raise_for_status.side_effect = requests.HTTPError("401 Client Error")
+
+    request_mock = Mock(return_value=mock_response)
+    monkeypatch.setattr(client.session, "request", request_mock)
+
+    with pytest.raises(requests.HTTPError):
+        client.get("https://api.github.com/test")
+
+    assert request_mock.call_count == 1
 
 # ---------------------------------------------------------
 # RATE LIMIT RETRY
@@ -103,6 +122,76 @@ def test_get_rate_limit_retry(monkeypatch, mock_sleep):
 
     assert result == {"retried": True}
 
+def test_retries_on_502_and_succeeds(monkeypatch, mock_sleep):
+    """Verify the client recovers if a 502 is followed by a 200."""
+    client = github_client.GitHubClient()
+
+    fail_502 = Mock()
+    fail_502.status_code = 502
+    fail_502.ok = False
+    fail_502.headers = {}
+    
+    success_200 = Mock()
+    success_200.status_code = 200
+    success_200.ok = True
+    success_200.headers = {"X-RateLimit-Remaining": "5000"}
+    success_200.json.return_value = {"data": "recovered"}
+
+    request_mock = Mock(side_effect=[fail_502, success_200])
+    monkeypatch.setattr(client.session, "request", request_mock)
+
+    result = client.get("https://api.github.com/test")
+
+    assert result == {"data": "recovered"}
+    assert request_mock.call_count == 2  
+
+def test_502_prioritized_over_rate_limit(monkeypatch, mock_sleep):
+    client = github_client.GitHubClient()
+
+    fail_502 = Mock()
+    fail_502.status_code = 502
+    fail_502.ok = False
+    fail_502.headers = {
+        "X-RateLimit-Remaining": "0", 
+        "X-RateLimit-Reset": "0",
+    }
+
+    success = Mock()
+    success.status_code = 200
+    success.ok = True
+    success.headers = {"X-RateLimit-Remaining": "10"}
+    success.json.return_value = {"ok": True}
+
+    request_mock = Mock(side_effect=[fail_502, success])
+    monkeypatch.setattr(client.session, "request", request_mock)
+
+    result = client.get("https://api.github.com/test")
+
+    assert result == {"ok": True}
+    assert request_mock.call_count == 2
+# ---------------------------------------------------------
+# CONCURRENCY
+# ---------------------------------------------------------
+
+def test_counter_thread_safety(monkeypatch):
+    """Verify requests_made is accurate when hit by multiple threads."""
+    client = github_client.GitHubClient()
+    
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.ok = True
+    mock_response.headers = {"X-RateLimit-Remaining": "5000"}
+    mock_response.json.return_value = {}
+    
+    monkeypatch.setattr(client.session, "request", Mock(return_value=mock_response))
+
+    # Run 10 threads at once
+    threads = [threading.Thread(target=client.get, args=("url",)) for _ in range(10)]
+    for t in threads: t.start()
+    for t in threads: t.join()
+
+   
+    assert client.requests_made == 10
 
 # ---------------------------------------------------------
 # GRAPHQL

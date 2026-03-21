@@ -13,6 +13,8 @@ from collections.abc import Mapping
 from typing import Any
 
 import requests
+import random
+import threading
 
 from hiero_analytics.config.github import (
     BASE_URL,
@@ -32,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 3
 MAX_GRAPHQL_FRESH_RETRIES = 2
+RETRY_STATUS_CODES = {500, 502, 503, 504}
 
 # --------------------------------------------------------
 # HEADERS
@@ -71,6 +74,8 @@ class GitHubClient:
 
         # Rate-limit policy: reads signals, returns decisions.
         self._policy = RateLimitPolicy()
+        # Thread lock to protect usage counters during concurrent execution.
+        self._lock = threading.Lock()
 
         # usage counters to keep track of API usage
         self.requests_made: int = 0
@@ -101,14 +106,15 @@ class GitHubClient:
         is_graphql: bool,
     ) -> RateLimitSnapshot | None:
         """Extract rate-limit info from response and update usage counters."""
-        self.requests_made += 1
-        if not is_graphql:
-            return None
+        with self._lock:
+            self.requests_made += 1
+            if not is_graphql:
+                return None
 
-        snapshot = RateLimitSnapshot.from_graphql_payload(data)
-        if snapshot and snapshot.cost is not None:
-            self.cost_used += snapshot.cost
-        return snapshot
+            snapshot = RateLimitSnapshot.from_graphql_payload(data)
+            if snapshot and snapshot.cost is not None:
+                self.cost_used += snapshot.cost
+            return snapshot
 
     # --------------------------------------------------------
     # REQUEST EXECUTION
@@ -158,6 +164,24 @@ class GitHubClient:
             logger.debug("GitHub response <- %.2fs", time.time() - start)
 
             # Check REST headers for all endpoints, including GraphQL.
+            if response.status_code in RETRY_STATUS_CODES:
+                if attempt == MAX_RETRIES:
+                    logger.error(
+                        "Server error %d after %d attempts",
+                        response.status_code,
+                        MAX_RETRIES,
+                    )
+                    response.raise_for_status()
+
+                sleep_time = (2 ** attempt) + random.uniform(0, 1) # small jitter
+                logger.warning(
+                    "Server error %d. Retrying in %.2fs...",
+                    response.status_code,
+                    sleep_time,
+                )
+                time.sleep(sleep_time)
+                continue
+
             snapshot = RateLimitSnapshot.from_rest_headers(response.headers)
             if snapshot:
                 rest_decision = self._policy.check_rest_response(
@@ -169,8 +193,9 @@ class GitHubClient:
                 )
                 action = self._apply_decision(rest_decision)
                 if action == Action.DELAY_THEN_RETRY_LOOP:
+                    logger.info("Retrying due to REST rate limit...")
                     continue
-
+                
             response.raise_for_status()
             return response
 
@@ -183,7 +208,13 @@ class GitHubClient:
         """
         is_graphql = url.endswith("/graphql")
 
-        for _fresh_retry_count in range(MAX_GRAPHQL_FRESH_RETRIES + 1):
+        start_time = time.time()
+        MAX_TOTAL_TIME = 60  # seconds
+
+        for attempt in range(1, MAX_GRAPHQL_FRESH_RETRIES + 2):
+            if time.time() - start_time > MAX_TOTAL_TIME:
+                raise TimeoutError("GraphQL request exceeded total retry time")
+        
             response = self._execute_http_with_retries(method, url, **kwargs)
             data: JSON = response.json()
 
@@ -196,9 +227,16 @@ class GitHubClient:
                 return data
 
             error_decision = self._policy.check_graphql_errors(data, graphql_snapshot)
+            if "errors" in data:
+                logger.warning(
+                    "GraphQL errors (attempt %d): %s",
+                     attempt, 
+                     data["errors"],
+                     )
             action = self._apply_decision(error_decision)
 
             if action == Action.DELAY_THEN_RETRY_FRESH:
+                logger.info("GraphQL retry attempt %d", attempt)
                 continue
 
             if graphql_snapshot:
