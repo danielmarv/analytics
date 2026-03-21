@@ -10,6 +10,8 @@ Produces:
 
 from __future__ import annotations
 
+import os
+
 from hiero_analytics.analysis.maintainer_pipeline import (
     STAGE_LABELS,
     STAGE_ORDER,
@@ -21,21 +23,87 @@ from hiero_analytics.analysis.maintainer_pipeline import (
 from hiero_analytics.config.charts import RESPONSIBILITY_COLORS
 from hiero_analytics.config.paths import ORG, ensure_org_dirs
 from hiero_analytics.data_sources.github_client import GitHubClient
-from hiero_analytics.data_sources.github_ingest import fetch_org_contributor_activity_graphql
+from hiero_analytics.data_sources.github_ingest import (
+    DEFAULT_CONTRIBUTOR_ACTIVITY_LOOKBACK_DAYS,
+    fetch_org_contributor_activity_graphql,
+)
 from hiero_analytics.export.save import save_dataframe
 from hiero_analytics.plotting.bars import plot_stacked_bar
 
 STACK_LABELS = [STAGE_LABELS[stage] for stage in STAGE_ORDER]
 
 
+def _activity_max_workers() -> int:
+    """Resolve the contributor-activity worker count from the environment."""
+    raw_value = os.getenv("GITHUB_CONTRIBUTOR_ACTIVITY_MAX_WORKERS", "1")
+
+    try:
+        return max(1, int(raw_value))
+    except ValueError:
+        return 1
+
+
+def _activity_lookback_days() -> int | None:
+    """Resolve the repo-relative contributor-activity lookback from the environment."""
+    raw_value = os.getenv(
+        "GITHUB_CONTRIBUTOR_ACTIVITY_LOOKBACK_DAYS",
+        str(DEFAULT_CONTRIBUTOR_ACTIVITY_LOOKBACK_DAYS),
+    )
+
+    try:
+        parsed_value = int(raw_value)
+    except ValueError:
+        return DEFAULT_CONTRIBUTOR_ACTIVITY_LOOKBACK_DAYS
+
+    return parsed_value if parsed_value > 0 else None
+
+
+def _activity_repo_pause_seconds() -> float:
+    """Resolve the pause between sequential repository fetches."""
+    raw_value = os.getenv("GITHUB_CONTRIBUTOR_ACTIVITY_REPO_PAUSE_SECONDS", "5")
+
+    try:
+        return max(0.0, float(raw_value))
+    except ValueError:
+        return 5.0
+
+
+def _selected_repos() -> list[str]:
+    """Resolve optional repo filters from a comma-separated environment variable."""
+    raw_value = os.getenv("GITHUB_CONTRIBUTOR_ACTIVITY_REPOS", "")
+    return [repo.strip() for repo in raw_value.split(",") if repo.strip()]
+
+
 def main() -> None:
     """Execute the contributor responsibility analytics pipeline."""
     org_data_dir, org_charts_dir = ensure_org_dirs(ORG)
+    activity_max_workers = _activity_max_workers()
+    activity_lookback_days = _activity_lookback_days()
+    repo_pause_seconds = _activity_repo_pause_seconds()
+    selected_repos = _selected_repos()
 
     print(f"Running maintainer pipeline analytics for org: {ORG}")
+    print(f"Using contributor activity worker count: {activity_max_workers}")
+    if activity_lookback_days is None:
+        print("Using contributor activity lookback: full history")
+    else:
+        print(
+            "Using contributor activity lookback: "
+            f"{activity_lookback_days} days from each repo's latest issue or PR update"
+        )
+    print(f"Using pause between repo fetches: {repo_pause_seconds:g}s")
+    if selected_repos:
+        print(f"Restricting contributor activity fetch to {len(selected_repos)} repo(s)")
 
     client = GitHubClient()
-    activities = fetch_org_contributor_activity_graphql(client, org=ORG)
+    activities = fetch_org_contributor_activity_graphql(
+        client,
+        org=ORG,
+        max_workers=activity_max_workers,
+        repos=selected_repos or None,
+        repo_pause_seconds=repo_pause_seconds,
+        lookback_days=activity_lookback_days,
+    )
 
     print(f"Fetched {len(activities)} contributor activity records")
 

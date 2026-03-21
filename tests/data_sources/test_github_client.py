@@ -122,6 +122,35 @@ def test_get_rate_limit_retry(monkeypatch, mock_sleep):
 
     assert result == {"retried": True}
 
+
+def test_get_secondary_rate_limit_retry(monkeypatch, mock_sleep):
+    """Retryable GitHub 403 responses should back off and try again."""
+    first = Mock()
+    first.headers = {"Retry-After": "1"}
+    first.json.return_value = {"message": "You have exceeded a secondary rate limit."}
+    first.status_code = 403
+    first.ok = False
+
+    second = Mock()
+    second.headers = {
+        "X-RateLimit-Remaining": "10",
+        "X-RateLimit-Reset": "0",
+    }
+    second.raise_for_status = Mock()
+    second.json.return_value = {"retried": True}
+    second.status_code = 200
+    second.ok = True
+
+    client = github_client.GitHubClient()
+
+    request_mock = Mock(side_effect=[first, second])
+    monkeypatch.setattr(client.session, "request", request_mock)
+
+    result = client.get("https://api.github.com/test")
+
+    assert result == {"retried": True}
+    assert request_mock.call_count == 2
+
 def test_retries_on_502_and_succeeds(monkeypatch, mock_sleep):
     """Verify the client recovers if a 502 is followed by a 200."""
     client = github_client.GitHubClient()

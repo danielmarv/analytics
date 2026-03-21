@@ -128,6 +128,24 @@ Run the test suite to ensure everything is working:
 ```bash
 uv run pytest
 ```
+
+### Run Analytics Pipelines
+
+Use the unified terminal runner to launch one pipeline or all of them:
+
+```bash
+uv run hiero-analytics
+```
+
+That opens an interactive menu where you can select a single pipeline or run every pipeline at once.
+
+You can also skip the prompt:
+
+```bash
+uv run hiero-analytics --run onboarding
+uv run hiero-analytics --run difficulty maintainer
+uv run hiero-analytics --all
+```
 ---
 
 ## License

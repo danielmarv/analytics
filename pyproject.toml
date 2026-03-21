@@ -5,6 +5,7 @@ description = "Hiero analytics"
 maintainers = [
     { name = "Sophie Bulloch", email = "exploreriii57@gmail.com" },
     { name = "Mona Eid", email = "monaa_eid@hotmail.com" },
+    { name = "Daniel Marvin", email = "danientege785@gmail.com" },
 ]
 license = { file = "LICENSE" }
 readme = "README.md"
@@ -29,6 +30,9 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+
+[project.scripts]
+hiero-analytics = "hiero_analytics.run_analytics:main"
 
 [dependency-groups]
 dev = [

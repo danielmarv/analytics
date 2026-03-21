@@ -12,8 +12,8 @@ import time
 from collections.abc import Mapping
 from typing import Any
 
-import requests
 import random
+import requests
 import threading
 
 from hiero_analytics.config.github import (
@@ -35,6 +35,13 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 3
 MAX_GRAPHQL_FRESH_RETRIES = 2
 RETRY_STATUS_CODES = {500, 502, 503, 504}
+SECONDARY_RATE_LIMIT_FALLBACK_SLEEP_SECONDS = 60
+SECONDARY_RATE_LIMIT_MARKERS = (
+    "secondary rate limit",
+    "abuse detection",
+    "please wait a few minutes",
+    "temporarily blocked",
+)
 
 # --------------------------------------------------------
 # HEADERS
@@ -59,6 +66,57 @@ def github_headers() -> dict[str, str]:
     )
     headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
     return headers
+
+
+def _response_error_message(response: requests.Response) -> str:
+    """Extract a short API error message from a failed HTTP response."""
+    try:
+        payload = response.json()
+    except ValueError:
+        text = response.text.strip()
+        return text[:300]
+
+    if isinstance(payload, dict):
+        message = payload.get("message")
+        if isinstance(message, str) and message.strip():
+            return message.strip()
+
+        errors = payload.get("errors")
+        if isinstance(errors, list) and errors:
+            return str(errors[0])
+
+    return ""
+
+
+def _retry_after_seconds(response: requests.Response) -> int:
+    """Parse GitHub's Retry-After header when present."""
+    raw_retry_after = response.headers.get("Retry-After")
+    if raw_retry_after is None:
+        return 0
+
+    try:
+        return max(0, int(raw_retry_after))
+    except ValueError:
+        return 0
+
+
+def _secondary_rate_limit_sleep_seconds(
+    response: requests.Response,
+) -> int | None:
+    """Return a retry delay for retryable 403 responses."""
+    if response.status_code != 403:
+        return None
+
+    retry_after = _retry_after_seconds(response)
+    message = _response_error_message(response).lower()
+
+    if retry_after > 0:
+        return retry_after
+
+    if any(marker in message for marker in SECONDARY_RATE_LIMIT_MARKERS):
+        return SECONDARY_RATE_LIMIT_FALLBACK_SLEEP_SECONDS
+
+    return None
 
 
 # --------------------------------------------------------
@@ -195,7 +253,31 @@ class GitHubClient:
                 if action == Action.DELAY_THEN_RETRY_LOOP:
                     logger.info("Retrying due to REST rate limit...")
                     continue
-                
+
+            secondary_limit_sleep = _secondary_rate_limit_sleep_seconds(response)
+            if secondary_limit_sleep is not None:
+                if attempt == MAX_RETRIES:
+                    logger.error(
+                        "GitHub 403 persisted after %d attempts: %s",
+                        MAX_RETRIES,
+                        _response_error_message(response),
+                    )
+                    response.raise_for_status()
+
+                logger.warning(
+                    "GitHub requested back-off after 403. Retrying in %ds. Message: %s",
+                    secondary_limit_sleep,
+                    _response_error_message(response),
+                )
+                time.sleep(secondary_limit_sleep)
+                continue
+
+            if not response.ok:
+                logger.error(
+                    "GitHub request failed with %d: %s",
+                    response.status_code,
+                    _response_error_message(response),
+                )
             response.raise_for_status()
             return response
 

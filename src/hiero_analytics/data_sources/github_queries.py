@@ -1,6 +1,4 @@
-"""
-GraphQL queries to later be used for fetching data from GitHub
-"""
+"""GraphQL queries used for fetching data from GitHub."""
 
 
 REPOS_QUERY: str = """
@@ -104,7 +102,7 @@ query($owner:String!, $repo:String!, $cursor:String) {
     issues(
       first:100
       after:$cursor
-      orderBy:{field:CREATED_AT, direction:ASC}
+      orderBy:{field:UPDATED_AT, direction:DESC}
     ) {
       pageInfo {
         hasNextPage
@@ -113,6 +111,7 @@ query($owner:String!, $repo:String!, $cursor:String) {
       nodes {
         number
         createdAt
+        updatedAt
         author {
           login
         }
@@ -192,7 +191,7 @@ query($owner:String!, $repo:String!, $cursor:String) {
     pullRequests(
       first:100
       after:$cursor
-      orderBy:{field:CREATED_AT, direction:ASC}
+      orderBy:{field:UPDATED_AT, direction:DESC}
     ) {
       pageInfo {
         hasNextPage
@@ -201,6 +200,7 @@ query($owner:String!, $repo:String!, $cursor:String) {
       nodes {
         number
         createdAt
+        updatedAt
         mergedAt
         author {
           login

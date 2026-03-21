@@ -78,6 +78,7 @@ def test_contributor_activity_record_cache_round_trip(_temp_cache_dir):
     parameters = {
         "owner": "org",
         "repo": "repo",
+        "lookback_days": 183,
     }
 
     cache.save_records_cache(
@@ -99,6 +100,22 @@ def test_contributor_activity_record_cache_round_trip(_temp_cache_dir):
     )
 
     assert loaded == records
+
+
+def test_contributor_activity_cache_key_changes_with_lookback(_temp_cache_dir):
+    """Contributor-activity cache files should differ for different windows."""
+    default_window = cache._cache_path(
+        "repo_contributor_activity",
+        "org_repo",
+        {"owner": "org", "repo": "repo", "lookback_days": 183},
+    )
+    shorter_window = cache._cache_path(
+        "repo_contributor_activity",
+        "org_repo",
+        {"owner": "org", "repo": "repo", "lookback_days": 90},
+    )
+
+    assert default_window != shorter_window
 
 
 def test_stale_cache_entry_is_ignored(_temp_cache_dir):
