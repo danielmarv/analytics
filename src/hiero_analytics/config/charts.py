@@ -95,3 +95,9 @@ STATE_COLORS = {
     "closed": "#28A197",
     "open": "#F46A25",
 }
+
+RESPONSIBILITY_COLORS = {
+    "General users": "#94A3B8",
+    "Triage contributors": "#0EA5E9",
+    "Maintainers": "#F97316",
+}

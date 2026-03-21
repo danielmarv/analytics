@@ -97,3 +97,180 @@ query($owner:String!, $repo:String!, $cursor:String) {
   }
 }
 """
+
+CONTRIBUTOR_ISSUE_ACTIVITY_QUERY: str = """
+query($owner:String!, $repo:String!, $cursor:String) {
+  repository(owner:$owner, name:$repo) {
+    issues(
+      first:100
+      after:$cursor
+      orderBy:{field:CREATED_AT, direction:ASC}
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        number
+        createdAt
+        author {
+          login
+        }
+        comments(first:100) {
+          nodes {
+            createdAt
+            author {
+              login
+            }
+          }
+        }
+        timelineItems(
+          first:100
+          itemTypes:[LABELED_EVENT, UNLABELED_EVENT, CLOSED_EVENT, REOPENED_EVENT, ASSIGNED_EVENT]
+        ) {
+          nodes {
+            __typename
+            ... on LabeledEvent {
+              createdAt
+              actor {
+                login
+              }
+              label {
+                name
+              }
+            }
+            ... on UnlabeledEvent {
+              createdAt
+              actor {
+                login
+              }
+              label {
+                name
+              }
+            }
+            ... on ClosedEvent {
+              createdAt
+              actor {
+                login
+              }
+            }
+            ... on ReopenedEvent {
+              createdAt
+              actor {
+                login
+              }
+            }
+            ... on AssignedEvent {
+              createdAt
+              actor {
+                login
+              }
+              assignee {
+                __typename
+                ... on User {
+                  login
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  rateLimit {
+    limit
+    remaining
+    cost
+    resetAt
+  }
+}
+"""
+
+CONTRIBUTOR_PULL_REQUEST_ACTIVITY_QUERY: str = """
+query($owner:String!, $repo:String!, $cursor:String) {
+  repository(owner:$owner, name:$repo) {
+    pullRequests(
+      first:100
+      after:$cursor
+      orderBy:{field:CREATED_AT, direction:ASC}
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        number
+        createdAt
+        mergedAt
+        author {
+          login
+        }
+        mergedBy {
+          login
+        }
+        comments(first:100) {
+          nodes {
+            createdAt
+            author {
+              login
+            }
+          }
+        }
+        reviews(first:100) {
+          nodes {
+            createdAt
+            state
+            author {
+              login
+            }
+          }
+        }
+        timelineItems(
+          first:100
+          itemTypes:[LABELED_EVENT, UNLABELED_EVENT, CLOSED_EVENT, REOPENED_EVENT]
+        ) {
+          nodes {
+            __typename
+            ... on LabeledEvent {
+              createdAt
+              actor {
+                login
+              }
+              label {
+                name
+              }
+            }
+            ... on UnlabeledEvent {
+              createdAt
+              actor {
+                login
+              }
+              label {
+                name
+              }
+            }
+            ... on ClosedEvent {
+              createdAt
+              actor {
+                login
+              }
+            }
+            ... on ReopenedEvent {
+              createdAt
+              actor {
+                login
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  rateLimit {
+    limit
+    remaining
+    cost
+    resetAt
+  }
+}
+"""

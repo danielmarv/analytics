@@ -47,3 +47,17 @@ class PullRequestDifficultyRecord:
     pr_changed_files: int
     issue_number: int
     issue_labels: list[str]
+
+
+@dataclass(frozen=True)
+class ContributorActivityRecord:
+    """A normalized contributor activity event used for pipeline inference."""
+
+    repo: str
+    actor: str
+    occurred_at: datetime
+    activity_type: str
+    target_type: str
+    target_number: int
+    target_author: str | None = None
+    detail: str | None = None

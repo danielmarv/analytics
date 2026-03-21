@@ -19,11 +19,14 @@ from .cache import (
 )
 from .github_client import GitHubClient
 from .github_queries import (
+    CONTRIBUTOR_ISSUE_ACTIVITY_QUERY,
+    CONTRIBUTOR_PULL_REQUEST_ACTIVITY_QUERY,
     ISSUES_QUERY,
     MERGED_PR_QUERY,
     REPOS_QUERY,
 )
 from .models import (
+    ContributorActivityRecord,
     IssueRecord,
     PullRequestDifficultyRecord,
     RepositoryRecord,
@@ -55,6 +58,56 @@ def _parse_dt(value: str | None) -> datetime | None:
     if value is None:
         return None
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
+
+
+def _extract_login(node: dict[str, object] | None) -> str | None:
+    """Safely read a GitHub actor/login field from a GraphQL node."""
+    if not isinstance(node, dict):
+        return None
+
+    login = node.get("login")
+    if isinstance(login, str) and login.strip():
+        return login
+
+    return None
+
+
+def _is_human_actor(login: str | None) -> bool:
+    """Return True for non-empty human logins and False for bot actors."""
+    if not login:
+        return False
+
+    return not login.lower().endswith("[bot]")
+
+
+def _append_activity(
+    records: list[ContributorActivityRecord],
+    *,
+    repo: str,
+    actor: str | None,
+    occurred_at: datetime | None,
+    activity_type: str,
+    target_type: str,
+    target_number: int,
+    target_author: str | None,
+    detail: str | None = None,
+) -> None:
+    """Append a normalized activity record when the actor and timestamp exist."""
+    if not _is_human_actor(actor) or occurred_at is None:
+        return
+
+    records.append(
+        ContributorActivityRecord(
+            repo=repo,
+            actor=actor,
+            occurred_at=occurred_at,
+            activity_type=activity_type,
+            target_type=target_type,
+            target_number=target_number,
+            target_author=target_author,
+            detail=detail,
+        )
+    )
 
 
 # --------------------------------------------------------
@@ -327,6 +380,370 @@ def fetch_org_issues_graphql(
         use_cache=use_cache,
     )
     return all_issues
+
+
+# --------------------------------------------------------
+# FETCH CONTRIBUTOR ACTIVITY FOR ONE REPOSITORY
+# --------------------------------------------------------
+
+
+def _parse_issue_activity_nodes(
+    owner: str,
+    repo: str,
+    issue_nodes: list[dict[str, object]],
+) -> list[ContributorActivityRecord]:
+    """Normalize issue authorship, comments, and issue-management events."""
+    full_name = f"{owner}/{repo}"
+    records: list[ContributorActivityRecord] = []
+
+    for issue in issue_nodes:
+        issue_number = int(issue["number"])
+        issue_author = _extract_login(issue.get("author"))
+
+        _append_activity(
+            records,
+            repo=full_name,
+            actor=issue_author,
+            occurred_at=_parse_dt(issue.get("createdAt")),
+            activity_type="authored_issue",
+            target_type="issue",
+            target_number=issue_number,
+            target_author=issue_author,
+        )
+
+        comments = issue.get("comments", {})
+        if isinstance(comments, dict):
+            for comment in comments.get("nodes", []):
+                if not isinstance(comment, dict):
+                    continue
+
+                _append_activity(
+                    records,
+                    repo=full_name,
+                    actor=_extract_login(comment.get("author")),
+                    occurred_at=_parse_dt(comment.get("createdAt")),
+                    activity_type="commented_on_issue",
+                    target_type="issue",
+                    target_number=issue_number,
+                    target_author=issue_author,
+                )
+
+        timeline = issue.get("timelineItems", {})
+        if not isinstance(timeline, dict):
+            continue
+
+        for item in timeline.get("nodes", []):
+            if not isinstance(item, dict):
+                continue
+
+            typename = item.get("__typename")
+            detail: str | None = None
+
+            if typename == "LabeledEvent":
+                activity_type = "labeled_issue"
+                label = item.get("label")
+                detail = label.get("name") if isinstance(label, dict) else None
+            elif typename == "UnlabeledEvent":
+                activity_type = "unlabeled_issue"
+                label = item.get("label")
+                detail = label.get("name") if isinstance(label, dict) else None
+            elif typename == "ClosedEvent":
+                activity_type = "closed_issue"
+            elif typename == "ReopenedEvent":
+                activity_type = "reopened_issue"
+            elif typename == "AssignedEvent":
+                activity_type = "assigned_issue"
+                detail = _extract_login(item.get("assignee"))
+            else:
+                continue
+
+            _append_activity(
+                records,
+                repo=full_name,
+                actor=_extract_login(item.get("actor")),
+                occurred_at=_parse_dt(item.get("createdAt")),
+                activity_type=activity_type,
+                target_type="issue",
+                target_number=issue_number,
+                target_author=issue_author,
+                detail=detail,
+            )
+
+    return records
+
+
+def _parse_pull_request_activity_nodes(
+    owner: str,
+    repo: str,
+    pr_nodes: list[dict[str, object]],
+) -> list[ContributorActivityRecord]:
+    """Normalize pull-request authorship, reviews, comments, and merges."""
+    full_name = f"{owner}/{repo}"
+    records: list[ContributorActivityRecord] = []
+
+    for pull_request in pr_nodes:
+        pr_number = int(pull_request["number"])
+        pr_author = _extract_login(pull_request.get("author"))
+
+        _append_activity(
+            records,
+            repo=full_name,
+            actor=pr_author,
+            occurred_at=_parse_dt(pull_request.get("createdAt")),
+            activity_type="authored_pull_request",
+            target_type="pull_request",
+            target_number=pr_number,
+            target_author=pr_author,
+        )
+
+        comments = pull_request.get("comments", {})
+        if isinstance(comments, dict):
+            for comment in comments.get("nodes", []):
+                if not isinstance(comment, dict):
+                    continue
+
+                _append_activity(
+                    records,
+                    repo=full_name,
+                    actor=_extract_login(comment.get("author")),
+                    occurred_at=_parse_dt(comment.get("createdAt")),
+                    activity_type="commented_on_pull_request",
+                    target_type="pull_request",
+                    target_number=pr_number,
+                    target_author=pr_author,
+                )
+
+        reviews = pull_request.get("reviews", {})
+        if isinstance(reviews, dict):
+            for review in reviews.get("nodes", []):
+                if not isinstance(review, dict):
+                    continue
+
+                _append_activity(
+                    records,
+                    repo=full_name,
+                    actor=_extract_login(review.get("author")),
+                    occurred_at=_parse_dt(review.get("createdAt")),
+                    activity_type="reviewed_pull_request",
+                    target_type="pull_request",
+                    target_number=pr_number,
+                    target_author=pr_author,
+                    detail=str(review.get("state")) if review.get("state") is not None else None,
+                )
+
+        _append_activity(
+            records,
+            repo=full_name,
+            actor=_extract_login(pull_request.get("mergedBy")),
+            occurred_at=_parse_dt(pull_request.get("mergedAt")),
+            activity_type="merged_pull_request",
+            target_type="pull_request",
+            target_number=pr_number,
+            target_author=pr_author,
+        )
+
+        timeline = pull_request.get("timelineItems", {})
+        if not isinstance(timeline, dict):
+            continue
+
+        for item in timeline.get("nodes", []):
+            if not isinstance(item, dict):
+                continue
+
+            typename = item.get("__typename")
+            detail: str | None = None
+
+            if typename == "LabeledEvent":
+                activity_type = "labeled_pull_request"
+                label = item.get("label")
+                detail = label.get("name") if isinstance(label, dict) else None
+            elif typename == "UnlabeledEvent":
+                activity_type = "unlabeled_pull_request"
+                label = item.get("label")
+                detail = label.get("name") if isinstance(label, dict) else None
+            elif typename == "ClosedEvent":
+                activity_type = "closed_pull_request"
+            elif typename == "ReopenedEvent":
+                activity_type = "reopened_pull_request"
+            else:
+                continue
+
+            _append_activity(
+                records,
+                repo=full_name,
+                actor=_extract_login(item.get("actor")),
+                occurred_at=_parse_dt(item.get("createdAt")),
+                activity_type=activity_type,
+                target_type="pull_request",
+                target_number=pr_number,
+                target_author=pr_author,
+                detail=detail,
+            )
+
+    return records
+
+
+def fetch_repo_contributor_activity_graphql(
+    client: GitHubClient,
+    owner: str,
+    repo: str,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
+) -> list[ContributorActivityRecord]:
+    """
+    Fetch normalized contributor activity for a repository.
+
+    The fetch includes issue authorship and comments, issue-management events,
+    pull request authorship and comments, pull request reviews, and merge
+    events. Nested activity connections are capped at 100 items per issue or
+    pull request to keep repository scans tractable.
+    """
+    scope = f"{owner}_{repo}"
+    cache_parameters = {
+        "owner": owner,
+        "repo": repo,
+    }
+    cached = load_records_cache(
+        "repo_contributor_activity",
+        scope,
+        cache_parameters,
+        ContributorActivityRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
+    def fetch_issue_page(
+        cursor: str | None,
+    ) -> tuple[list[ContributorActivityRecord], str | None, bool]:
+        data = client.graphql(
+            CONTRIBUTOR_ISSUE_ACTIVITY_QUERY,
+            {
+                "owner": owner,
+                "repo": repo,
+                "cursor": cursor,
+            },
+        )
+
+        issue_data = data["data"]["repository"]["issues"]
+        items = _parse_issue_activity_nodes(owner, repo, issue_data["nodes"])
+        next_cursor = issue_data["pageInfo"]["endCursor"]
+        has_next = issue_data["pageInfo"]["hasNextPage"]
+        return items, next_cursor, has_next
+
+    def fetch_pull_request_page(
+        cursor: str | None,
+    ) -> tuple[list[ContributorActivityRecord], str | None, bool]:
+        data = client.graphql(
+            CONTRIBUTOR_PULL_REQUEST_ACTIVITY_QUERY,
+            {
+                "owner": owner,
+                "repo": repo,
+                "cursor": cursor,
+            },
+        )
+
+        pull_request_data = data["data"]["repository"]["pullRequests"]
+        items = _parse_pull_request_activity_nodes(owner, repo, pull_request_data["nodes"])
+        next_cursor = pull_request_data["pageInfo"]["endCursor"]
+        has_next = pull_request_data["pageInfo"]["hasNextPage"]
+        return items, next_cursor, has_next
+
+    records = paginate_cursor(fetch_issue_page)
+    records.extend(paginate_cursor(fetch_pull_request_page))
+    records.sort(key=lambda record: (record.occurred_at, record.actor, record.activity_type))
+
+    save_records_cache(
+        "repo_contributor_activity",
+        scope,
+        cache_parameters,
+        ContributorActivityRecord,
+        records,
+        use_cache=use_cache,
+    )
+    return records
+
+
+# --------------------------------------------------------
+# FETCH CONTRIBUTOR ACTIVITY ACROSS AN ORG (PARALLEL)
+# --------------------------------------------------------
+
+
+def fetch_org_contributor_activity_graphql(
+    client: GitHubClient,
+    org: str,
+    max_workers: int = 5,
+    *,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
+) -> list[ContributorActivityRecord]:
+    """Fetch normalized contributor activity across all repositories in an org."""
+    logger.info(
+        "Fetching contributor activity for %s (max_workers=%d)",
+        org,
+        max_workers,
+    )
+    cache_parameters = {"org": org}
+    cached = load_records_cache(
+        "org_contributor_activity",
+        org,
+        cache_parameters,
+        ContributorActivityRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
+    repos = fetch_org_repos_graphql(
+        client,
+        org,
+        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+    )
+    logger.info("Found %d repositories in %s", len(repos), org)
+    all_records: list[ContributorActivityRecord] = []
+
+    def fetch(repository: RepositoryRecord) -> list[ContributorActivityRecord]:
+        logger.info("Scanning contributor activity for repository %s", repository.full_name)
+        return fetch_repo_contributor_activity_graphql(
+            client,
+            owner=repository.owner,
+            repo=repository.name,
+            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        )
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(fetch, repo): repo for repo in repos}
+
+        for future in as_completed(futures):
+            repo = futures[future]
+
+            try:
+                all_records.extend(future.result())
+            except Exception as exc:
+                logger.exception(
+                    "Failed fetching contributor activity for %s: %s",
+                    repo.full_name,
+                    exc,
+                )
+
+    all_records.sort(key=lambda record: (record.occurred_at, record.repo, record.actor))
+    logger.info("Collected %d contributor activity records across %s", len(all_records), org)
+    save_records_cache(
+        "org_contributor_activity",
+        org,
+        cache_parameters,
+        ContributorActivityRecord,
+        all_records,
+        use_cache=use_cache,
+    )
+    return all_records
 
 
 # --------------------------------------------------------

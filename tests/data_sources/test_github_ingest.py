@@ -5,6 +5,7 @@ import pytest
 
 import hiero_analytics.data_sources.github_ingest as ingest
 from hiero_analytics.data_sources.models import (
+    ContributorActivityRecord,
     IssueRecord,
     PullRequestDifficultyRecord,
     RepositoryRecord,
@@ -286,6 +287,161 @@ def test_fetch_org_merged_pr_difficulty_graphql(monkeypatch, mock_client):
     )
 
     repos_returned = {r.repo for r in records}
+
+    assert repos_returned == {"org/repo1", "org/repo2"}
+    assert len(records) == 2
+
+
+# ---------------------------------------------------------
+# contributor activity
+# ---------------------------------------------------------
+
+def test_fetch_repo_contributor_activity_graphql(mock_client, bypass_pagination):
+
+    mock_client.graphql.side_effect = [
+        {
+            "data": {
+                "repository": {
+                    "issues": {
+                        "nodes": [
+                            {
+                                "number": 1,
+                                "createdAt": "2024-01-01T00:00:00Z",
+                                "author": {"login": "alice"},
+                                "comments": {
+                                    "nodes": [
+                                        {
+                                            "createdAt": "2024-01-02T00:00:00Z",
+                                            "author": {"login": "bob"},
+                                        }
+                                    ]
+                                },
+                                "timelineItems": {
+                                    "nodes": [
+                                        {
+                                            "__typename": "LabeledEvent",
+                                            "createdAt": "2024-01-03T00:00:00Z",
+                                            "actor": {"login": "carol"},
+                                            "label": {"name": "bug"},
+                                        }
+                                    ]
+                                },
+                            }
+                        ],
+                        "pageInfo": {
+                            "hasNextPage": False,
+                            "endCursor": None,
+                        },
+                    }
+                }
+            }
+        },
+        {
+            "data": {
+                "repository": {
+                    "pullRequests": {
+                        "nodes": [
+                            {
+                                "number": 10,
+                                "createdAt": "2024-01-04T00:00:00Z",
+                                "mergedAt": "2024-01-07T00:00:00Z",
+                                "author": {"login": "dave"},
+                                "mergedBy": {"login": "erin"},
+                                "comments": {
+                                    "nodes": [
+                                        {
+                                            "createdAt": "2024-01-05T00:00:00Z",
+                                            "author": {"login": "frank"},
+                                        }
+                                    ]
+                                },
+                                "reviews": {
+                                    "nodes": [
+                                        {
+                                            "createdAt": "2024-01-06T00:00:00Z",
+                                            "state": "APPROVED",
+                                            "author": {"login": "gina"},
+                                        }
+                                    ]
+                                },
+                                "timelineItems": {
+                                    "nodes": [
+                                        {
+                                            "__typename": "ClosedEvent",
+                                            "createdAt": "2024-01-08T00:00:00Z",
+                                            "actor": {"login": "harry"},
+                                        }
+                                    ]
+                                },
+                            }
+                        ],
+                        "pageInfo": {
+                            "hasNextPage": False,
+                            "endCursor": None,
+                        },
+                    }
+                }
+            }
+        },
+    ]
+
+    records = ingest.fetch_repo_contributor_activity_graphql(
+        mock_client,
+        "org",
+        "repo",
+        use_cache=False,
+    )
+
+    activity_types = [record.activity_type for record in records]
+
+    assert isinstance(records[0], ContributorActivityRecord)
+    assert "authored_issue" in activity_types
+    assert "commented_on_issue" in activity_types
+    assert "labeled_issue" in activity_types
+    assert "authored_pull_request" in activity_types
+    assert "commented_on_pull_request" in activity_types
+    assert "reviewed_pull_request" in activity_types
+    assert "merged_pull_request" in activity_types
+    assert "closed_pull_request" in activity_types
+
+
+def test_fetch_org_contributor_activity_graphql(monkeypatch, mock_client):
+
+    repos = [
+        RepositoryRecord("org/repo1", "repo1", "org"),
+        RepositoryRecord("org/repo2", "repo2", "org"),
+    ]
+
+    monkeypatch.setattr(
+        ingest,
+        "fetch_org_repos_graphql",
+        lambda client, org, **_kwargs: repos,
+    )
+
+    monkeypatch.setattr(
+        ingest,
+        "fetch_repo_contributor_activity_graphql",
+        lambda client, owner, repo, **_kwargs: [
+            ContributorActivityRecord(
+                repo=f"{owner}/{repo}",
+                actor="alice",
+                occurred_at=datetime(2024, 1, 1),
+                activity_type="authored_issue",
+                target_type="issue",
+                target_number=1,
+                target_author="alice",
+            )
+        ],
+    )
+
+    records = ingest.fetch_org_contributor_activity_graphql(
+        mock_client,
+        "org",
+        max_workers=2,
+        use_cache=False,
+    )
+
+    repos_returned = {record.repo for record in records}
 
     assert repos_returned == {"org/repo1", "org/repo2"}
     assert len(records) == 2

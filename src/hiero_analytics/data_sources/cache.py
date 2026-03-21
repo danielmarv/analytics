@@ -16,6 +16,7 @@ from typing import TypeVar
 from hiero_analytics.config.paths import OUTPUTS_DIR
 
 from .models import (
+    ContributorActivityRecord,
     IssueRecord,
     PullRequestDifficultyRecord,
     RepositoryRecord,
@@ -33,12 +34,14 @@ _DATETIME_FIELDS: dict[type[object], tuple[str, ...]] = {
     RepositoryRecord: ("created_at",),
     IssueRecord: ("created_at", "closed_at"),
     PullRequestDifficultyRecord: ("pr_created_at", "pr_merged_at"),
+    ContributorActivityRecord: ("occurred_at",),
 }
 RecordType = TypeVar(
     "RecordType",
     RepositoryRecord,
     IssueRecord,
     PullRequestDifficultyRecord,
+    ContributorActivityRecord,
 )
 
 
