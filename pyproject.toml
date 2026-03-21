@@ -33,6 +33,7 @@ classifiers = [
 
 [project.scripts]
 hiero-analytics = "hiero_analytics.run_analytics:main"
+hiero-maintainer-sequential = "hiero_analytics.run_maintainer_pipeline_repo_by_repo:main"
 
 [dependency-groups]
 dev = [

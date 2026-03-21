@@ -38,7 +38,7 @@ from .models import (
 from .pagination import paginate_cursor
 
 logger = logging.getLogger(__name__)
-DEFAULT_CONTRIBUTOR_ACTIVITY_LOOKBACK_DAYS = 183
+DEFAULT_CONTRIBUTOR_ACTIVITY_LOOKBACK_DAYS = 365
 
 
 def _cache_kwargs(

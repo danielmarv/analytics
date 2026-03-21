@@ -146,6 +146,20 @@ uv run hiero-analytics --run onboarding
 uv run hiero-analytics --run difficulty maintainer
 uv run hiero-analytics --all
 ```
+
+For the maintainer pipeline, there is also a safer sequential runner that
+fetches contributor activity one repository at a time before building the
+org-wide outputs:
+
+```bash
+uv run hiero-maintainer-sequential
+```
+
+You can restrict it to a subset of repositories while warming the cache:
+
+```bash
+GITHUB_CONTRIBUTOR_ACTIVITY_REPOS=hiero-cli,hiero-sdk-java uv run hiero-maintainer-sequential
+```
 ---
 
 ## License

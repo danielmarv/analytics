@@ -11,6 +11,7 @@ from hiero_analytics import (
     run_difficulty_org_for_repo,
     run_gfic_gfi_org,
     run_maintainer_pipeline_org,
+    run_maintainer_pipeline_repo_by_repo,
 )
 
 PipelineRunner = Callable[[], None]
@@ -47,6 +48,13 @@ PIPELINES: tuple[PipelineSpec, ...] = (
         description="Contributor responsibility and maintainer pipeline analytics.",
         runner=run_maintainer_pipeline_org.main,
         aliases=("responsibility", "pipeline"),
+    ),
+    PipelineSpec(
+        key="maintainer-sequential",
+        label="Maintainer Safe",
+        description="Maintainer pipeline analytics fetched one repository at a time.",
+        runner=run_maintainer_pipeline_repo_by_repo.main,
+        aliases=("maintainer-safe", "repo-by-repo", "safe"),
     ),
 )
 

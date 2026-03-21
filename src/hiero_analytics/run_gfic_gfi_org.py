@@ -53,7 +53,7 @@ def main() -> None:
     print(f"Running onboarding analytics for org: {ORG}")
 
     client = GitHubClient()
-    issues = fetch_org_issues_graphql(client, org=ORG)
+    issues = fetch_org_issues_graphql(client, org=ORG, max_workers=3)
 
     print(f"Fetched {len(issues)} issues")
 

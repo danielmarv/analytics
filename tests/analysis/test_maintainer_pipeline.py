@@ -11,7 +11,10 @@ from hiero_analytics.analysis.maintainer_pipeline import (
     MAINTAINER_STAGE,
     TRIAGE_STAGE,
     build_maintainer_pipeline,
+    build_cumulative_stage_timeline,
     build_repo_stage_distribution,
+    build_stage_activity_timeline,
+    build_stage_entry_timeline,
     summarize_actor_stage_journeys,
 )
 from hiero_analytics.data_sources.models import ContributorActivityRecord
@@ -201,3 +204,87 @@ def test_build_maintainer_pipeline_and_repo_stage_distribution():
     assert repo_two[GENERAL_USER_STAGE] == 0
     assert repo_two[TRIAGE_STAGE] == 1
     assert repo_two[MAINTAINER_STAGE] == 0
+
+
+def test_build_stage_entry_and_activity_timelines():
+    """Monthly timelines should expose stage entries, growth, and active contributors."""
+    activities = [
+        ContributorActivityRecord(
+            repo="org/repo-one",
+            actor="alice",
+            occurred_at=_dt(2024, 1, 1),
+            activity_type="authored_issue",
+            target_type="issue",
+            target_number=1,
+            target_author="alice",
+        ),
+        ContributorActivityRecord(
+            repo="org/repo-one",
+            actor="alice",
+            occurred_at=_dt(2025, 1, 2),
+            activity_type="reviewed_pull_request",
+            target_type="pull_request",
+            target_number=5,
+            target_author="bob",
+            detail="APPROVED",
+        ),
+        ContributorActivityRecord(
+            repo="org/repo-one",
+            actor="alice",
+            occurred_at=_dt(2025, 6, 1),
+            activity_type="merged_pull_request",
+            target_type="pull_request",
+            target_number=5,
+            target_author="bob",
+        ),
+        ContributorActivityRecord(
+            repo="org/repo-one",
+            actor="bob",
+            occurred_at=_dt(2024, 3, 1),
+            activity_type="authored_pull_request",
+            target_type="pull_request",
+            target_number=7,
+            target_author="bob",
+        ),
+        ContributorActivityRecord(
+            repo="org/repo-two",
+            actor="cara",
+            occurred_at=_dt(2024, 4, 1),
+            activity_type="authored_issue",
+            target_type="issue",
+            target_number=9,
+            target_author="cara",
+        ),
+        ContributorActivityRecord(
+            repo="org/repo-two",
+            actor="cara",
+            occurred_at=_dt(2024, 4, 5),
+            activity_type="labeled_issue",
+            target_type="issue",
+            target_number=10,
+            target_author="dan",
+            detail="bug",
+        ),
+    ]
+
+    org_journeys = summarize_actor_stage_journeys(activities, by_repo=False)
+
+    monthly_entries = build_stage_entry_timeline(org_journeys, frequency="month")
+    monthly_cumulative = build_cumulative_stage_timeline(monthly_entries, period_col="month")
+    monthly_activity = build_stage_activity_timeline(activities, frequency="month")
+
+    april_2024_entries = monthly_entries[monthly_entries["month"] == "2024-04"].iloc[0]
+    june_2025_cumulative = monthly_cumulative[monthly_cumulative["month"] == "2025-06"].iloc[0]
+    april_2024_activity = monthly_activity[monthly_activity["month"] == "2024-04"].iloc[0]
+
+    assert april_2024_entries[GENERAL_USER_STAGE] == 1
+    assert april_2024_entries[TRIAGE_STAGE] == 1
+    assert april_2024_entries[MAINTAINER_STAGE] == 0
+
+    assert june_2025_cumulative[GENERAL_USER_STAGE] == 3
+    assert june_2025_cumulative[TRIAGE_STAGE] == 2
+    assert june_2025_cumulative[MAINTAINER_STAGE] == 1
+
+    assert april_2024_activity[GENERAL_USER_STAGE] == 1
+    assert april_2024_activity[TRIAGE_STAGE] == 1
+    assert april_2024_activity[MAINTAINER_STAGE] == 0

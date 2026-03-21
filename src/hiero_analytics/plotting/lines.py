@@ -13,6 +13,19 @@ from .base import create_figure, finalize_chart, prepare_dataframe
 from .primitives import annotate_endpoint_badge, build_palette, format_chart_value
 
 
+def _resolve_line_x_values(
+    values: pd.Series,
+) -> tuple[pd.Series, list[str] | None]:
+    """Return numeric plotting positions and optional categorical tick labels."""
+    numeric_values = pd.to_numeric(values, errors="coerce")
+    if numeric_values.notna().all():
+        return numeric_values.astype(float), None
+
+    labels = values.astype(str).tolist()
+    positions = pd.Series(range(len(values)), index=values.index, dtype=float)
+    return positions, labels
+
+
 def plot_line(
     df: pd.DataFrame,
     x_col: str,
@@ -24,18 +37,12 @@ def plot_line(
     """Plot a single-series line chart."""
     df = prepare_dataframe(df, x_col, y_col)
     data = df.sort_values(x_col).copy()
-
-    # Ensure numeric x-axis values
-    data[x_col] = pd.to_numeric(data[x_col], errors="coerce")
-    data = data.dropna(subset=[x_col])
-
-    if data.empty:
-        raise ValueError("No valid numeric x-axis values")
+    x_values, x_labels = _resolve_line_x_values(data[x_col])
 
     fig, ax = create_figure()
 
     ax.plot(
-        data[x_col],
+        x_values,
         data[y_col],
         marker="o",
         color=PRIMARY_PALETTE[2],
@@ -47,7 +54,7 @@ def plot_line(
         zorder=3,
     )
     ax.fill_between(
-        data[x_col],
+        x_values,
         data[y_col],
         0,
         color=PRIMARY_PALETTE[2],
@@ -56,16 +63,20 @@ def plot_line(
     )
     annotate_endpoint_badge(
         ax,
-        x=float(data[x_col].iloc[-1]),
+        x=float(x_values.iloc[-1]),
         y=float(data[y_col].iloc[-1]),
         text=f"{y_col} {format_chart_value(float(data[y_col].iloc[-1]))}",
         color=PRIMARY_PALETTE[2],
         y_offset=-4,
     )
 
-    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    if x_labels is None:
+        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    else:
+        ax.set_xticks(list(x_values))
+        ax.set_xticklabels(x_labels)
     ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
-    ax.set_xlim(float(data[x_col].min()) - 0.15, float(data[x_col].max()) + 0.45)
+    ax.set_xlim(float(x_values.min()) - 0.15, float(x_values.max()) + 0.45)
     ax.margins(x=0.03, y=0.16)
 
     finalize_chart(
@@ -126,12 +137,8 @@ def plot_multiline(
     if pivot.empty:
         raise ValueError("Pivot produced an empty dataset")
 
-    pivot.index = pd.to_numeric(pivot.index, errors="coerce")
-    pivot = pivot.dropna(axis=0, how="all")
-    pivot = pivot[~pivot.index.isna()]
-
-    if pivot.empty:
-        raise ValueError("No valid numeric x-axis values")
+    index_positions, x_labels = _resolve_line_x_values(pivot.index.to_series().reset_index(drop=True))
+    pivot.index = pd.Index(index_positions.tolist(), dtype=float)
 
     fig, ax = create_figure()
     palette = build_palette(len(pivot.columns))
@@ -175,7 +182,11 @@ def plot_multiline(
             y_offset=endpoint_offsets[index % len(endpoint_offsets)],
         )
 
-    ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    if x_labels is None:
+        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    else:
+        ax.set_xticks(list(pivot.index))
+        ax.set_xticklabels(x_labels)
     ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
     ax.set_xlim(float(pivot.index.min()) - 0.15, float(pivot.index.max()) + 0.45)
     ax.margins(x=0.03, y=0.16)

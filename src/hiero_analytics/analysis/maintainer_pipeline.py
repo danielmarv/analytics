@@ -47,6 +47,31 @@ MAINTAINER_ACTIVITY_TYPES = {
 }
 
 
+def _period_column_name(frequency: str) -> str:
+    """Return the output column name for a supported timeline frequency."""
+    if frequency == "year":
+        return "year"
+    if frequency == "month":
+        return "month"
+
+    raise ValueError(f"Unsupported frequency: {frequency}")
+
+
+def _bucket_period(
+    timestamps: pd.Series,
+    *,
+    frequency: str,
+) -> pd.Series:
+    """Bucket timestamps into a supported reporting period."""
+    normalized = pd.to_datetime(timestamps, utc=True)
+    if frequency == "year":
+        return normalized.dt.year.astype(int)
+    if frequency == "month":
+        return normalized.dt.strftime("%Y-%m")
+
+    raise ValueError(f"Unsupported frequency: {frequency}")
+
+
 def activity_records_to_dataframe(
     activities: list[ContributorActivityRecord],
 ) -> pd.DataFrame:
@@ -169,7 +194,17 @@ def summarize_actor_stage_journeys(
 
 def build_maintainer_pipeline(stage_journeys: pd.DataFrame) -> pd.DataFrame:
     """Count yearly first-entry signals for each responsibility stage."""
-    columns = ["year", *STAGE_ORDER]
+    return build_stage_entry_timeline(stage_journeys, frequency="year")
+
+
+def build_stage_entry_timeline(
+    stage_journeys: pd.DataFrame,
+    *,
+    frequency: str,
+) -> pd.DataFrame:
+    """Count first-entry stage signals by year or month."""
+    period_col = _period_column_name(frequency)
+    columns = [period_col, *STAGE_ORDER]
     if stage_journeys.empty:
         return pd.DataFrame(columns=columns)
 
@@ -180,28 +215,79 @@ def build_maintainer_pipeline(stage_journeys: pd.DataFrame) -> pd.DataFrame:
         stage_df = stage_journeys.dropna(subset=[stage_column]).copy()
 
         if stage_df.empty:
-            counts_by_stage.append(pd.DataFrame(columns=["year", stage]))
+            counts_by_stage.append(pd.DataFrame(columns=[period_col, stage]))
             continue
 
-        stage_df["year"] = pd.to_datetime(stage_df[stage_column], utc=True).dt.year
-        counts = stage_df.groupby("year", as_index=False).size().rename(columns={"size": stage})
+        stage_df[period_col] = _bucket_period(stage_df[stage_column], frequency=frequency)
+        counts = stage_df.groupby(period_col, as_index=False).size().rename(columns={"size": stage})
         counts_by_stage.append(counts)
 
-    pipeline = counts_by_stage[0]
+    timeline = counts_by_stage[0]
     for counts in counts_by_stage[1:]:
-        pipeline = pipeline.merge(counts, on="year", how="outer")
+        timeline = timeline.merge(counts, on=period_col, how="outer")
 
-    pipeline = (
-        pipeline.fillna(0)
+    timeline = (
+        timeline.fillna(0)
         .astype({stage: int for stage in STAGE_ORDER})
-        .sort_values("year")
+        .sort_values(period_col)
         .reset_index(drop=True)
     )
 
-    if "year" in pipeline.columns:
-        pipeline["year"] = pipeline["year"].astype(int)
+    if frequency == "year":
+        timeline[period_col] = timeline[period_col].astype(int)
 
-    return pipeline[columns]
+    return timeline[columns]
+
+
+def build_cumulative_stage_timeline(
+    stage_timeline: pd.DataFrame,
+    *,
+    period_col: str,
+) -> pd.DataFrame:
+    """Convert a stage-entry timeline into cumulative stage totals."""
+    columns = [period_col, *STAGE_ORDER]
+    if stage_timeline.empty:
+        return pd.DataFrame(columns=columns)
+
+    cumulative = stage_timeline.sort_values(period_col).reset_index(drop=True).copy()
+    cumulative[STAGE_ORDER] = cumulative[STAGE_ORDER].cumsum()
+    return cumulative[columns]
+
+
+def build_stage_activity_timeline(
+    activities: list[ContributorActivityRecord],
+    *,
+    frequency: str,
+) -> pd.DataFrame:
+    """Count unique active contributors per stage signal by year or month."""
+    period_col = _period_column_name(frequency)
+    columns = [period_col, *STAGE_ORDER]
+
+    activity_df = activity_records_to_dataframe(activities)
+    if activity_df.empty:
+        return pd.DataFrame(columns=columns)
+
+    filtered = activity_df[~activity_df["actor"].astype(str).str.endswith("[bot]")].copy()
+    filtered["stage"] = filtered.apply(_activity_stage, axis=1)
+    filtered = filtered.dropna(subset=["stage"])
+
+    if filtered.empty:
+        return pd.DataFrame(columns=columns)
+
+    filtered[period_col] = _bucket_period(filtered["occurred_at"], frequency=frequency)
+    filtered = filtered.drop_duplicates(subset=[period_col, "stage", "actor"])
+
+    timeline = (
+        filtered.groupby([period_col, "stage"])
+        .size()
+        .unstack(fill_value=0)
+        .reindex(columns=STAGE_ORDER, fill_value=0)
+        .reset_index()
+        .sort_values(period_col)
+        .reset_index(drop=True)
+    )
+
+    return timeline[columns]
 
 
 def build_repo_stage_distribution(stage_journeys: pd.DataFrame) -> pd.DataFrame:

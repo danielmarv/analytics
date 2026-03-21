@@ -108,6 +108,30 @@ def test_plotters_write_chart_files(tmp_path):
     assert pie_output.exists() and pie_output.stat().st_size > 0
 
 
+def test_plot_multiline_accepts_categorical_x_values(tmp_path):
+    """Multiline charts should render ordered categorical x-axis labels."""
+    line_df = pd.DataFrame(
+        {
+            "month": ["2025-01", "2025-01", "2025-02", "2025-02"],
+            "count": [8, 3, 12, 5],
+            "stage": ["General users", "Maintainers", "General users", "Maintainers"],
+        }
+    )
+    line_output = tmp_path / "maintainer_monthly_line.png"
+
+    plot_multiline(
+        line_df,
+        x_col="month",
+        y_col="count",
+        group_col="stage",
+        title="Responsibility Trends by Month",
+        output_path=line_output,
+        rotate_x=45,
+    )
+
+    assert line_output.exists() and line_output.stat().st_size > 0
+
+
 def test_plot_pie_rejects_non_positive_totals(tmp_path):
     """Pie charts should fail fast when there is no positive total to render."""
     pie_df = pd.DataFrame(

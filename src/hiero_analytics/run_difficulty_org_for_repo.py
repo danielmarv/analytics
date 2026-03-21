@@ -40,7 +40,7 @@ def main() -> None:
     print(f"Running difficulty analytics for org: {ORG}")
 
     client = GitHubClient()
-    issues = fetch_org_issues_graphql(client, org=ORG)
+    issues = fetch_org_issues_graphql(client, org=ORG, max_workers=3)
 
     print(f"Fetched {len(issues)} issues")
 
@@ -52,9 +52,6 @@ def main() -> None:
 
     # Remove org prefix from repo name
     df["repo"] = df["repo"].str.split("/").str[-1]
-
-    # Only analyze OPEN issues
-    df = df[df["state"] == "open"].copy()
 
     # Assign difficulty
     df["difficulty"] = df["labels"].apply(lambda labels: assign_difficulty(labels, DIFFICULTY_LEVELS))
