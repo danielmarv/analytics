@@ -49,6 +49,7 @@ def test_main_fetches_repositories_sequentially(monkeypatch, capsys) -> None:
 
     monkeypatch.setattr(sequential_runner, "ensure_org_dirs", lambda _org: (None, None))
     monkeypatch.setattr(sequential_runner, "resolve_activity_lookback_days", lambda: 183)
+    monkeypatch.setattr(sequential_runner, "resolve_activity_cache_ttl_seconds", lambda: 86400)
     monkeypatch.setattr(sequential_runner, "resolve_activity_repo_pause_seconds", lambda: 2.0)
     monkeypatch.setattr(sequential_runner, "resolve_selected_repos", lambda: [])
     monkeypatch.setattr(sequential_runner, "print_maintainer_runtime_settings", lambda **_kwargs: None)
@@ -56,13 +57,16 @@ def test_main_fetches_repositories_sequentially(monkeypatch, capsys) -> None:
     monkeypatch.setattr(
         sequential_runner,
         "fetch_org_repos_graphql",
-        lambda _client, _org: repositories,
+        lambda _client, _org, cache_ttl_seconds: (
+            repositories if cache_ttl_seconds == 86400 else []
+        ),
     )
     monkeypatch.setattr(sequential_runner.time, "sleep", pause_calls.append)
 
-    def fake_fetch_repo_activity(_client, owner, repo, *, lookback_days):
+    def fake_fetch_repo_activity(_client, owner, repo, *, lookback_days, cache_ttl_seconds):
         fetched_repos.append(f"{owner}/{repo}")
         assert lookback_days == 183
+        assert cache_ttl_seconds == 86400
         return [
             ContributorActivityRecord(
                 repo=f"{owner}/{repo}",

@@ -17,8 +17,8 @@ from hiero_analytics.analysis.maintainer_pipeline import (
     STAGE_LABELS,
     STAGE_ORDER,
     activity_records_to_dataframe,
-    build_maintainer_pipeline,
     build_cumulative_stage_timeline,
+    build_maintainer_pipeline,
     build_repo_stage_distribution,
     build_stage_activity_timeline,
     build_stage_entry_timeline,
@@ -41,6 +41,7 @@ RESPONSIBILITY_STAGE_COLORS = {
     STAGE_LABELS[stage]: RESPONSIBILITY_COLORS[STAGE_LABELS[stage]]
     for stage in STAGE_ORDER
 }
+DEFAULT_CONTRIBUTOR_ACTIVITY_CACHE_TTL_SECONDS = 86_400
 
 
 def resolve_activity_max_workers() -> int:
@@ -84,11 +85,25 @@ def resolve_selected_repos() -> list[str]:
     return [repo.strip() for repo in raw_value.split(",") if repo.strip()]
 
 
+def resolve_activity_cache_ttl_seconds() -> int:
+    """Resolve the contributor-activity cache TTL for maintainer analytics."""
+    raw_value = os.getenv(
+        "GITHUB_CONTRIBUTOR_ACTIVITY_CACHE_TTL_SECONDS",
+        str(DEFAULT_CONTRIBUTOR_ACTIVITY_CACHE_TTL_SECONDS),
+    )
+
+    try:
+        return max(0, int(raw_value))
+    except ValueError:
+        return DEFAULT_CONTRIBUTOR_ACTIVITY_CACHE_TTL_SECONDS
+
+
 def print_maintainer_runtime_settings(
     *,
     output_fn: Callable[[str], None] = print,
     activity_max_workers: int,
     activity_lookback_days: int | None,
+    activity_cache_ttl_seconds: int,
     repo_pause_seconds: float,
     selected_repos: Sequence[str],
 ) -> None:
@@ -101,6 +116,7 @@ def print_maintainer_runtime_settings(
             "Using contributor activity lookback: "
             f"{activity_lookback_days} days from each repo's latest issue or PR update"
         )
+    output_fn(f"Using contributor activity cache TTL: {activity_cache_ttl_seconds}s")
     output_fn(f"Using pause between repo fetches: {repo_pause_seconds:g}s")
     if selected_repos:
         output_fn(f"Restricting contributor activity fetch to {len(selected_repos)} repo(s)")
@@ -234,6 +250,7 @@ def main() -> None:
     ensure_org_dirs(ORG)
     activity_max_workers = resolve_activity_max_workers()
     activity_lookback_days = resolve_activity_lookback_days()
+    activity_cache_ttl_seconds = resolve_activity_cache_ttl_seconds()
     repo_pause_seconds = resolve_activity_repo_pause_seconds()
     selected_repos = resolve_selected_repos()
 
@@ -241,6 +258,7 @@ def main() -> None:
     print_maintainer_runtime_settings(
         activity_max_workers=activity_max_workers,
         activity_lookback_days=activity_lookback_days,
+        activity_cache_ttl_seconds=activity_cache_ttl_seconds,
         repo_pause_seconds=repo_pause_seconds,
         selected_repos=selected_repos,
     )
@@ -253,6 +271,7 @@ def main() -> None:
         repos=selected_repos or None,
         repo_pause_seconds=repo_pause_seconds,
         lookback_days=activity_lookback_days,
+        cache_ttl_seconds=activity_cache_ttl_seconds,
     )
 
     print(f"Fetched {len(activities)} contributor activity records")

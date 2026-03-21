@@ -115,14 +115,6 @@ query($owner:String!, $repo:String!, $cursor:String) {
         author {
           login
         }
-        comments(first:100) {
-          nodes {
-            createdAt
-            author {
-              login
-            }
-          }
-        }
         timelineItems(
           first:100
           itemTypes:[LABELED_EVENT, UNLABELED_EVENT, CLOSED_EVENT, REOPENED_EVENT, ASSIGNED_EVENT]
@@ -207,14 +199,6 @@ query($owner:String!, $repo:String!, $cursor:String) {
         }
         mergedBy {
           login
-        }
-        comments(first:100) {
-          nodes {
-            createdAt
-            author {
-              login
-            }
-          }
         }
         reviews(first:100) {
           nodes {

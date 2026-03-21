@@ -16,6 +16,7 @@ from hiero_analytics.data_sources.github_ingest import (
 from hiero_analytics.data_sources.models import ContributorActivityRecord, RepositoryRecord
 from hiero_analytics.run_maintainer_pipeline_org import (
     print_maintainer_runtime_settings,
+    resolve_activity_cache_ttl_seconds,
     resolve_activity_lookback_days,
     resolve_activity_repo_pause_seconds,
     resolve_selected_repos,
@@ -65,6 +66,7 @@ def main() -> None:
     """Fetch maintainer activity sequentially per repo before building outputs."""
     ensure_org_dirs(ORG)
     activity_lookback_days = resolve_activity_lookback_days()
+    activity_cache_ttl_seconds = resolve_activity_cache_ttl_seconds()
     repo_pause_seconds = resolve_activity_repo_pause_seconds()
     selected_repos = resolve_selected_repos()
 
@@ -72,12 +74,20 @@ def main() -> None:
     print_maintainer_runtime_settings(
         activity_max_workers=1,
         activity_lookback_days=activity_lookback_days,
+        activity_cache_ttl_seconds=activity_cache_ttl_seconds,
         repo_pause_seconds=repo_pause_seconds,
         selected_repos=selected_repos,
     )
 
     client = GitHubClient()
-    repositories = _filter_repositories(fetch_org_repos_graphql(client, ORG), selected_repos)
+    repositories = _filter_repositories(
+        fetch_org_repos_graphql(
+            client,
+            ORG,
+            cache_ttl_seconds=activity_cache_ttl_seconds,
+        ),
+        selected_repos,
+    )
     total_repos = len(repositories)
     all_activities: list[ContributorActivityRecord] = []
     failures: list[tuple[str, str]] = []
@@ -93,6 +103,7 @@ def main() -> None:
                 owner=repository.owner,
                 repo=repository.name,
                 lookback_days=activity_lookback_days,
+                cache_ttl_seconds=activity_cache_ttl_seconds,
             )
         except requests.HTTPError as exc:
             failures.append((repository.full_name, str(exc)))
