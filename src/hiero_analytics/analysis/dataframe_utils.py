@@ -1,8 +1,10 @@
+"""Helpers for building analysis dataframes."""
+
 from __future__ import annotations
 
 import pandas as pd
 
-from hiero_analytics.data_sources.models import IssueRecord
+from hiero_analytics.data_sources.models import ContributorActivityRecord, IssueRecord
 from hiero_analytics.domain.labels import UNKNOWN_DIFFICULTY, LabelSpec
 
 
@@ -28,14 +30,12 @@ def build_difficulty_dataframe(
      state
          Optional state filter. If provided, only issues whose ``state``
          column matches this value are included in the aggregation.
-     Returns
-     -------
-     pd.DataFrame
-         DataFrame with one row per difficulty level and two columns:
-         - ``difficulty``: difficulty bucket name.
-         - ``count``: number of issues falling into that bucket. Issues that
-           do not match any specification are grouped under
-           ``UNKNOWN_DIFFICULTY``.
+
+    Returns:
+        pd.DataFrame: DataFrame with one row per difficulty level and two columns:
+        ``difficulty`` for the bucket name and ``count`` for the number of
+        matching issues. Issues that do not match any specification are
+        grouped under ``UNKNOWN_DIFFICULTY``.
     """
     if state:
         df = df[df["state"] == state]
@@ -45,7 +45,6 @@ def build_difficulty_dataframe(
     matched_mask = pd.Series(False, index=df.index)
 
     for spec in difficulty_specs:
-
         mask = df["labels"].apply(spec.matches)
 
         matched_mask |= mask
@@ -68,6 +67,7 @@ def build_difficulty_dataframe(
     )
 
     return pd.DataFrame(rows)
+
 
 def issues_to_dataframe(issues: list[IssueRecord]) -> pd.DataFrame:
     """
@@ -108,6 +108,44 @@ def issues_to_dataframe(issues: list[IssueRecord]) -> pd.DataFrame:
             for issue in issues
         ]
     )
+
+
+def contributor_activity_to_dataframe(
+    activities: list[ContributorActivityRecord],
+) -> pd.DataFrame:
+    """Convert normalized contributor activity records into a dataframe."""
+    columns = [
+        "repo",
+        "actor",
+        "occurred_at",
+        "year",
+        "activity_type",
+        "target_type",
+        "target_number",
+        "target_author",
+        "detail",
+    ]
+    if not activities:
+        return pd.DataFrame(columns=columns)
+
+    frame = pd.DataFrame(
+        [
+            {
+                "repo": activity.repo,
+                "actor": activity.actor,
+                "occurred_at": activity.occurred_at,
+                "year": activity.occurred_at.year,
+                "activity_type": activity.activity_type,
+                "target_type": activity.target_type,
+                "target_number": activity.target_number,
+                "target_author": activity.target_author,
+                "detail": activity.detail,
+            }
+            for activity in activities
+        ]
+    )
+
+    return frame.sort_values(["occurred_at", "repo", "actor", "activity_type"]).reset_index(drop=True)
 
 
 def filter_by_labels(df: pd.DataFrame, labels: set[str]) -> pd.DataFrame:
@@ -158,9 +196,4 @@ def count_by(df: pd.DataFrame, *cols: str) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame(columns=[*cols, "count"])
 
-    return (
-        df.groupby(list(cols))
-        .size()
-        .reset_index(name="count")
-        .sort_values(list(cols))
-    )
+    return df.groupby(list(cols)).size().reset_index(name="count").sort_values(list(cols))

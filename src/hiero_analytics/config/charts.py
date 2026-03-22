@@ -99,5 +99,6 @@ STATE_COLORS = {
 RESPONSIBILITY_COLORS = {
     "General users": "#94A3B8",
     "Triage contributors": "#0EA5E9",
+    "Committers": "#14B8A6",
     "Maintainers": "#F97316",
 }

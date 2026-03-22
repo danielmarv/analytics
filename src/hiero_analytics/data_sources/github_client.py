@@ -8,13 +8,13 @@ for both REST and GraphQL API calls.
 from __future__ import annotations
 
 import logging
+import random
+import threading
 import time
 from collections.abc import Mapping
 from typing import Any
 
-import random
 import requests
-import threading
 
 from hiero_analytics.config.github import (
     BASE_URL,
@@ -22,12 +22,15 @@ from hiero_analytics.config.github import (
     HTTP_TIMEOUT_SECONDS,
     REQUEST_DELAY_SECONDS,
 )
+
 from .rate_limit import (
-    Action,
     JSON,
+    Action,
     RateLimitDecision,
     RateLimitPolicy,
     RateLimitSnapshot,
+    response_error_message,
+    secondary_rate_limit_sleep_seconds,
 )
 
 logger = logging.getLogger(__name__)
@@ -35,17 +38,11 @@ logger = logging.getLogger(__name__)
 MAX_RETRIES = 3
 MAX_GRAPHQL_FRESH_RETRIES = 2
 RETRY_STATUS_CODES = {500, 502, 503, 504}
-SECONDARY_RATE_LIMIT_FALLBACK_SLEEP_SECONDS = 60
-SECONDARY_RATE_LIMIT_MARKERS = (
-    "secondary rate limit",
-    "abuse detection",
-    "please wait a few minutes",
-    "temporarily blocked",
-)
 
 # --------------------------------------------------------
 # HEADERS
 # --------------------------------------------------------
+
 
 def github_headers() -> dict[str, str]:
     """Build HTTP headers required for GitHub API requests."""
@@ -55,78 +52,24 @@ def github_headers() -> dict[str, str]:
     }
 
     if not GITHUB_TOKEN:
-        logger.warning(
-            "GITHUB_TOKEN not set. Unauthenticated rate limit is 60 requests/hour."
-        )
+        logger.warning("GITHUB_TOKEN not set. Unauthenticated rate limit is 60 requests/hour.")
         return headers
 
-    logger.info(
-        "Using GITHUB_TOKEN for authenticated requests. "
-        "API allows up to 5000 requests per hour."
-    )
+    logger.info("Using GITHUB_TOKEN for authenticated requests. API allows up to 5000 requests per hour.")
     headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
     return headers
-
-
-def _response_error_message(response: requests.Response) -> str:
-    """Extract a short API error message from a failed HTTP response."""
-    try:
-        payload = response.json()
-    except ValueError:
-        text = response.text.strip()
-        return text[:300]
-
-    if isinstance(payload, dict):
-        message = payload.get("message")
-        if isinstance(message, str) and message.strip():
-            return message.strip()
-
-        errors = payload.get("errors")
-        if isinstance(errors, list) and errors:
-            return str(errors[0])
-
-    return ""
-
-
-def _retry_after_seconds(response: requests.Response) -> int:
-    """Parse GitHub's Retry-After header when present."""
-    raw_retry_after = response.headers.get("Retry-After")
-    if raw_retry_after is None:
-        return 0
-
-    try:
-        return max(0, int(raw_retry_after))
-    except ValueError:
-        return 0
-
-
-def _secondary_rate_limit_sleep_seconds(
-    response: requests.Response,
-) -> int | None:
-    """Return a retry delay for retryable 403 responses."""
-    if response.status_code != 403:
-        return None
-
-    retry_after = _retry_after_seconds(response)
-    message = _response_error_message(response).lower()
-
-    if retry_after > 0:
-        return retry_after
-
-    if any(marker in message for marker in SECONDARY_RATE_LIMIT_MARKERS):
-        return SECONDARY_RATE_LIMIT_FALLBACK_SLEEP_SECONDS
-
-    return None
 
 
 # --------------------------------------------------------
 # CLIENT
 # --------------------------------------------------------
 
+
 class GitHubClient:
     """HTTP client for interacting with the GitHub API."""
 
     def __init__(self) -> None:
+        """Create a session-backed GitHub client."""
         self.session: requests.Session = requests.Session()
         self.session.headers.update(github_headers())
 
@@ -186,6 +129,7 @@ class GitHubClient:
     ) -> requests.Response:
         """
         Handle low-level network retries and REST header-based rate limiting.
+
         Returns a successful HTTP response or raises.
         """
         for attempt in range(1, MAX_RETRIES + 1):
@@ -216,7 +160,7 @@ class GitHubClient:
                     exc,
                     attempt + 1,
                 )
-                time.sleep(2 ** attempt)
+                time.sleep(2**attempt)
                 continue
 
             logger.debug("GitHub response <- %.2fs", time.time() - start)
@@ -231,7 +175,7 @@ class GitHubClient:
                     )
                     response.raise_for_status()
 
-                sleep_time = (2 ** attempt) + random.uniform(0, 1) # small jitter
+                sleep_time = (2**attempt) + random.uniform(0, 1)  # small jitter
                 logger.warning(
                     "Server error %d. Retrying in %.2fs...",
                     response.status_code,
@@ -254,20 +198,20 @@ class GitHubClient:
                     logger.info("Retrying due to REST rate limit...")
                     continue
 
-            secondary_limit_sleep = _secondary_rate_limit_sleep_seconds(response)
+            secondary_limit_sleep = secondary_rate_limit_sleep_seconds(response)
             if secondary_limit_sleep is not None:
                 if attempt == MAX_RETRIES:
                     logger.error(
                         "GitHub 403 persisted after %d attempts: %s",
                         MAX_RETRIES,
-                        _response_error_message(response),
+                        response_error_message(response),
                     )
                     response.raise_for_status()
 
                 logger.warning(
                     "GitHub requested back-off after 403. Retrying in %ds. Message: %s",
                     secondary_limit_sleep,
-                    _response_error_message(response),
+                    response_error_message(response),
                 )
                 time.sleep(secondary_limit_sleep)
                 continue
@@ -276,18 +220,15 @@ class GitHubClient:
                 logger.error(
                     "GitHub request failed with %d: %s",
                     response.status_code,
-                    _response_error_message(response),
+                    response_error_message(response),
                 )
             response.raise_for_status()
             return response
 
         raise RuntimeError("Unreachable request state")
 
-
     def _request(self, method: str, url: str, **kwargs: Any) -> JSON:
-        """
-        Execute request and apply GraphQL-specific retry policy.
-        """
+        """Execute request and apply GraphQL-specific retry policy."""
         is_graphql = url.endswith("/graphql")
 
         start_time = time.time()
@@ -296,7 +237,7 @@ class GitHubClient:
         for attempt in range(1, MAX_GRAPHQL_FRESH_RETRIES + 2):
             if time.time() - start_time > MAX_TOTAL_TIME:
                 raise TimeoutError("GraphQL request exceeded total retry time")
-        
+
             response = self._execute_http_with_retries(method, url, **kwargs)
             data: JSON = response.json()
 
@@ -312,9 +253,9 @@ class GitHubClient:
             if "errors" in data:
                 logger.warning(
                     "GraphQL errors (attempt %d): %s",
-                     attempt, 
-                     data["errors"],
-                     )
+                    attempt,
+                    data["errors"],
+                )
             action = self._apply_decision(error_decision)
 
             if action == Action.DELAY_THEN_RETRY_FRESH:
@@ -330,24 +271,14 @@ class GitHubClient:
 
             return data
 
-        raise RuntimeError(
-            "GraphQL fresh retry limit exceeded after RATE_LIMIT responses"
-        )
+        raise RuntimeError("GraphQL fresh retry limit exceeded after RATE_LIMIT responses")
 
     # --------------------------------------------------------
     # PUBLIC API
     # --------------------------------------------------------
 
     def get(self, url: str, **kwargs: Any) -> JSON:
-        """
-        Execute a GET request to a GitHub REST endpoint.
-
-        Args:
-            url: Full GitHub API URL
-
-        Returns:
-            Parsed JSON response
-        """
+        """Execute a GET request to a GitHub REST endpoint."""
         return self._request("GET", url, **kwargs)
 
     def graphql(self, query: str, variables: Mapping[str, Any]) -> JSON:

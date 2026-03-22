@@ -131,20 +131,12 @@ uv run pytest
 
 ### Run Analytics Pipelines
 
-Use the unified terminal runner to launch one pipeline or all of them:
+Run the analytics scripts directly:
 
 ```bash
-uv run hiero-analytics
-```
-
-That opens an interactive menu where you can select a single pipeline or run every pipeline at once.
-
-You can also skip the prompt:
-
-```bash
-uv run hiero-analytics --run onboarding
-uv run hiero-analytics --run difficulty maintainer
-uv run hiero-analytics --all
+uv run python -m hiero_analytics.run_gfic_gfi_org
+uv run python -m hiero_analytics.run_difficulty_org_for_repo
+uv run python -m hiero_analytics.run_maintainer_pipeline_org
 ```
 
 For the maintainer pipeline, there is also a safer sequential runner that
@@ -155,10 +147,10 @@ org-wide outputs:
 uv run hiero-maintainer-sequential
 ```
 
-You can restrict it to a subset of repositories while warming the cache:
+You can restrict it to a small set of repositories while warming the cache:
 
 ```bash
-GITHUB_CONTRIBUTOR_ACTIVITY_REPOS=hiero-cli,hiero-sdk-java uv run hiero-maintainer-sequential
+GITHUB_CONTRIBUTOR_ACTIVITY_REPOS=hiero-cli uv run hiero-maintainer-sequential
 ```
 ---
 

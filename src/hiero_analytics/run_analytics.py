@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import re
 from collections.abc import Callable, Iterable, Sequence
-from dataclasses import dataclass
 
 from hiero_analytics import (
     run_difficulty_org_for_repo,
@@ -16,54 +15,43 @@ from hiero_analytics import (
 
 PipelineRunner = Callable[[], None]
 
-
-@dataclass(frozen=True)
-class PipelineSpec:
-    """Describe a runnable analytics pipeline."""
-
-    key: str
-    label: str
-    description: str
-    runner: PipelineRunner
-    aliases: tuple[str, ...] = ()
-
-
-PIPELINES: tuple[PipelineSpec, ...] = (
-    PipelineSpec(
-        key="onboarding",
-        label="Onboarding",
-        description="Good first issue and candidate pipeline analytics.",
-        runner=run_gfic_gfi_org.main,
-        aliases=("gfi", "gfic"),
-    ),
-    PipelineSpec(
-        key="difficulty",
-        label="Difficulty",
-        description="Difficulty distribution analytics for recent open issues.",
-        runner=run_difficulty_org_for_repo.main,
-    ),
-    PipelineSpec(
-        key="maintainer",
-        label="Maintainer",
-        description="Contributor responsibility and maintainer pipeline analytics.",
-        runner=run_maintainer_pipeline_org.main,
-        aliases=("responsibility", "pipeline"),
-    ),
-    PipelineSpec(
-        key="maintainer-sequential",
-        label="Maintainer Safe",
-        description="Maintainer pipeline analytics fetched one repository at a time.",
-        runner=run_maintainer_pipeline_repo_by_repo.main,
-        aliases=("maintainer-safe", "repo-by-repo", "safe"),
-    ),
+PIPELINES = (
+    {
+        "key": "onboarding",
+        "label": "Onboarding",
+        "description": "Good first issue and candidate pipeline analytics.",
+        "runner": run_gfic_gfi_org.main,
+        "aliases": ("gfi", "gfic"),
+    },
+    {
+        "key": "difficulty",
+        "label": "Difficulty",
+        "description": "Difficulty distribution analytics for recent open issues.",
+        "runner": run_difficulty_org_for_repo.main,
+        "aliases": (),
+    },
+    {
+        "key": "maintainer",
+        "label": "Maintainer",
+        "description": "Contributor responsibility and maintainer pipeline analytics.",
+        "runner": run_maintainer_pipeline_org.main,
+        "aliases": ("responsibility", "pipeline"),
+    },
+    {
+        "key": "maintainer-sequential",
+        "label": "Maintainer Safe",
+        "description": "Maintainer pipeline analytics fetched one repository at a time.",
+        "runner": run_maintainer_pipeline_repo_by_repo.main,
+        "aliases": ("maintainer-safe", "repo-by-repo", "safe"),
+    },
 )
 
 ALL_SELECTION = "all"
 
 
-def _pipeline_map() -> dict[str, PipelineSpec]:
+def _pipeline_map() -> dict[str, dict[str, object]]:
     """Return the configured pipelines keyed by their stable command names."""
-    return {pipeline.key: pipeline for pipeline in PIPELINES}
+    return {str(pipeline["key"]): pipeline for pipeline in PIPELINES}
 
 
 def _selection_aliases() -> dict[str, str]:
@@ -74,12 +62,13 @@ def _selection_aliases() -> dict[str, str]:
     }
 
     for index, pipeline in enumerate(PIPELINES, start=1):
-        aliases[str(index)] = pipeline.key
-        aliases[pipeline.key] = pipeline.key
-        aliases[pipeline.key.replace("_", "-")] = pipeline.key
+        key = str(pipeline["key"])
+        aliases[str(index)] = key
+        aliases[key] = key
+        aliases[key.replace("_", "-")] = key
 
-        for alias in pipeline.aliases:
-            aliases[alias] = pipeline.key
+        for alias in pipeline["aliases"]:
+            aliases[str(alias)] = key
 
     return aliases
 
@@ -113,7 +102,7 @@ def parse_selection(raw_selection: str) -> list[str]:
             valid = ", ".join([*(str(index) for index, _ in enumerate(PIPELINES, start=1)), ALL_SELECTION])
             raise ValueError(f"unknown selection '{token}' (valid selections: {valid})")
         if pipeline_key == ALL_SELECTION:
-            return [pipeline.key for pipeline in PIPELINES]
+            return [str(pipeline["key"]) for pipeline in PIPELINES]
         resolved.append(pipeline_key)
 
     return _dedupe_preserving_order(resolved)
@@ -124,9 +113,9 @@ def print_pipeline_menu(*, output_fn: Callable[[str], None] = print) -> None:
     output_fn("Available analytics pipelines:")
 
     for index, pipeline in enumerate(PIPELINES, start=1):
-        output_fn(f"  {index}. {pipeline.label:<12} {pipeline.description}")
+        output_fn(f"  {index}. {pipeline['label']:<16} {pipeline['description']}")
 
-    output_fn("  A. Run all      Execute every analytics pipeline.")
+    output_fn("  A. Run all         Execute every analytics pipeline.")
 
 
 def prompt_for_selection(
@@ -139,9 +128,7 @@ def prompt_for_selection(
         print_pipeline_menu(output_fn=output_fn)
 
         try:
-            raw_selection = input_fn(
-                "Select analytics to run (numbers or names, comma-separated, or 'all'): "
-            )
+            raw_selection = input_fn("Select analytics to run (numbers or names, comma-separated, or 'all'): ")
         except EOFError as exc:
             raise SystemExit("No selection received. Re-run with --all or --run to skip the prompt.") from exc
 
@@ -187,8 +174,10 @@ def run_selected_pipelines(
     selected = [pipeline_map[key] for key in pipeline_keys]
 
     for index, pipeline in enumerate(selected, start=1):
-        output_fn(f"[{index}/{len(selected)}] Running {pipeline.label} analytics")
-        pipeline.runner()
+        output_fn(f"[{index}/{len(selected)}] Running {pipeline['label']} analytics")
+        runner = pipeline["runner"]
+        assert callable(runner)
+        runner()
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -201,7 +190,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     if args.all:
-        selected = [pipeline.key for pipeline in PIPELINES]
+        selected = [str(pipeline["key"]) for pipeline in PIPELINES]
     elif args.run:
         selected = _dedupe_preserving_order(args.run)
     else:

@@ -1,45 +1,48 @@
-"""Contributor-responsibility pipeline analysis built from GitHub activity."""
+"""Contributor responsibility pipeline analysis built from GitHub activity."""
 
 from __future__ import annotations
 
 import pandas as pd
 
+from hiero_analytics.analysis.dataframe_utils import contributor_activity_to_dataframe
 from hiero_analytics.data_sources.models import ContributorActivityRecord
 
 GENERAL_USER_STAGE = "general_user"
 TRIAGE_STAGE = "triage"
+COMMITTER_STAGE = "committer"
 MAINTAINER_STAGE = "maintainer"
 
 STAGE_ORDER = [
     GENERAL_USER_STAGE,
     TRIAGE_STAGE,
+    COMMITTER_STAGE,
     MAINTAINER_STAGE,
 ]
 
 STAGE_LABELS = {
     GENERAL_USER_STAGE: "General users",
     TRIAGE_STAGE: "Triage contributors",
+    COMMITTER_STAGE: "Committers",
     MAINTAINER_STAGE: "Maintainers",
 }
+
+STAGE_RANKS = {stage: index for index, stage in enumerate(STAGE_ORDER)}
 
 GENERAL_ACTIVITY_TYPES = {
     "authored_issue",
     "authored_pull_request",
-    "commented_on_issue",
-    "commented_on_pull_request",
 }
 
 TRIAGE_ACTIVITY_TYPES = {
     "assigned_issue",
-    "closed_issue",
-    "closed_pull_request",
     "labeled_issue",
     "labeled_pull_request",
-    "reopened_issue",
-    "reopened_pull_request",
-    "reviewed_pull_request",
     "unlabeled_issue",
     "unlabeled_pull_request",
+}
+
+COMMITTER_ACTIVITY_TYPES = {
+    "reviewed_pull_request",
 }
 
 MAINTAINER_ACTIVITY_TYPES = {
@@ -72,62 +75,18 @@ def _bucket_period(
     raise ValueError(f"Unsupported frequency: {frequency}")
 
 
-def activity_records_to_dataframe(
-    activities: list[ContributorActivityRecord],
-) -> pd.DataFrame:
-    """Convert normalized contributor activity records into a dataframe."""
-    columns = [
-        "repo",
-        "actor",
-        "occurred_at",
-        "year",
-        "activity_type",
-        "target_type",
-        "target_number",
-        "target_author",
-        "detail",
-    ]
-    if not activities:
-        return pd.DataFrame(columns=columns)
-
-    frame = pd.DataFrame(
-        [
-            {
-                "repo": activity.repo,
-                "actor": activity.actor,
-                "occurred_at": activity.occurred_at,
-                "year": activity.occurred_at.year,
-                "activity_type": activity.activity_type,
-                "target_type": activity.target_type,
-                "target_number": activity.target_number,
-                "target_author": activity.target_author,
-                "detail": activity.detail,
-            }
-            for activity in activities
-        ]
-    )
-
-    return frame.sort_values(["occurred_at", "repo", "actor", "activity_type"]).reset_index(drop=True)
-
-
-def _is_triage_signal(row: pd.Series) -> bool:
-    """Treat management actions on other users' work as triage evidence."""
-    if row["activity_type"] not in TRIAGE_ACTIVITY_TYPES:
-        return False
-
-    target_author = row["target_author"]
-    actor = row["actor"]
-
-    return not (isinstance(target_author, str) and target_author == actor)
-
-
-def _activity_stage(row: pd.Series) -> str | None:
-    """Map a normalized activity row to the highest stage it signals."""
+def _explicit_activity_stage(row: pd.Series) -> str | None:
+    """Map an activity row to the strongest stage that action explicitly signals."""
     activity_type = row["activity_type"]
 
     if activity_type in MAINTAINER_ACTIVITY_TYPES:
         return MAINTAINER_STAGE
-    if _is_triage_signal(row):
+    if activity_type in COMMITTER_ACTIVITY_TYPES:
+        return COMMITTER_STAGE
+    if activity_type in TRIAGE_ACTIVITY_TYPES:
+        target_author = row["target_author"]
+        if isinstance(target_author, str) and target_author == row["actor"]:
+            return None
         return TRIAGE_STAGE
     if activity_type in GENERAL_ACTIVITY_TYPES:
         return GENERAL_USER_STAGE
@@ -135,36 +94,59 @@ def _activity_stage(row: pd.Series) -> str | None:
     return None
 
 
+def _timestamp_columns() -> list[str]:
+    """Return the ordered first-seen timestamp columns for each stage."""
+    return [f"first_{stage}_at" for stage in STAGE_ORDER]
+
+
+def _backfill_capability_timestamps(stage_journeys: pd.DataFrame) -> pd.DataFrame:
+    """Treat higher responsibility signals as implicitly granting earlier stages."""
+    result = stage_journeys.copy()
+
+    for row_index in result.index:
+        inherited_timestamp = pd.NaT
+        for stage in reversed(STAGE_ORDER):
+            column = f"first_{stage}_at"
+            value = result.at[row_index, column]
+            if pd.notna(value):
+                inherited_timestamp = value
+                continue
+            if pd.notna(inherited_timestamp):
+                result.at[row_index, column] = inherited_timestamp
+
+    return result
+
+
+def _highest_stage_from_timestamps(row: pd.Series) -> str | None:
+    """Return the highest stage reached by an actor."""
+    highest: str | None = None
+    for stage in STAGE_ORDER:
+        if pd.notna(row[f"first_{stage}_at"]):
+            highest = stage
+    return highest
+
+
 def summarize_actor_stage_journeys(
     activities: list[ContributorActivityRecord],
-    *,
-    by_repo: bool,
 ) -> pd.DataFrame:
-    """
-    Build a stage-journey table from normalized contributor activity.
+    """Build an org-wide stage-journey table from normalized contributor activity."""
+    columns = ["actor", *_timestamp_columns(), "highest_stage"]
 
-    When ``by_repo`` is True, journeys are tracked separately per repository.
-    When False, the earliest signal per actor is used across the whole org.
-    """
-    prefix = ["repo", "actor"] if by_repo else ["actor"]
-    timestamp_columns = [f"first_{stage}_at" for stage in STAGE_ORDER]
-    columns = [*prefix, *timestamp_columns, "highest_stage"]
-
-    activity_df = activity_records_to_dataframe(activities)
+    activity_df = contributor_activity_to_dataframe(activities)
     if activity_df.empty:
         return pd.DataFrame(columns=columns)
 
     filtered = activity_df[~activity_df["actor"].astype(str).str.endswith("[bot]")].copy()
-    filtered["stage"] = filtered.apply(_activity_stage, axis=1)
+    filtered["stage"] = filtered.apply(_explicit_activity_stage, axis=1)
     filtered = filtered.dropna(subset=["stage"])
 
     if filtered.empty:
         return pd.DataFrame(columns=columns)
 
     journey_rows = (
-        filtered.groupby([*prefix, "stage"], as_index=False)["occurred_at"]
+        filtered.groupby(["actor", "stage"], as_index=False)["occurred_at"]
         .min()
-        .pivot(index=prefix, columns="stage", values="occurred_at")
+        .pivot(index="actor", columns="stage", values="occurred_at")
         .reset_index()
     )
 
@@ -177,19 +159,10 @@ def summarize_actor_stage_journeys(
     for stage in STAGE_ORDER:
         journey_rows[f"first_{stage}_at"] = pd.to_datetime(journey_rows[stage], utc=True)
 
-    def resolve_highest_stage(row: pd.Series) -> str | None:
-        highest: str | None = None
-        for stage in STAGE_ORDER:
-            if pd.notna(row[f"first_{stage}_at"]):
-                highest = stage
-        return highest
+    result = _backfill_capability_timestamps(journey_rows[["actor", *_timestamp_columns()]].copy())
+    result["highest_stage"] = result.apply(_highest_stage_from_timestamps, axis=1)
 
-    journey_rows["highest_stage"] = journey_rows.apply(resolve_highest_stage, axis=1)
-
-    result = journey_rows[[*prefix, *timestamp_columns, "highest_stage"]].copy()
-
-    sort_columns = ["actor"] if not by_repo else ["repo", "actor"]
-    return result.sort_values(sort_columns).reset_index(drop=True)
+    return result.sort_values("actor").reset_index(drop=True)[columns]
 
 
 def build_maintainer_pipeline(stage_journeys: pd.DataFrame) -> pd.DataFrame:
@@ -227,10 +200,7 @@ def build_stage_entry_timeline(
         timeline = timeline.merge(counts, on=period_col, how="outer")
 
     timeline = (
-        timeline.fillna(0)
-        .astype({stage: int for stage in STAGE_ORDER})
-        .sort_values(period_col)
-        .reset_index(drop=True)
+        timeline.fillna(0).astype({stage: int for stage in STAGE_ORDER}).sort_values(period_col).reset_index(drop=True)
     )
 
     if frequency == "year":
@@ -254,31 +224,48 @@ def build_cumulative_stage_timeline(
     return cumulative[columns]
 
 
+def _highest_stage_reached_by_period(row: pd.Series) -> str | None:
+    """Return the highest stage an actor had reached by the activity timestamp."""
+    highest: str | None = None
+    for stage in STAGE_ORDER:
+        first_seen = row[f"first_{stage}_at"]
+        if pd.notna(first_seen) and first_seen <= row["occurred_at"]:
+            highest = stage
+    return highest
+
+
 def build_stage_activity_timeline(
     activities: list[ContributorActivityRecord],
     *,
     frequency: str,
 ) -> pd.DataFrame:
-    """Count unique active contributors per stage signal by year or month."""
+    """Count active contributors once per period under their highest attained stage."""
     period_col = _period_column_name(frequency)
     columns = [period_col, *STAGE_ORDER]
 
-    activity_df = activity_records_to_dataframe(activities)
+    activity_df = contributor_activity_to_dataframe(activities)
     if activity_df.empty:
         return pd.DataFrame(columns=columns)
 
     filtered = activity_df[~activity_df["actor"].astype(str).str.endswith("[bot]")].copy()
-    filtered["stage"] = filtered.apply(_activity_stage, axis=1)
+    filtered["stage"] = filtered.apply(_explicit_activity_stage, axis=1)
     filtered = filtered.dropna(subset=["stage"])
 
     if filtered.empty:
         return pd.DataFrame(columns=columns)
 
     filtered[period_col] = _bucket_period(filtered["occurred_at"], frequency=frequency)
-    filtered = filtered.drop_duplicates(subset=[period_col, "stage", "actor"])
+    active_actors = filtered.groupby([period_col, "actor"], as_index=False)["occurred_at"].max()
+    stage_journeys = summarize_actor_stage_journeys(activities)
+    if stage_journeys.empty:
+        return pd.DataFrame(columns=columns)
+
+    active_actors = active_actors.merge(stage_journeys, on="actor", how="left")
+    active_actors["stage"] = active_actors.apply(_highest_stage_reached_by_period, axis=1)
+    active_actors = active_actors.dropna(subset=["stage"])
 
     timeline = (
-        filtered.groupby([period_col, "stage"])
+        active_actors.groupby([period_col, "stage"])
         .size()
         .unstack(fill_value=0)
         .reindex(columns=STAGE_ORDER, fill_value=0)
@@ -288,24 +275,3 @@ def build_stage_activity_timeline(
     )
 
     return timeline[columns]
-
-
-def build_repo_stage_distribution(stage_journeys: pd.DataFrame) -> pd.DataFrame:
-    """Count contributors by their highest observed stage in each repository."""
-    columns = ["repo", *STAGE_ORDER]
-    if stage_journeys.empty:
-        return pd.DataFrame(columns=columns)
-
-    distribution = (
-        stage_journeys.dropna(subset=["highest_stage"])
-        .groupby(["repo", "highest_stage"])
-        .size()
-        .unstack(fill_value=0)
-        .reindex(columns=STAGE_ORDER, fill_value=0)
-        .reset_index()
-    )
-
-    distribution["total"] = distribution[STAGE_ORDER].sum(axis=1)
-    distribution = distribution.sort_values(["total", "repo"], ascending=[False, True]).drop(columns="total")
-
-    return distribution.reset_index(drop=True)[columns]

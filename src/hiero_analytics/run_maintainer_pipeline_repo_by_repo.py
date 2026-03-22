@@ -9,9 +9,11 @@ import requests
 
 from hiero_analytics.config.paths import ORG, ensure_org_dirs
 from hiero_analytics.data_sources.github_client import GitHubClient
+from hiero_analytics.data_sources.github_contributor_activity import (
+    fetch_repo_contributor_activity_graphql,
+)
 from hiero_analytics.data_sources.github_ingest import (
     fetch_org_repos_graphql,
-    fetch_repo_contributor_activity_graphql,
 )
 from hiero_analytics.data_sources.models import ContributorActivityRecord, RepositoryRecord
 from hiero_analytics.run_maintainer_pipeline_org import (
@@ -122,10 +124,7 @@ def main() -> None:
     if failures:
         preview = ", ".join(f"{repo} ({reason})" for repo, reason in failures[:5])
         if not all_activities:
-            raise RuntimeError(
-                "Failed fetching contributor activity for every repository. "
-                f"First failures: {preview}"
-            )
+            raise RuntimeError(f"Failed fetching contributor activity for every repository. First failures: {preview}")
         print(f"Skipped {len(failures)} repo(s). First failures: {preview}")
 
     all_activities.sort(key=lambda record: (record.occurred_at, record.repo, record.actor))
