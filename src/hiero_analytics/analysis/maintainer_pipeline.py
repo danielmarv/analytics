@@ -1,3 +1,5 @@
+"""Analytics helpers for maintainer-pipeline role classification."""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -25,7 +27,8 @@ def activity_to_role_dataframe(
             continue
 
         repo_name = record.repo.split("/")[-1]
-        role = repo_role_lookup.get(repo_name, {}).get(record.actor, "general_user")
+        actor_key = record.actor.strip().lower()
+        role = repo_role_lookup.get(repo_name, {}).get(actor_key, "general_user")
 
         rows.append(
             {

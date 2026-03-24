@@ -1,6 +1,9 @@
+"""Helpers for mapping governance config teams to repo-scoped contributor roles."""
+
 from __future__ import annotations
 
 import os
+import re
 from collections import defaultdict
 from typing import Any
 
@@ -22,6 +25,37 @@ ROLE_PRIORITY = {
 }
 
 
+def _normalize_username(user: str) -> str:
+    """Normalize GitHub logins for case-insensitive matching."""
+    return user.strip().lower()
+
+
+def _tokenize_name(value: str) -> tuple[str, ...]:
+    """Split a governance name into normalized alphanumeric tokens."""
+    return tuple(token for token in re.split(r"[^a-z0-9]+", value.lower()) if token)
+
+
+def _best_matching_repo_for_team(
+    team_name: str,
+    repo_name_tokens: dict[str, tuple[str, ...]],
+) -> str | None:
+    """Return the most specific repository name prefixed by the team name."""
+    team_tokens = _tokenize_name(team_name)
+
+    best_repo: str | None = None
+    best_length = 0
+    for repo_name, tokens in repo_name_tokens.items():
+        if len(tokens) > len(team_tokens):
+            continue
+        if team_tokens[: len(tokens)] != tokens:
+            continue
+        if len(tokens) > best_length:
+            best_repo = repo_name
+            best_length = len(tokens)
+
+    return best_repo
+
+
 def fetch_governance_config(url: str = GOVERNANCE_CONFIG_URL) -> dict[str, Any]:
     """Fetch and parse the Hiero governance config file."""
     response = requests.get(url, timeout=HTTP_TIMEOUT_SECONDS)
@@ -38,6 +72,11 @@ def build_repo_role_lookup(config: dict[str, Any]) -> dict[str, dict[str, str]]:
     """Build repo -> user -> highest governance role lookup from config.yaml."""
     teams = config.get("teams", [])
     repositories = config.get("repositories", [])
+    repo_name_tokens = {
+        repo["name"]: _tokenize_name(repo["name"])
+        for repo in repositories
+        if isinstance(repo, dict) and isinstance(repo.get("name"), str)
+    }
 
     team_members: dict[str, set[str]] = {}
     for team in teams:
@@ -52,8 +91,15 @@ def build_repo_role_lookup(config: dict[str, Any]) -> dict[str, dict[str, str]]:
         for field in ("maintainers", "members"):
             values = team.get(field, [])
             if isinstance(values, list):
-                members.update(user for user in values if isinstance(user, str) and user)
+                members.update(
+                    _normalize_username(user) for user in values if isinstance(user, str) and user
+                )
         team_members[name] = members
+
+    team_repo_affinity = {
+        team_name: _best_matching_repo_for_team(team_name, repo_name_tokens)
+        for team_name in team_members
+    }
 
     repo_roles: dict[str, dict[str, str]] = {}
     for repo in repositories:
@@ -67,6 +113,9 @@ def build_repo_role_lookup(config: dict[str, Any]) -> dict[str, dict[str, str]]:
 
         user_roles: dict[str, str] = {}
         for team_name, permission in assignments.items():
+            if team_repo_affinity.get(team_name) != repo_name:
+                continue
+
             role = permission_to_role(permission)
             if role is None:
                 continue
