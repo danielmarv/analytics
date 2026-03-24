@@ -1,0 +1,25 @@
+repo,Unknown,Good First Issue,Beginner,Intermediate,Advanced
+governance,4,0,0,0,0
+heka-identity-platform,1,0,0,0,0
+hiero,1,0,0,0,0
+hiero-block-node,71,0,0,0,0
+hiero-cli,51,0,0,0,0
+hiero-consensus-node,123,0,0,0,0
+hiero-enterprise-java,4,0,0,0,0
+hiero-gradle-conventions,1,0,0,0,0
+hiero-json-rpc-relay,43,0,0,0,0
+hiero-mirror-node,40,0,0,0,0
+hiero-mirror-node-explorer,4,0,0,0,0
+hiero-sdk-cpp,1,6,2,0,1
+hiero-sdk-go,3,0,0,0,0
+hiero-sdk-java,3,0,0,0,0
+hiero-sdk-js,0,7,3,0,2
+hiero-sdk-python,0,3,3,1,7
+hiero-sdk-rust,3,0,0,0,0
+hiero-sdk-swift,0,1,0,0,1
+hiero-sdk-tck,2,0,0,0,0
+hiero-website,0,0,1,4,0
+homebrew-tools,1,0,0,0,0
+sdk-collaboration-hub,3,0,0,0,0
+solo,64,0,0,0,0
+solo-docs,25,0,0,0,0
