@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 from .cache import (
     load_records_cache,
@@ -19,11 +19,13 @@ from .cache import (
 )
 from .github_client import GitHubClient
 from .github_queries import (
+    CONTRIBUTOR_ACTIVITY_QUERY,
     ISSUES_QUERY,
     MERGED_PR_QUERY,
     REPOS_QUERY,
 )
 from .models import (
+    ContributorActivityRecord,
     IssueRecord,
     PullRequestDifficultyRecord,
     RepositoryRecord,
@@ -511,6 +513,260 @@ def fetch_org_merged_pr_difficulty_graphql(
         org,
         cache_parameters,
         PullRequestDifficultyRecord,
+        all_records,
+        use_cache=use_cache,
+    )
+    return all_records
+
+
+# --------------------------------------------------------
+# FETCH CONTRIBUTOR ACTIVITY FOR ONE REPOSITORY
+# --------------------------------------------------------
+
+
+def fetch_repo_contributor_activity_graphql(
+    client: GitHubClient,
+    owner: str,
+    repo: str,
+    *,
+    lookback_days: int = 183,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
+) -> list[ContributorActivityRecord]:
+    """
+    Fetch contributor activity signals from pull request lifecycle data.
+
+    Signals include:
+    - authored_pull_request
+    - reviewed_pull_request
+    - merged_pull_request
+
+    Args:
+        client: Authenticated GitHub client.
+        owner: Repository owner or organization name.
+        repo: Repository name only, not full_name.
+        lookback_days: Number of days to include from the present.
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
+
+    Returns:
+        A list of normalized contributor activity records.
+    """
+    scope = f"{owner}_{repo}"
+    cache_parameters = {
+        "owner": owner,
+        "repo": repo,
+        "lookback_days": lookback_days,
+    }
+    cached = load_records_cache(
+        "repo_contributor_activity",
+        scope,
+        cache_parameters,
+        ContributorActivityRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
+    cutoff = datetime.now(UTC) - timedelta(days=lookback_days)
+
+    def page(cursor: str | None) -> tuple[list[ContributorActivityRecord], str | None, bool]:
+        data = client.graphql(
+            CONTRIBUTOR_ACTIVITY_QUERY,
+            {
+                "owner": owner,
+                "repo": repo,
+                "cursor": cursor,
+            },
+        )
+
+        pr_data = data["data"]["repository"]["pullRequests"]
+        pr_nodes = pr_data["nodes"]
+        items: list[ContributorActivityRecord] = []
+
+        for pr in pr_nodes:
+            pr_number = pr["number"]
+            repo_name = f"{owner}/{repo}"
+
+            pr_author = None
+            if pr.get("author"):
+                pr_author = pr["author"].get("login")
+
+            pr_created_at = _parse_dt(pr.get("createdAt"))
+            if pr_created_at and pr_created_at >= cutoff and pr_author:
+                items.append(
+                    ContributorActivityRecord(
+                        repo=repo_name,
+                        activity_type="authored_pull_request",
+                        actor=pr_author,
+                        occurred_at=pr_created_at,
+                        target_type="pull_request",
+                        target_number=pr_number,
+                        target_author=pr_author,
+                    )
+                )
+
+            for review in pr["reviews"]["nodes"]:
+                review_author = None
+                if review.get("author"):
+                    review_author = review["author"].get("login")
+
+                reviewed_at = _parse_dt(review.get("submittedAt"))
+                if reviewed_at and reviewed_at >= cutoff and review_author:
+                    items.append(
+                        ContributorActivityRecord(
+                            repo=repo_name,
+                            activity_type="reviewed_pull_request",
+                            actor=review_author,
+                            occurred_at=reviewed_at,
+                            target_type="pull_request",
+                            target_number=pr_number,
+                            target_author=pr_author,
+                            detail=review.get("state"),
+                        )
+                    )
+
+            merged_at = _parse_dt(pr.get("mergedAt"))
+            merged_by = None
+            if pr.get("mergedBy"):
+                merged_by = pr["mergedBy"].get("login")
+
+            if merged_at and merged_at >= cutoff and merged_by:
+                items.append(
+                    ContributorActivityRecord(
+                        repo=repo_name,
+                        activity_type="merged_pull_request",
+                        actor=merged_by,
+                        occurred_at=merged_at,
+                        target_type="pull_request",
+                        target_number=pr_number,
+                        target_author=pr_author,
+                    )
+                )
+
+        next_cursor = pr_data["pageInfo"]["endCursor"]
+        has_next = pr_data["pageInfo"]["hasNextPage"]
+
+        if pr_nodes:
+            oldest_updated = _parse_dt(pr_nodes[-1].get("updatedAt"))
+            if oldest_updated and oldest_updated < cutoff:
+                has_next = False
+
+        return items, next_cursor, has_next
+
+    records = paginate_cursor(page)
+    save_records_cache(
+        "repo_contributor_activity",
+        scope,
+        cache_parameters,
+        ContributorActivityRecord,
+        records,
+        use_cache=use_cache,
+    )
+    return records
+
+
+# --------------------------------------------------------
+# FETCH CONTRIBUTOR ACTIVITY ACROSS AN ORG (PARALLEL)
+# --------------------------------------------------------
+
+
+def fetch_org_contributor_activity_graphql(
+    client: GitHubClient,
+    org: str,
+    max_workers: int = 5,
+    *,
+    repos: list[str] | None = None,
+    lookback_days: int = 183,
+    use_cache: bool | None = None,
+    cache_ttl_seconds: int | None = None,
+    refresh: bool = False,
+) -> list[ContributorActivityRecord]:
+    """
+    Fetch contributor activity records across all repositories in an organization.
+
+    Args:
+        client: Authenticated GitHub client.
+        org: GitHub organization login.
+        max_workers: Number of worker threads for parallel repository fetches.
+        repos: Optional list of repositories to include (name or full_name).
+        lookback_days: Number of days to include from the present.
+        use_cache: Optional override for enabling or disabling fetch caching.
+        cache_ttl_seconds: Optional cache TTL override in seconds.
+        refresh: When True, bypass any existing cache entry and rewrite it.
+
+    Returns:
+        A combined list of contributor activity records.
+    """
+    normalized_repos = sorted(repos) if repos else []
+    cache_parameters = {
+        "org": org,
+        "repos": normalized_repos,
+        "lookback_days": lookback_days,
+    }
+    cached = load_records_cache(
+        "org_contributor_activity",
+        org,
+        cache_parameters,
+        ContributorActivityRecord,
+        use_cache=use_cache,
+        ttl_seconds=cache_ttl_seconds,
+        refresh=refresh,
+    )
+    if cached is not None:
+        return cached
+
+    all_repos = fetch_org_repos_graphql(
+        client,
+        org,
+        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+    )
+
+    if repos:
+        allowed = set(repos)
+        all_repos = [
+            repo
+            for repo in all_repos
+            if repo.full_name in allowed or repo.name in allowed
+        ]
+
+    all_records: list[ContributorActivityRecord] = []
+
+    def fetch(repo_record: RepositoryRecord) -> list[ContributorActivityRecord]:
+        logger.info("Scanning contributor activity for %s", repo_record.full_name)
+        return fetch_repo_contributor_activity_graphql(
+            client,
+            owner=repo_record.owner,
+            repo=repo_record.name,
+            lookback_days=lookback_days,
+            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        )
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {executor.submit(fetch, repo): repo for repo in all_repos}
+
+        for future in as_completed(futures):
+            repo = futures[future]
+
+            try:
+                all_records.extend(future.result())
+
+            except Exception as exc:
+                logger.exception(
+                    "Failed fetching contributor activity for %s: %s",
+                    repo.full_name,
+                    exc,
+                )
+
+    save_records_cache(
+        "org_contributor_activity",
+        org,
+        cache_parameters,
+        ContributorActivityRecord,
         all_records,
         use_cache=use_cache,
     )

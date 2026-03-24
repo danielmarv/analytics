@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 
 from hiero_analytics.data_sources.models import (
+    ContributorActivityRecord,
     IssueRecord,
     PullRequestDifficultyRecord,
     RepositoryRecord,
@@ -95,6 +96,27 @@ def test_pr_difficulty_record_creation():
     assert record.pr_number == 10
     assert record.issue_number == 1
     assert record.issue_labels == ["good first issue"]
+
+
+def test_contributor_activity_record_creation():
+
+    occurred = datetime(2024, 1, 1)
+
+    record = ContributorActivityRecord(
+        repo="org/repo",
+        activity_type="authored_pull_request",
+        actor="alice",
+        occurred_at=occurred,
+        target_type="pull_request",
+        target_number=10,
+        target_author="alice",
+        detail=None,
+    )
+
+    assert record.repo == "org/repo"
+    assert record.activity_type == "authored_pull_request"
+    assert record.actor == "alice"
+    assert record.target_number == 10
 
 
 # ---------------------------------------------------------

@@ -97,3 +97,48 @@ query($owner:String!, $repo:String!, $cursor:String) {
   }
 }
 """
+
+
+CONTRIBUTOR_ACTIVITY_QUERY: str = """
+query($owner:String!, $repo:String!, $cursor:String) {
+  repository(owner:$owner, name:$repo) {
+    pullRequests(
+      first:100
+      after:$cursor
+      orderBy:{field:UPDATED_AT, direction:DESC}
+    ) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        number
+        createdAt
+        updatedAt
+        mergedAt
+        author {
+          login
+        }
+        mergedBy {
+          login
+        }
+        reviews(first:100) {
+          nodes {
+            state
+            submittedAt
+            author {
+              login
+            }
+          }
+        }
+      }
+    }
+  }
+  rateLimit{
+    limit
+    remaining
+    cost
+    resetAt
+  }
+}
+"""
