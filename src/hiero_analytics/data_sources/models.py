@@ -61,3 +61,4 @@ class ContributorActivityRecord:
     target_number: int
     target_author: str | None = None
     detail: str | None = None
+    author: str | None = None

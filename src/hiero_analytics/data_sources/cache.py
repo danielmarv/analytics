@@ -25,7 +25,7 @@ from .models import (
 logger = logging.getLogger(__name__)
 
 CACHE_VERSION = 1
-DEFAULT_GITHUB_CACHE_TTL_SECONDS = 900
+DEFAULT_GITHUB_CACHE_TTL_SECONDS = 60*60*24 # 24 hours
 GITHUB_CACHE_DIR = OUTPUTS_DIR / "cache" / "github"
 
 _TRUE_VALUES = {"1", "true", "yes", "on"}
