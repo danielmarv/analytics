@@ -52,7 +52,7 @@ def main() -> None:
             colors=MAINTAINER_PIPELINE_COLORS,
             title="Unique Active Contributors by Role (Yearly)",
             output_path=org_charts_dir / "maintainer_pipeline_yearly.png",
-            annotate_totals=False,
+            annotate_totals=True,
         )
 
     if not repo_pipeline.empty:
