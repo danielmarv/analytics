@@ -158,3 +158,15 @@ def summarize_role_counts(repo_role_lookup: dict[str, dict[str, str]]) -> dict[s
     for role in users.values():
         counts[role] += 1
     return dict(counts)
+
+
+def count_distinct_role_holders_by_role(
+    repo_role_lookup: dict[str, dict[str, str]],
+) -> dict[str, int]:
+    """Return distinct user counts for each role across all repositories."""
+    users_by_role: dict[str, set[str]] = defaultdict(set)
+    for repo_lookup in repo_role_lookup.values():
+        for user, role in repo_lookup.items():
+            users_by_role[role].add(user)
+
+    return {role: len(users) for role, users in users_by_role.items()}

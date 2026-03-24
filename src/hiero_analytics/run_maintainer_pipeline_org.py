@@ -50,7 +50,7 @@ def main() -> None:
             stack_cols=STAGE_COLUMNS,
             labels=STACK_LABELS,
             colors=MAINTAINER_PIPELINE_COLORS,
-            title="Maintainer Pipeline by Role (Yearly)",
+            title="Unique Active Contributors by Role (Yearly)",
             output_path=org_charts_dir / "maintainer_pipeline_yearly.png",
             annotate_totals=False,
         )
@@ -62,7 +62,7 @@ def main() -> None:
             stack_cols=STAGE_COLUMNS,
             labels=STACK_LABELS,
             colors=MAINTAINER_PIPELINE_COLORS,
-            title="Maintainer Pipeline by Role (by Repository)",
+            title="Unique Active Contributors by Role (by Repository)",
             output_path=org_charts_dir / "maintainer_pipeline_by_repo.png",
             rotate_x=45,
             annotate_totals=False,

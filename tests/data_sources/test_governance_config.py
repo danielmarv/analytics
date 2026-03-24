@@ -1,6 +1,10 @@
 """Tests for governance-config role mapping helpers."""
 
-from hiero_analytics.data_sources.governance_config import build_repo_role_lookup, permission_to_role
+from hiero_analytics.data_sources.governance_config import (
+    build_repo_role_lookup,
+    count_distinct_role_holders_by_role,
+    permission_to_role,
+)
 
 
 def test_permission_to_role_maps_repo_permissions():
@@ -122,3 +126,22 @@ def test_build_repo_role_lookup_normalizes_usernames():
 
     assert repo_role_lookup["hiero-website"]["leadmaintainer"] == "committer"
     assert repo_role_lookup["hiero-website"]["exploreriii"] == "committer"
+
+
+def test_count_distinct_role_holders_by_role_counts_each_user_once_per_role():
+    """Distinct role-holder counts should deduplicate users within each role."""
+    repo_role_lookup = {
+        "repo-a": {
+            "alice": "maintainer",
+            "bob": "committer",
+        },
+        "repo-b": {
+            "alice": "committer",
+            "carol": "committer",
+        },
+    }
+
+    counts = count_distinct_role_holders_by_role(repo_role_lookup)
+
+    assert counts["maintainer"] == 1
+    assert counts["committer"] == 3
