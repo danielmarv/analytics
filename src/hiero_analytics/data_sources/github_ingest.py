@@ -394,6 +394,7 @@ def fetch_repo_merged_pr_difficulty_graphql(
 
             for issue in issues:
                 labels = [label["name"] for label in issue["labels"]["nodes"]]
+                author = pr.get("author", {}).get("login")
 
                 items.append(
                     PullRequestDifficultyRecord(
@@ -406,6 +407,7 @@ def fetch_repo_merged_pr_difficulty_graphql(
                         pr_changed_files=pr["changedFiles"],
                         issue_number=issue["number"],
                         issue_labels=labels,
+                        author=author
                     )
                 )
 

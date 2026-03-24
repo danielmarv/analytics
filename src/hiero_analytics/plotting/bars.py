@@ -146,8 +146,9 @@ def plot_bar(
     """Plot a standard bar chart."""
     df = prepare_dataframe(df, x_col, y_col).copy()
 
-    df = df.sort_values(x_col) if is_numeric_or_datetime(df[x_col]) else df.sort_values(y_col, ascending=False)
-    # Auto-switch to a more report-like horizontal layout for crowded categories.
+    # Sort bars by x-axis for numeric/datetime categories, but keep original order for categorical axes (often already sorted by total count) to preserve readability and avoid reordering issues with long labels. Rotate bars to horizontal if there are many categories or if x-axis labels are long.
+    if not pd.api.types.is_categorical_dtype(df[x_col]):
+        df = df.sort_values(x_col) if is_numeric_or_datetime(df[x_col]) else df.sort_values(y_col, ascending=False)    # Auto-switch to a more report-like horizontal layout for crowded categories.
     horizontal = _should_use_horizontal(df, x_col, rotate_x)
 
     fig, ax = create_figure()

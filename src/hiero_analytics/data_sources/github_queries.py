@@ -73,6 +73,11 @@ query($owner:String!, $repo:String!, $cursor:String) {
         number
         createdAt
         mergedAt
+
+        author {
+          login
+        }
+
         additions
         deletions
         changedFiles

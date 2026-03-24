@@ -47,3 +47,4 @@ class PullRequestDifficultyRecord:
     pr_changed_files: int
     issue_number: int
     issue_labels: list[str]
+    author: str | None = None
