@@ -97,7 +97,8 @@ STATE_COLORS = {
 }
 
 MAINTAINER_PIPELINE_COLORS = {
-    "General Users": "#8FB339",
-    "Triage": "#4D7EA8",
-    "Committer/Maintainer": "#D1495B",
+    "General User": "#94A3B8",   # muted slate
+    "Triage":       "#60B8D4",   # sky blue
+    "Committer":    "#2A9D8F",   # teal
+    "Maintainer":   "#E76F51",   # coral
 }

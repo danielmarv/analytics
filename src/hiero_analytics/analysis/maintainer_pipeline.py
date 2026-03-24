@@ -4,30 +4,35 @@ import pandas as pd
 
 from hiero_analytics.data_sources.models import ContributorActivityRecord
 
-STAGE_COLUMNS = ["general_user", "triage", "committer_maintainer"]
+STAGE_COLUMNS = ["general_user", "triage", "committer", "maintainer"]
 
-_STAGE_BY_ACTIVITY = {
-    "authored_pull_request": "general_user",
-    "reviewed_pull_request": "triage",
-    "merged_pull_request": "committer_maintainer",
+_PR_ACTIVITY_TYPES = {
+    "authored_pull_request",
+    "reviewed_pull_request",
+    "merged_pull_request",
 }
 
 
-def activity_to_stage_dataframe(records: list[ContributorActivityRecord]) -> pd.DataFrame:
-    """Convert contributor activity records into stage-labeled rows."""
+def activity_to_role_dataframe(
+    records: list[ContributorActivityRecord],
+    repo_role_lookup: dict[str, dict[str, str]],
+) -> pd.DataFrame:
+    """Classify each contributor activity record by governance role."""
     rows = []
 
     for record in records:
-        stage = _STAGE_BY_ACTIVITY.get(record.activity_type)
-        if stage is None:
+        if record.activity_type not in _PR_ACTIVITY_TYPES:
             continue
+
+        repo_name = record.repo.split("/")[-1]
+        role = repo_role_lookup.get(repo_name, {}).get(record.actor, "general_user")
 
         rows.append(
             {
-                "repo": record.repo.split("/")[-1],
+                "repo": repo_name,
                 "actor": record.actor,
                 "year": record.occurred_at.year,
-                "stage": stage,
+                "stage": role,
             }
         )
 
@@ -38,7 +43,7 @@ def activity_to_stage_dataframe(records: list[ContributorActivityRecord]) -> pd.
 
 
 def build_maintainer_yearly_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
-    """Build yearly contributor counts for each maintainer-pipeline stage."""
+    """Build yearly contributor counts for each observed PR activity stage."""
     if stage_df.empty:
         return pd.DataFrame(columns=["year", *STAGE_COLUMNS])
 
@@ -55,7 +60,7 @@ def build_maintainer_yearly_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_maintainer_repo_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
-    """Build repository-level contributor counts for each maintainer-pipeline stage."""
+    """Build repository-level contributor counts for each observed PR activity stage."""
     if stage_df.empty:
         return pd.DataFrame(columns=["repo", *STAGE_COLUMNS])
 
@@ -71,3 +76,28 @@ def build_maintainer_repo_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
     by_repo = by_repo.sort_values("total", ascending=False).drop(columns=["total"])
 
     return by_repo.astype({column: int for column in STAGE_COLUMNS})
+
+
+def collapse_repo_pipeline_tail(repo_df: pd.DataFrame, max_repos: int) -> pd.DataFrame:
+    """Return a chart-friendly repo table with the long tail aggregated."""
+    if repo_df.empty or max_repos <= 0 or len(repo_df) <= max_repos:
+        return repo_df.copy()
+
+    head_count = max_repos - 1
+    if head_count <= 0:
+        return repo_df.copy()
+
+    head = repo_df.head(head_count).copy()
+    tail = repo_df.iloc[head_count:]
+
+    other_totals = {column: int(tail[column].sum()) for column in STAGE_COLUMNS}
+    other_row = pd.DataFrame(
+        [
+            {
+                "repo": f"Other Repos ({len(tail)})",
+                **other_totals,
+            }
+        ]
+    )
+
+    return pd.concat([head, other_row], ignore_index=True)

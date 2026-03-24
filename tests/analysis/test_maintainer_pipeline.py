@@ -1,10 +1,13 @@
 from datetime import UTC, datetime
 
+import pandas as pd
+
 from hiero_analytics.analysis.maintainer_pipeline import (
     STAGE_COLUMNS,
-    activity_to_stage_dataframe,
+    activity_to_role_dataframe,
     build_maintainer_repo_pipeline,
     build_maintainer_yearly_pipeline,
+    collapse_repo_pipeline_tail,
 )
 from hiero_analytics.data_sources.models import ContributorActivityRecord
 
@@ -20,7 +23,8 @@ def _record(activity_type: str, actor: str, repo: str, year: int) -> Contributor
     )
 
 
-def test_activity_to_stage_dataframe_filters_unknown_types():
+def test_activity_to_role_dataframe_filters_unknown_types():
+    role_lookup = {"repo-a": {"alice": "maintainer", "bob": "triage"}}
     records = [
         _record("authored_pull_request", "alice", "org/repo-a", 2024),
         _record("reviewed_pull_request", "bob", "org/repo-a", 2024),
@@ -28,14 +32,24 @@ def test_activity_to_stage_dataframe_filters_unknown_types():
         _record("ignored_event", "dave", "org/repo-a", 2024),
     ]
 
-    df = activity_to_stage_dataframe(records)
+    df = activity_to_role_dataframe(records, role_lookup)
 
-    assert set(df["stage"]) == set(STAGE_COLUMNS)
     assert len(df) == 3
     assert set(df["repo"]) == {"repo-a"}
+    # alice → maintainer, bob → triage, carol has no entry → general_user
+    assert set(df["stage"]) == {"maintainer", "triage", "general_user"}
+
+
+def test_activity_to_role_dataframe_defaults_unknown_actor_to_general_user():
+    records = [_record("authored_pull_request", "unknown_actor", "org/repo-a", 2024)]
+    df = activity_to_role_dataframe(records, {})
+    assert df.iloc[0]["stage"] == "general_user"
 
 
 def test_build_maintainer_yearly_pipeline_counts_unique_actors_per_stage():
+    role_lookup = {
+        "repo-a": {"alice": "general_user", "bob": "triage", "carol": "committer"}
+    }
     records = [
         _record("authored_pull_request", "alice", "org/repo-a", 2024),
         _record("authored_pull_request", "alice", "org/repo-a", 2024),
@@ -43,17 +57,21 @@ def test_build_maintainer_yearly_pipeline_counts_unique_actors_per_stage():
         _record("merged_pull_request", "carol", "org/repo-a", 2024),
     ]
 
-    stage_df = activity_to_stage_dataframe(records)
+    stage_df = activity_to_role_dataframe(records, role_lookup)
     yearly = build_maintainer_yearly_pipeline(stage_df)
 
     row = yearly.iloc[0]
     assert row["year"] == 2024
     assert row["general_user"] == 1
     assert row["triage"] == 1
-    assert row["committer_maintainer"] == 1
+    assert row["committer"] == 1
 
 
 def test_build_maintainer_repo_pipeline_sorts_by_total():
+    role_lookup = {
+        "repo-a": {"alice": "general_user", "bob": "triage", "carol": "committer"},
+        "repo-b": {"dana": "general_user"},
+    }
     records = [
         _record("authored_pull_request", "alice", "org/repo-a", 2024),
         _record("reviewed_pull_request", "bob", "org/repo-a", 2024),
@@ -61,10 +79,45 @@ def test_build_maintainer_repo_pipeline_sorts_by_total():
         _record("authored_pull_request", "dana", "org/repo-b", 2024),
     ]
 
-    stage_df = activity_to_stage_dataframe(records)
+    stage_df = activity_to_role_dataframe(records, role_lookup)
     by_repo = build_maintainer_repo_pipeline(stage_df)
 
     assert by_repo.iloc[0]["repo"] == "repo-a"
     assert by_repo.iloc[0]["general_user"] == 1
     assert by_repo.iloc[0]["triage"] == 1
-    assert by_repo.iloc[0]["committer_maintainer"] == 1
+    assert by_repo.iloc[0]["committer"] == 1
+
+
+def test_collapse_repo_pipeline_tail_aggregates_remaining_rows():
+    repo_df = pd.DataFrame(
+        [
+            {"repo": "repo-a", "general_user": 10, "triage": 1, "committer": 2, "maintainer": 3},
+            {"repo": "repo-b", "general_user": 8, "triage": 1, "committer": 2, "maintainer": 1},
+            {"repo": "repo-c", "general_user": 6, "triage": 1, "committer": 1, "maintainer": 1},
+            {"repo": "repo-d", "general_user": 4, "triage": 0, "committer": 1, "maintainer": 1},
+        ]
+    )
+
+    collapsed = collapse_repo_pipeline_tail(repo_df, max_repos=3)
+
+    assert len(collapsed) == 3
+    assert collapsed.iloc[0]["repo"] == "repo-a"
+    assert collapsed.iloc[1]["repo"] == "repo-b"
+    assert collapsed.iloc[2]["repo"] == "Other Repos (2)"
+    assert collapsed.iloc[2]["general_user"] == 10
+    assert collapsed.iloc[2]["triage"] == 1
+    assert collapsed.iloc[2]["committer"] == 2
+    assert collapsed.iloc[2]["maintainer"] == 2
+
+
+def test_collapse_repo_pipeline_tail_noop_when_below_limit():
+    repo_df = pd.DataFrame(
+        [
+            {"repo": "repo-a", "general_user": 1, "triage": 0, "committer": 0, "maintainer": 0},
+            {"repo": "repo-b", "general_user": 1, "triage": 0, "committer": 0, "maintainer": 0},
+        ]
+    )
+
+    collapsed = collapse_repo_pipeline_tail(repo_df, max_repos=5)
+
+    assert collapsed.equals(repo_df)

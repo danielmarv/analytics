@@ -9,7 +9,7 @@ import pandas as pd
 from matplotlib.axes import Axes
 from matplotlib.patches import FancyBboxPatch, Patch, Rectangle
 
-from hiero_analytics.config.charts import ANNOTATION_FONT_SIZE, FONT_WEIGHT_SEMIBOLD, PRIMARY_PALETTE, TITLE_COLOR
+from hiero_analytics.config.charts import ANNOTATION_FONT_SIZE, DEFAULT_FIGSIZE, FONT_WEIGHT_SEMIBOLD, PRIMARY_PALETTE, TITLE_COLOR
 
 from .base import create_figure, finalize_chart, prepare_dataframe
 from .primitives import build_palette, format_chart_value, is_numeric_or_datetime
@@ -17,6 +17,10 @@ from .primitives import build_palette, format_chart_value, is_numeric_or_datetim
 BAR_HEIGHT = 0.68
 BAR_WIDTH = 0.62
 BAR_ROUNDING_RATIO = 0.18
+HORIZONTAL_ROW_HEIGHT = 0.42  # inches per bar for auto-sizing horizontal charts
+HORIZONTAL_FIGURE_OVERHEAD = 3.5   # inches reserved for title, axes, legend
+HORIZONTAL_FIGURE_MIN_HEIGHT = 6.0
+HORIZONTAL_FIGURE_WIDTH = 14.0
 ANNOTATION_PADDING_RATIO = 0.015
 ANNOTATION_MIN_PADDING = 0.75
 HORIZONTAL_AXIS_LIMIT_RATIO = 1.12
@@ -210,6 +214,10 @@ def plot_stacked_bar(
     output_path: Path,
     colors: dict[str, str] | None = None,
     rotate_x: int | None = None,
+    annotate_totals: bool = True,
+    sort_categorical: bool = True,
+    legend_inside_bottom_right: bool = False,
+    auto_height_for_horizontal: bool = True,
 ) -> None:
     """
     Plot stacked bar chart.
@@ -239,6 +247,18 @@ def plot_stacked_bar(
 
     rotate_x : int | None
         Optional x-axis label rotation.
+
+    annotate_totals : bool
+        Whether to annotate bar totals. Defaults to True.
+
+    sort_categorical : bool
+        Whether to sort categorical bars by total descending.
+
+    legend_inside_bottom_right : bool
+        Place legend inside plot area at lower-right.
+
+    auto_height_for_horizontal : bool
+        Expand figure height based on row count for horizontal charts.
     """
     df = prepare_dataframe(df, x_col, *stack_cols).copy()
 
@@ -250,13 +270,23 @@ def plot_stacked_bar(
     # - For categorical x_col, sort bars by total size for readability.
     if is_numeric_or_datetime(df[x_col]):
         df = df.sort_values(x_col)
-    else:
+    elif sort_categorical:
         # Repo-level comparisons are easier to read when ordered by total volume.
         df["total"] = df[stack_cols].sum(axis=1)
         df = df.sort_values("total", ascending=False)
     horizontal = _should_use_horizontal(df, x_col, rotate_x)
 
-    fig, ax = create_figure()
+    # Scale the figure to comfortably fit all rows when using a horizontal layout.
+    if horizontal and auto_height_for_horizontal:
+        fig_height = max(
+            HORIZONTAL_FIGURE_MIN_HEIGHT,
+            len(df) * HORIZONTAL_ROW_HEIGHT + HORIZONTAL_FIGURE_OVERHEAD,
+        )
+        figsize: tuple[float, float] = (HORIZONTAL_FIGURE_WIDTH, fig_height)
+    else:
+        figsize = DEFAULT_FIGSIZE
+
+    fig, ax = create_figure(figsize=figsize)
 
     offsets = pd.Series(0, index=df.index, dtype=float)
     totals = df[stack_cols].sum(axis=1)
@@ -302,13 +332,28 @@ def plot_stacked_bar(
         # of each stack rather than inside the bars.
         max_total = float(totals.max()) if not totals.empty else 0.0
         padding = _compute_annotation_padding(max_total)
-        _annotate_bar_totals(ax, patches, totals, horizontal=True)
+        if annotate_totals:
+            _annotate_bar_totals(ax, patches, totals, horizontal=True)
         ax.margins(y=HORIZONTAL_Y_MARGIN, x=HORIZONTAL_X_MARGIN)
         ax.set_xlim(0, _compute_horizontal_axis_limit(max_total, padding))
+        legend_anchor = (0.5, -0.04)
+        bottom_rect = 0.05
     else:
-        if len(df) <= 12:
+        if annotate_totals and len(df) <= 12:
             _annotate_bar_totals(ax, patches, totals, horizontal=False)
         ax.margins(x=VERTICAL_X_MARGIN, y=VERTICAL_Y_MARGIN)
+        # Force integer ticks when all x values are whole numbers (e.g. years).
+        if is_numeric_or_datetime(df[x_col]) and (df[x_col] % 1 == 0).all():
+            ax.set_xticks(df[x_col])
+            ax.set_xticklabels([str(int(v)) for v in df[x_col]])
+        legend_anchor = (0.5, -0.14)
+        bottom_rect = 0.14
+
+    legend_loc = "lower center"
+    if legend_inside_bottom_right:
+        legend_loc = "lower right"
+        legend_anchor = (0.985, 0.02)
+        bottom_rect = 0.0
 
     finalize_chart(
         fig=fig,
@@ -322,9 +367,9 @@ def plot_stacked_bar(
         grid_axis="x" if horizontal else "y",
         legend_handles=legend_handles,
         legend_labels=labels,
-        legend_loc="upper right",
-        legend_bbox_to_anchor=(1, 1.14),
-        legend_ncol=min(len(labels), 3),
+        legend_loc=legend_loc,
+        legend_bbox_to_anchor=legend_anchor,
+        legend_ncol=min(len(labels), 4),
         legend_kwargs={"borderaxespad": 0.0},
-        layout_rect=(0, 0, 1, 0.92),
+        layout_rect=(0, bottom_rect, 1, 1.0),
     )

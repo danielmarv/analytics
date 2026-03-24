@@ -10,7 +10,7 @@ import pytest
 
 import hiero_analytics.data_sources.cache as cache
 import hiero_analytics.data_sources.github_ingest as ingest
-from hiero_analytics.data_sources.models import IssueRecord
+from hiero_analytics.data_sources.models import ContributorActivityRecord, IssueRecord
 
 
 @pytest.fixture(name="_temp_cache_dir")
@@ -53,6 +53,47 @@ def test_issue_record_cache_round_trip(_temp_cache_dir):
         "org_repo",
         parameters,
         IssueRecord,
+        use_cache=True,
+        ttl_seconds=60,
+    )
+
+    assert loaded == records
+
+
+def test_contributor_activity_record_cache_round_trip(_temp_cache_dir):
+    """Cached contributor activity records should deserialize back correctly."""
+    records = [
+        ContributorActivityRecord(
+            repo="org/repo",
+            activity_type="reviewed_pull_request",
+            actor="alice",
+            occurred_at=datetime(2024, 1, 2, tzinfo=UTC),
+            target_type="pull_request",
+            target_number=10,
+            target_author="bob",
+            detail="APPROVED",
+        )
+    ]
+    parameters = {
+        "owner": "org",
+        "repo": "repo",
+        "lookback_days": 30,
+    }
+
+    cache.save_records_cache(
+        "repo_contributor_activity",
+        "org_repo",
+        parameters,
+        ContributorActivityRecord,
+        records,
+        use_cache=True,
+    )
+
+    loaded = cache.load_records_cache(
+        "repo_contributor_activity",
+        "org_repo",
+        parameters,
+        ContributorActivityRecord,
         use_cache=True,
         ttl_seconds=60,
     )
