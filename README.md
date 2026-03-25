@@ -128,6 +128,22 @@ Run the test suite to ensure everything is working:
 ```bash
 uv run pytest
 ```
+
+### HIP Progression Pilot
+
+Run the repo-scoped HIP progression pipeline for the current pilot target:
+
+```bash
+uv run python -m hiero_analytics.run_hip_progression_for_repo --owner hiero-ledger --repo hiero-sdk-js
+```
+
+Useful options:
+
+```bash
+uv run python -m hiero_analytics.run_hip_progression_for_repo --limit 25 --author-scope committers
+```
+
+The pipeline writes CSV outputs for all HIP tables and markdown tables for the derived feature, evidence, and status outputs under `outputs/hip_progression/<owner>_<repo>/`.
 ---
 
 ## License

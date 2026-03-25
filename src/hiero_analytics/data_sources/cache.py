@@ -14,6 +14,7 @@ from tempfile import NamedTemporaryFile
 from typing import TypeVar
 
 from hiero_analytics.config.paths import OUTPUTS_DIR
+from hiero_analytics.domain.hip_progression_models import ChangedFile, HipArtifact
 
 from .models import (
     ContributorActivityRecord,
@@ -35,6 +36,10 @@ _DATETIME_FIELDS: dict[type[object], tuple[str, ...]] = {
     IssueRecord: ("created_at", "closed_at"),
     PullRequestDifficultyRecord: ("pr_created_at", "pr_merged_at"),
     ContributorActivityRecord: ("occurred_at",),
+    HipArtifact: ("created_at", "updated_at", "closed_at"),
+}
+_NESTED_LIST_FIELDS: dict[type[object], dict[str, type[object]]] = {
+    HipArtifact: {"changed_files": ChangedFile},
 }
 RecordType = TypeVar(
     "RecordType",
@@ -42,6 +47,7 @@ RecordType = TypeVar(
     IssueRecord,
     PullRequestDifficultyRecord,
     ContributorActivityRecord,
+    HipArtifact,
 )
 
 
@@ -126,6 +132,17 @@ def _deserialize_record(  # noqa: UP047
         raw_value = restored.get(field_name)
         if raw_value is not None:
             restored[field_name] = datetime.fromisoformat(str(raw_value))
+
+    nested_fields = _NESTED_LIST_FIELDS.get(record_type, {})
+    for field_name, nested_type in nested_fields.items():
+        raw_items = restored.get(field_name)
+        if not isinstance(raw_items, list):
+            continue
+        restored[field_name] = [
+            nested_type(**item)
+            for item in raw_items
+            if isinstance(item, dict)
+        ]
 
     return record_type(**restored)  # type: ignore[arg-type]
 
