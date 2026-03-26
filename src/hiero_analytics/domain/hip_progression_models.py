@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import PurePosixPath
@@ -55,6 +57,11 @@ CODE_FILE_EXTENSIONS = {
     ".ts",
     ".tsx",
 }
+ARTIFACT_REFERENCE_PATTERNS = (
+    re.compile(r"(?:^|[^\w])#(\d+)\b"),
+    re.compile(r"github\.com/[^/\s]+/[^/\s]+/(?:issues|pull)/(\d+)\b", re.IGNORECASE),
+    re.compile(r"\b[\w.-]+/[\w.-]+#(\d+)\b"),
+)
 
 
 def _path_parts(path: str) -> tuple[str, ...]:
@@ -114,6 +121,18 @@ def author_matches_scope(
     if author_scope == "committers":
         return is_committer_like_author(author_association)
     return True
+
+
+def extract_artifact_reference_numbers(*texts: str) -> list[int]:
+    """Extract referenced local GitHub issue or pull-request numbers from free-form text."""
+    seen: OrderedDict[int, None] = OrderedDict()
+    for text in texts:
+        if not text:
+            continue
+        for pattern in ARTIFACT_REFERENCE_PATTERNS:
+            for match in pattern.finditer(text):
+                seen[int(match.group(1))] = None
+    return list(seen)
 
 
 @dataclass(slots=True)

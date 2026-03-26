@@ -143,7 +143,19 @@ Useful options:
 uv run python -m hiero_analytics.run_hip_progression_for_repo --limit 25 --author-scope committers
 ```
 
+```bash
+uv run python -m hiero_analytics.run_hip_progression_for_repo --train-ratio 0.8
+```
+
 The pipeline writes CSV outputs for all HIP tables and markdown tables for the derived feature, evidence, and status outputs under `outputs/hip_progression/<owner>_<repo>/`.
+
+The HIP progression runner now also creates a manual feedback loop:
+- `pr_evaluation.csv` and `issue_evaluation.csv` for artifact-level review, with direct links, `human_observation`, and correctness/error columns.
+- `repo_evaluation.csv` for repo-level HIP status review, including supporting artifact links and false-negative tracking.
+- `prediction_review_breakdown.csv` with a compact review breakdown for confirmed matches, overcalls, misses, clears, and overall accuracy by scope and split.
+- `evaluation_summary.csv` with review coverage plus accuracy, precision, and recall percentages for `train`, `test`, and `all`.
+
+Manual review columns are preserved across reruns, so you can keep verifying predictions over time without losing prior annotations. Reviewed rows can now also be marked as `is_confirmed_non_match` when the model correctly leaves something unflagged.
 ---
 
 ## License

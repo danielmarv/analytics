@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from hiero_analytics.domain.hip_progression_models import HipArtifact, HipEvidence, HipRepoStatus
+from hiero_analytics.domain.hip_progression_models import (
+    HipArtifact,
+    HipEvidence,
+    HipRepoStatus,
+    extract_artifact_reference_numbers,
+    is_maintainer_like_author,
+)
 
 COMPLETED_COMPLETION_THRESHOLD = 75.0
 COMPLETED_IMPLEMENTATION_THRESHOLD = 60.0
@@ -47,10 +53,80 @@ def _resolve_status(group: list[HipEvidence]) -> str:
     return "not_started"
 
 
-def _resolve_confidence(group: list[HipEvidence], status: str) -> str:
+def _group_artifacts(
+    group: list[HipEvidence],
+    artifact_lookup: dict[tuple[str, int], HipArtifact],
+) -> list[HipArtifact]:
+    return [
+        artifact_lookup[(evidence.repo, evidence.artifact_number)]
+        for evidence in group
+        if (evidence.repo, evidence.artifact_number) in artifact_lookup
+    ]
+
+
+def _has_linked_issue_pull_request_pair(group_artifacts: list[HipArtifact]) -> bool:
+    issue_numbers = {
+        artifact.number
+        for artifact in group_artifacts
+        if artifact.artifact_type == "issue"
+    }
+    pr_numbers = {
+        artifact.number
+        for artifact in group_artifacts
+        if artifact.artifact_type == "pull_request"
+    }
+    if not issue_numbers or not pr_numbers:
+        return False
+
+    for artifact in group_artifacts:
+        linked_numbers = set(
+            extract_artifact_reference_numbers(
+                artifact.title,
+                artifact.body,
+                artifact.comments_text,
+                artifact.commit_messages_text,
+            )
+        )
+        if artifact.artifact_type == "pull_request" and linked_numbers & issue_numbers:
+            return True
+        if artifact.artifact_type == "issue" and linked_numbers & pr_numbers:
+            return True
+    return False
+
+
+def _has_maintainer_like_merged_pull_request(group_artifacts: list[HipArtifact]) -> bool:
+    return any(
+        artifact.artifact_type == "pull_request"
+        and artifact.merged
+        and is_maintainer_like_author(artifact.author_association)
+        for artifact in group_artifacts
+    )
+
+
+def _resolve_confidence(
+    group: list[HipEvidence],
+    status: str,
+    group_artifacts: list[HipArtifact],
+) -> str:
     max_candidate = max(evidence.hip_candidate_score for evidence in group)
     max_implementation = max(evidence.implementation_score for evidence in group)
     max_completion = max(evidence.completion_score for evidence in group)
+    issue_only = all(evidence.artifact_type == "issue" for evidence in group)
+    has_linked_issue_pull_request_pair = _has_linked_issue_pull_request_pair(group_artifacts)
+    has_maintainer_like_merged_pull_request = _has_maintainer_like_merged_pull_request(group_artifacts)
+
+    if (
+        status in {"completed", "in_progress"}
+        and has_linked_issue_pull_request_pair
+        and has_maintainer_like_merged_pull_request
+        and max_implementation >= 50
+    ):
+        return "high"
+
+    if issue_only and max_implementation < 35 and max_completion < 35:
+        if status == "conflicting" and max_candidate >= 80:
+            return "medium"
+        return "low"
 
     if status == "completed" and max_completion >= 85:
         return "high"
@@ -85,7 +161,11 @@ def _select_supporting_artifacts(group: list[HipEvidence]) -> list[int]:
     return list(dict.fromkeys(selected))
 
 
-def _build_rationale(group: list[HipEvidence], status: str) -> list[str]:
+def _build_rationale(
+    group: list[HipEvidence],
+    status: str,
+    group_artifacts: list[HipArtifact],
+) -> list[str]:
     max_candidate = max(evidence.hip_candidate_score for evidence in group)
     max_implementation = max(evidence.implementation_score for evidence in group)
     max_completion = max(evidence.completion_score for evidence in group)
@@ -100,6 +180,11 @@ def _build_rationale(group: list[HipEvidence], status: str) -> list[str]:
         rationale = ["HIP mentions exist, but evidence is too sparse or ambiguous to classify confidently"]
     else:
         rationale = ["no meaningful implementation evidence detected"]
+
+    if _has_linked_issue_pull_request_pair(group_artifacts):
+        rationale.append("linked issue and PR evidence reinforce the same HIP")
+    if _has_maintainer_like_merged_pull_request(group_artifacts):
+        rationale.append("maintainer-like merged PR strengthens confidence")
 
     rationale.extend(
         [
@@ -144,7 +229,8 @@ def aggregate_hip_repo_status(
     repo_statuses: list[HipRepoStatus] = []
     for (repo, hip_id), group in sorted(grouped.items()):
         status = _resolve_status(group)
-        confidence_level = _resolve_confidence(group, status)
+        group_artifacts = _group_artifacts(group, artifact_lookup)
+        confidence_level = _resolve_confidence(group, status, group_artifacts)
         last_evidence_at = None
         for evidence in group:
             artifact = artifact_lookup.get((repo, evidence.artifact_number))
@@ -161,7 +247,7 @@ def aggregate_hip_repo_status(
                 status=status,
                 confidence_level=confidence_level,
                 supporting_artifact_numbers=_select_supporting_artifacts(group),
-                rationale=_build_rationale(group, status),
+                rationale=_build_rationale(group, status, group_artifacts),
                 last_evidence_at=last_evidence_at,
             )
         )

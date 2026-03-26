@@ -7,6 +7,7 @@ from collections import Counter
 from pathlib import Path
 
 from hiero_analytics.analysis.hip_candidate_extraction import extract_hip_candidates
+from hiero_analytics.analysis.hip_evaluation import assign_dataset_splits
 from hiero_analytics.analysis.hip_feature_engineering import engineer_hip_feature_vectors
 from hiero_analytics.analysis.hip_scoring import score_hip_feature_vectors
 from hiero_analytics.analysis.hip_status_aggregation import aggregate_hip_repo_status
@@ -59,6 +60,12 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default=None,
         help="Optional cap on the number of newest artifacts to materialize.",
     )
+    parser.add_argument(
+        "--train-ratio",
+        type=float,
+        default=0.8,
+        help="Chronological fraction of issue and PR history reserved for training review.",
+    )
     return parser
 
 
@@ -75,6 +82,7 @@ def run_pipeline(
     include_prs: bool,
     output_dir: Path,
     limit: int | None = None,
+    train_ratio: float = 0.8,
 ) -> dict[str, object]:
     """Execute the end-to-end HIP progression pipeline."""
     client = GitHubClient()
@@ -92,12 +100,14 @@ def run_pipeline(
     feature_vectors = engineer_hip_feature_vectors(candidates)
     evidence_records = score_hip_feature_vectors(feature_vectors)
     repo_statuses = aggregate_hip_repo_status(evidence_records, artifacts=scoped_artifacts)
+    dataset_splits = assign_dataset_splits(scoped_artifacts, train_ratio=train_ratio)
     exported_paths = export_hip_progression_results(
         output_dir,
         artifacts=scoped_artifacts,
         feature_vectors=feature_vectors,
         evidence_records=evidence_records,
         repo_statuses=repo_statuses,
+        dataset_splits=dataset_splits,
     )
     client.log_usage()
 
@@ -108,6 +118,7 @@ def run_pipeline(
         "feature_vectors": feature_vectors,
         "evidence_records": evidence_records,
         "repo_statuses": repo_statuses,
+        "dataset_splits": dataset_splits,
         "exported_paths": exported_paths,
     }
 
@@ -131,12 +142,15 @@ def main(argv: list[str] | None = None) -> int:
         include_prs=args.include_prs,
         output_dir=output_dir,
         limit=args.limit,
+        train_ratio=args.train_ratio,
     )
 
     repo_statuses = results["repo_statuses"]
     scoped_artifacts = results["scoped_artifacts"]
     candidates = results["candidates"]
+    dataset_splits = results["dataset_splits"]
     status_counts = Counter(repo_status.status for repo_status in repo_statuses)
+    split_counts = Counter(dataset_splits.values())
 
     print(f"HIP progression analysis complete for {args.owner}/{args.repo}")
     print(f"Artifacts fetched: {len(results['artifacts'])}")
@@ -146,6 +160,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Repo statuses produced: {len(repo_statuses)}")
     if status_counts:
         print(f"Status breakdown: {dict(sorted(status_counts.items()))}")
+    if split_counts:
+        print(f"Train/test artifact split: {dict(sorted(split_counts.items()))}")
     print(f"Outputs written to: {output_dir}")
 
     return 0
