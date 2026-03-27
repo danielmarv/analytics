@@ -157,10 +157,10 @@ uv run python -m hiero_analytics.run_hip_progression_for_repo --limit 25 --autho
 uv run python -m hiero_analytics.run_hip_progression_batch --repo hiero-sdk-js --repo hiero-sdk-python --limit 25
 ```
 
-Use the smaller review bundle by default, or opt into the full audit bundle when needed:
+Use the smaller end-user bundle by default, or opt into the full debug bundle when needed:
 
 ```bash
-uv run python -m hiero_analytics.run_hip_progression_batch --evaluate --latest-hip-limit 10 --checklist-limit 10 --export-profile review
+uv run python -m hiero_analytics.run_hip_progression_batch --evaluate --latest-hip-limit 10 --export-profile review
 ```
 
 ```bash
@@ -171,20 +171,28 @@ The default scope now keeps the newest 10 official HIPs, ordered descending by H
 
 The repo runner writes outputs under `outputs/hip_progression/<owner>_<repo>/`. The batch runner writes outputs under `outputs/hip_progression/batch/`.
 
-Primary reviewer-facing outputs:
-- `hip_repo_summary.csv` and `hip_repo_summary.md` with one row per `repo + hip_id`, including RAG label, status, confidence, evidence count, top artifacts, reviewer notes, reasons, and uncertainties.
-- `hip_checklist.md` for a fast checklist-style review pass limited to the newest 10 HIPs per repo by default.
-- `hip_high_confidence_completion.csv` and `hip_high_confidence_completion.md` to isolate only high-confidence completed HIPs by repo.
-- `hip_evidence_detail.csv` and `hip_evidence_detail.md` for auditor-focused evidence inspection.
-- `manual_accuracy_review.csv` with direct PR and issue links, `human_observation`, `is_prediction_correct`, and missed/overcalled review flags.
-- `manual_accuracy_report.md` with one-page PR, issue, and repo review sections plus current accuracy breakdown.
-- `recent_hip_status_counts.csv` and `recent_hip_status_counts.png` for a stacked view of the newest HIPs by repo-count status when multiple repos are in scope.
-- `sdk_completion_counts.csv` and `sdk_completion_counts.png` for high-confidence completion by SDK when multiple repos are in scope, with non-completed work grouped separately.
-- `benchmark_report.md` and `benchmark_report.json` for reproducible benchmark evaluation when `--evaluate` is enabled.
+Top-level repo outputs now stay small and stakeholder-facing:
+- `repo_hip_status.csv` with one row per HIP in scope for the repo, sorted by HIP id descending.
+- `repo_hip_issues.csv` with issue URL, HIP likelihood score, and development status for HIP-linked issues.
+- `repo_hip_status.png` as a stacked development-status view for the scoped HIPs.
 
-Extra internal audit tables such as `artifact_features`, `hip_evidence`, and manual review sheets are only written when `--export-profile full` is used.
+Top-level batch outputs focus on the SDK group and org rollup:
+- `sdk_hip_status_matrix.csv` with one row per HIP and one status flag column per SDK.
+- `sdk_hip_rollup.csv` with raised-counts, in-progress counts, completed counts, and completion rate across the selected SDKs.
+- `sdk_hip_development_status.png` with stacked `not_raised`, `issue_raised`, `in_progress`, and `completed` counts by HIP.
+- `sdk_hip_completion_rate.png` with HIP completion rate across the selected SDKs.
+- `approved_hip_org_rollup.csv` with approved HIP counts across the selected repos plus completed repo lists.
+- `approved_hip_org_rollup.png` with the approved-HIP stacked rollup.
 
-Reviewer notes and manual review columns are preserved across reruns.
+Accuracy and debug material now lives under `evaluation/`:
+- `artifact_predictions.csv`
+- `repo_predictions.csv`
+- `manual_accuracy_review.csv`
+- `review_breakdown.csv`
+- `accuracy_summary.csv`
+- `benchmark_metrics.csv`, `benchmark_confusion_matrix.csv`, and `benchmark_per_status.csv` when `--evaluate` is enabled
+
+Deep diagnostics such as `artifacts.csv`, `artifact_features.csv`, `artifact_assessments.csv`, and `evidence_detail.csv` are only written under `debug/` when `--export-profile full` is used.
 
 The scoring remains conservative. Stronger evidence now comes from direct HIP references in pull requests, implementation language such as `feat`, `adds`, or `introduces`, substantial source deltas, linked maintainer-owned artifacts, and implementation shapes that touch both source and tests. Negative contexts such as `unblock`, `follow-up`, `prep`, `cleanup only`, and `reverted` reduce confidence instead of inflating it.
 

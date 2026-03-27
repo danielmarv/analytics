@@ -96,12 +96,14 @@ def main(argv: list[str] | None = None) -> int:
     export_paths = export_hip_progression_results(
         args.output_dir,
         artifacts=result.artifacts,
+        catalog_entries=result.catalog_entries,
         feature_vectors=result.feature_vectors,
         artifact_assessments=result.artifact_assessments,
         repo_statuses=result.repo_statuses,
         dataset_splits=assign_dataset_splits(result.artifacts, train_ratio=args.train_ratio),
         benchmark_exports=benchmark_exports,
         export_profile=args.export_profile,
+        export_scope="batch",
         checklist_latest_limit=args.checklist_limit,
     )
     client.log_usage()
@@ -118,7 +120,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.evaluate:
         print(f"Benchmark evaluation exported from: {args.benchmark_dir}")
     print(f"Outputs written to: {args.output_dir}")
-    print(f"Primary summary: {export_paths['hip_repo_summary']}")
+    print(f"Primary summary: {export_paths['sdk_hip_status_matrix']}")
     return 0
 
 

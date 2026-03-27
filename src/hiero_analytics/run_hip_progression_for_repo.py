@@ -127,11 +127,13 @@ def run_pipeline(
     exported_paths = export_hip_progression_results(
         output_dir,
         artifacts=scoped_artifacts,
+        catalog_entries=result.catalog_entries,
         feature_vectors=result.feature_vectors,
         artifact_assessments=result.artifact_assessments,
         repo_statuses=result.repo_statuses,
         dataset_splits=dataset_splits,
         export_profile=export_profile,
+        export_scope="repo",
         checklist_latest_limit=checklist_limit,
     )
     client.log_usage()

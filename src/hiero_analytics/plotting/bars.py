@@ -67,6 +67,7 @@ def _annotate_bar_totals(
     values: pd.Series,
     *,
     horizontal: bool,
+    annotate_zero: bool = False,
 ) -> None:
     """Add clean total labels to the ends of bars."""
     if values.empty:
@@ -76,7 +77,7 @@ def _annotate_bar_totals(
     padding = _compute_annotation_padding(max_value)
 
     for patch, value in zip(patches, values, strict=True):
-        if value <= 0:
+        if value < 0 or (value == 0 and not annotate_zero):
             continue
 
         if horizontal:
@@ -182,7 +183,7 @@ def plot_bar(
     )
     patches = cast(list[Rectangle], list(bars.patches))
     _round_bar_patches(ax, patches)
-    _annotate_bar_totals(ax, patches, df[y_col], horizontal=horizontal)
+    _annotate_bar_totals(ax, patches, df[y_col], horizontal=horizontal, annotate_zero=True)
 
     if horizontal:
         ax.invert_yaxis()

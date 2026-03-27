@@ -42,10 +42,10 @@ Batch plus benchmark evaluation:
 uv run python -m hiero_analytics.run_hip_progression_batch --evaluate
 ```
 
-Lean reviewer bundle with the latest 10 HIPs in the checklist:
+Lean end-user bundle:
 
 ```bash
-uv run python -m hiero_analytics.run_hip_progression_batch --evaluate --latest-hip-limit 10 --export-profile review --checklist-limit 10
+uv run python -m hiero_analytics.run_hip_progression_batch --evaluate --latest-hip-limit 10 --export-profile review
 ```
 
 Full audit bundle when you need every intermediate table:
@@ -60,29 +60,33 @@ Per-repo outputs land in `outputs/hip_progression/<owner>_<repo>/`.
 
 Batch outputs land in `outputs/hip_progression/batch/`.
 
-The fastest files to review are:
+Default `review` exports now separate end-user content from evaluation/debug content.
 
-- `hip_repo_summary.md`
-- `hip_checklist.md` limited to the newest 10 HIPs per repo by default
-- `hip_evidence_detail.md`
-- `benchmark_report.md`
+Top-level repo outputs:
 
-Default `review` exports keep the folder small:
+- `repo_hip_status.csv`
+- `repo_hip_issues.csv`
+- `repo_hip_status.png`
 
-- `hip_repo_summary.csv`
-- `hip_repo_summary.md`
-- `hip_checklist.md`
-- `hip_high_confidence_completion.csv`
-- `hip_high_confidence_completion.md`
-- `hip_evidence_detail.csv`
-- `hip_evidence_detail.md`
-- `recent_hip_status_counts.csv` and `recent_hip_status_counts.png` when multiple repos are in scope
-- `sdk_completion_counts.csv` and `sdk_completion_counts.png` when multiple repos are in scope
+Top-level batch outputs:
+
+- `sdk_hip_status_matrix.csv`
+- `sdk_hip_rollup.csv`
+- `sdk_hip_development_status.png`
+- `sdk_hip_completion_rate.png`
+- `approved_hip_org_rollup.csv`
+- `approved_hip_org_rollup.png`
+
+Accuracy-focused CSVs land under `evaluation/`:
+
+- `artifact_predictions.csv`
+- `repo_predictions.csv`
 - `manual_accuracy_review.csv`
-- `manual_accuracy_report.md`
-- `benchmark_report.md` and `benchmark_report.json` when evaluation is enabled
+- `review_breakdown.csv`
+- `accuracy_summary.csv`
+- `benchmark_metrics.csv`, `benchmark_confusion_matrix.csv`, and `benchmark_per_status.csv` when evaluation is enabled
 
-Use `--export-profile full` when you also want manual-review sheets, artifact feature tables, artifact-level evidence summaries, and other audit-oriented intermediates.
+Use `--export-profile full` when you also want `debug/artifacts.csv`, `debug/artifact_features.csv`, `debug/artifact_assessments.csv`, and `debug/evidence_detail.csv`.
 
 ## Scope control
 
@@ -90,16 +94,17 @@ The pipeline no longer defaults to the full HIP catalog in reviewer-facing runs.
 
 - `--latest-hip-limit 10` keeps the newest 10 official HIPs in scope
 - `--latest-hip-limit 20` widens the scope to the newest 20 HIPs
-- repo summaries and checklists are emitted in descending HIP-number order
+- repo, SDK, and approved-HIP rollups are emitted in descending HIP-number order
 
 This keeps the analysis focused on recent governance work and avoids overcrowding the output with old HIPs that may not be relevant to the SDK review.
 
 ## Feedback cycle
 
-The primary manual-review loop now lives in two files:
+The primary manual-review loop now lives under `evaluation/`:
 
 - `manual_accuracy_review.csv`: editable review queue with PR/issue links, linked-artifact URLs, `human_observation`, `is_prediction_correct`, `is_overcalled_match`, and `is_missed_match`
-- `manual_accuracy_report.md`: one-page summary that separates pull requests, issues, and repo-level calls while surfacing current reviewed accuracy
+- `accuracy_summary.csv`: current accuracy and review coverage by scope
+- `review_breakdown.csv`: misses, overcalls, confirmed matches, and non-match checks by scope and split
 
 Artifacts with no HIP prediction are still included in the manual review queue with `prediction_present = false`, so reviewers can explicitly mark missed HIP matches instead of only reviewing predicted rows.
 
@@ -138,6 +143,8 @@ The benchmark reports:
 - macro precision
 - macro recall
 - per-status confusion matrix
+- overcall rate
+- undercall rate
 - overcall rate
 - undercall rate
 
