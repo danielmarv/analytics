@@ -1,0 +1,32 @@
+[
+  {
+    "repo": "hiero-ledger/hiero-sdk-js",
+    "hip_id": "HIP-1234",
+    "expected_status": "completed",
+    "rationale": "Merged implementation, tests, changelog, and linked issue closure."
+  },
+  {
+    "repo": "hiero-ledger/hiero-sdk-js",
+    "hip_id": "HIP-1235",
+    "expected_status": "in_progress",
+    "rationale": "Implementation exists, but completion corroboration is missing."
+  },
+  {
+    "repo": "hiero-ledger/hiero-sdk-js",
+    "hip_id": "HIP-1236",
+    "expected_status": "not_started",
+    "rationale": "Planning evidence only."
+  },
+  {
+    "repo": "hiero-ledger/hiero-sdk-js",
+    "hip_id": "HIP-1237",
+    "expected_status": "unknown",
+    "rationale": "Only bot-style evidence exists."
+  },
+  {
+    "repo": "hiero-ledger/hiero-sdk-js",
+    "hip_id": "HIP-1238",
+    "expected_status": "conflicting",
+    "rationale": "Implementation and revert/follow-up evidence conflict."
+  }
+]

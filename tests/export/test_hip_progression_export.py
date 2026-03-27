@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import pandas as pd
 
+from hiero_analytics.analysis.hip_evaluation import assign_dataset_splits
 from hiero_analytics.analysis.hip_feature_engineering import engineer_hip_feature_vector
 from hiero_analytics.analysis.hip_scoring import score_hip_feature_vector
 from hiero_analytics.analysis.hip_status_aggregation import aggregate_hip_repo_status
 from hiero_analytics.export.hip_progression_export import export_hip_progression_results
 from hiero_analytics.export.save import save_markdown_table
-from tests.hip_progression_fixtures import make_candidate, make_pull_request_artifact
+from tests.hip_progression_fixtures import make_candidate, make_catalog_entries, make_pull_request_artifact
 
 
 def test_save_markdown_table_escapes_pipes_and_newlines(tmp_path):
@@ -24,65 +25,175 @@ def test_save_markdown_table_escapes_pipes_and_newlines(tmp_path):
     assert "line one<br>line \\| two" in contents
 
 
-def test_export_hip_progression_results_writes_markdown_tables(tmp_path):
-    """HIP progression export should emit markdown tables for derived outputs, not raw artifacts."""
+def test_export_hip_progression_results_writes_new_summary_and_checklist_outputs(tmp_path):
+    """Default HIP progression export should emit the lean single-repo reviewer bundle."""
     artifact = make_pull_request_artifact()
     candidate = make_candidate(artifact)
     feature_vector = engineer_hip_feature_vector(candidate)
-    evidence = score_hip_feature_vector(feature_vector)
-    repo_status = aggregate_hip_repo_status([evidence], artifacts=[artifact])[0]
+    assessment = score_hip_feature_vector(feature_vector)
+    repo_status = aggregate_hip_repo_status(
+        [assessment],
+        artifacts=[artifact],
+        catalog_entries=make_catalog_entries("HIP-1234"),
+        repos=["hiero-ledger/hiero-sdk-js"],
+    )[0]
 
     paths = export_hip_progression_results(
         tmp_path,
         artifacts=[artifact],
         feature_vectors=[feature_vector],
-        evidence_records=[evidence],
+        artifact_assessments=[assessment],
         repo_statuses=[repo_status],
+        dataset_splits=assign_dataset_splits([artifact]),
     )
 
-    assert "artifacts_markdown" not in paths
-    assert not (tmp_path / "artifacts.md").exists()
-    assert paths["artifact_features_markdown"].exists()
-    assert paths["hip_evidence_markdown"].exists()
-    assert paths["hip_repo_status_markdown"].exists()
-    assert paths["pr_evaluation"].exists()
-    assert paths["pr_evaluation_markdown"].exists()
-    assert paths["repo_evaluation"].exists()
-    assert paths["prediction_review_breakdown"].exists()
-    assert paths["prediction_review_breakdown_markdown"].exists()
-    assert paths["evaluation_summary"].exists()
+    assert paths["hip_evidence_detail_markdown"].exists()
+    assert paths["hip_repo_summary_markdown"].exists()
+    assert paths["hip_checklist_markdown"].exists()
+    assert paths["hip_high_confidence_completion"].exists()
+    assert paths["manual_accuracy_review"].exists()
+    assert paths["manual_accuracy_report"].exists()
+    assert "recent_hip_status_counts" not in paths
+    assert "recent_hip_status_chart" not in paths
+    assert "sdk_completion_counts" not in paths
+    assert "sdk_completion_chart" not in paths
+    assert "artifact_features_markdown" not in paths
+    assert "hip_evidence_markdown" not in paths
+    assert "pr_evaluation" not in paths
 
-    feature_markdown = paths["artifact_features_markdown"].read_text(encoding="utf-8")
-    evidence_markdown = paths["hip_evidence_markdown"].read_text(encoding="utf-8")
-    status_markdown = paths["hip_repo_status_markdown"].read_text(encoding="utf-8")
-    pr_evaluation_markdown = paths["pr_evaluation_markdown"].read_text(encoding="utf-8")
-    review_breakdown_markdown = paths["prediction_review_breakdown_markdown"].read_text(encoding="utf-8")
-    summary_markdown = paths["evaluation_summary_markdown"].read_text(encoding="utf-8")
+    summary_markdown = paths["hip_repo_summary_markdown"].read_text(encoding="utf-8")
+    checklist_markdown = paths["hip_checklist_markdown"].read_text(encoding="utf-8")
+    accuracy_report = paths["manual_accuracy_report"].read_text(encoding="utf-8")
 
-    assert "| repo | artifact_type | artifact_number |" in feature_markdown
-    assert "| repo | hip_id | artifact_type |" in evidence_markdown
-    assert "HIP-1234" in evidence_markdown
-    assert "| repo | hip_id | status |" in status_markdown
-    assert "artifact_link" in pr_evaluation_markdown
-    assert "confirmed_non_match_rows" in review_breakdown_markdown
-    assert "accuracy_percent" in summary_markdown
+    assert "| repo | hip_id | rag_label | status |" in summary_markdown
+    assert "confidence_score" in summary_markdown
+    assert "## hiero-ledger/hiero-sdk-js" in checklist_markdown
+    assert "HIP-1234" in checklist_markdown
+    assert "## Pull Request Review Queue" in accuracy_report
+    assert "is_prediction_correct" in accuracy_report
 
 
-def test_export_hip_progression_results_preserves_manual_feedback_and_builds_review_breakdown(tmp_path):
-    """Existing manual review columns should survive reruns and feed the review breakdown metrics."""
+def test_export_hip_progression_results_writes_cross_repo_charts_for_multi_repo_batches(tmp_path):
+    """Cross-repo chart outputs should appear when more than one repo is in scope."""
+    js_artifact = make_pull_request_artifact(repo="hiero-ledger/hiero-sdk-js", number=101)
+    java_artifact = make_pull_request_artifact(repo="hiero-ledger/hiero-sdk-java", number=202)
+    js_feature_vector = engineer_hip_feature_vector(make_candidate(js_artifact))
+    java_feature_vector = engineer_hip_feature_vector(make_candidate(java_artifact))
+    js_assessment = score_hip_feature_vector(js_feature_vector)
+    java_assessment = score_hip_feature_vector(java_feature_vector)
+    repo_statuses = aggregate_hip_repo_status(
+        [js_assessment, java_assessment],
+        artifacts=[js_artifact, java_artifact],
+        catalog_entries=make_catalog_entries("HIP-1234"),
+        repos=["hiero-ledger/hiero-sdk-js", "hiero-ledger/hiero-sdk-java"],
+    )
+
+    paths = export_hip_progression_results(
+        tmp_path,
+        artifacts=[js_artifact, java_artifact],
+        feature_vectors=[js_feature_vector, java_feature_vector],
+        artifact_assessments=[js_assessment, java_assessment],
+        repo_statuses=repo_statuses,
+        dataset_splits=assign_dataset_splits([js_artifact, java_artifact]),
+    )
+
+    assert paths["recent_hip_status_counts"].exists()
+    assert paths["recent_hip_status_chart"].exists()
+    assert paths["sdk_completion_counts"].exists()
+    assert paths["sdk_completion_chart"].exists()
+
+
+def test_export_hip_progression_results_limits_checklist_to_latest_ten_hips(tmp_path):
+    """Checklist output should focus on the newest HIPs only."""
+    hip_ids = [f"HIP-{number}" for number in range(1000, 1012)]
+    repo_statuses = aggregate_hip_repo_status(
+        [],
+        artifacts=[],
+        catalog_entries=make_catalog_entries(*hip_ids),
+        repos=["hiero-ledger/hiero-sdk-js"],
+    )
+
+    paths = export_hip_progression_results(
+        tmp_path,
+        artifacts=[],
+        feature_vectors=[],
+        artifact_assessments=[],
+        repo_statuses=repo_statuses,
+        checklist_latest_limit=10,
+    )
+
+    checklist_markdown = paths["hip_checklist_markdown"].read_text(encoding="utf-8")
+    assert "HIP-1011" in checklist_markdown
+    assert "HIP-1010" in checklist_markdown
+    assert "HIP-1002" in checklist_markdown
+    assert "HIP-1001" not in checklist_markdown
+    assert "HIP-1000" not in checklist_markdown
+
+
+def test_export_hip_progression_results_drops_summary_rows_outside_current_scope(tmp_path):
+    """Scoped reruns should not keep stale summary rows from older, wider exports."""
+    wide_scope_statuses = aggregate_hip_repo_status(
+        [],
+        artifacts=[],
+        catalog_entries=make_catalog_entries(*[f"HIP-{number}" for number in range(1000, 1012)]),
+        repos=["hiero-ledger/hiero-sdk-js"],
+    )
+    narrow_scope_statuses = aggregate_hip_repo_status(
+        [],
+        artifacts=[],
+        catalog_entries=make_catalog_entries(*[f"HIP-{number}" for number in range(1002, 1012)]),
+        repos=["hiero-ledger/hiero-sdk-js"],
+    )
+
+    first_paths = export_hip_progression_results(
+        tmp_path,
+        artifacts=[],
+        feature_vectors=[],
+        artifact_assessments=[],
+        repo_statuses=wide_scope_statuses,
+    )
+    first_summary_df = pd.read_csv(first_paths["hip_repo_summary"], keep_default_na=False)
+    second_paths = export_hip_progression_results(
+        tmp_path,
+        artifacts=[],
+        feature_vectors=[],
+        artifact_assessments=[],
+        repo_statuses=narrow_scope_statuses,
+    )
+
+    second_summary_df = pd.read_csv(second_paths["hip_repo_summary"], keep_default_na=False)
+
+    assert len(first_summary_df) == 12
+    assert len(second_summary_df) == 10
+    assert "HIP-1001" not in set(second_summary_df["hip_id"])
+    assert "HIP-1000" not in set(second_summary_df["hip_id"])
+
+
+def test_export_hip_progression_results_preserves_reviewer_notes_and_manual_feedback(tmp_path):
+    """Editable reviewer notes and manual review columns should survive reruns."""
     artifact = make_pull_request_artifact()
     candidate = make_candidate(artifact)
     feature_vector = engineer_hip_feature_vector(candidate)
-    evidence = score_hip_feature_vector(feature_vector)
-    repo_status = aggregate_hip_repo_status([evidence], artifacts=[artifact])[0]
+    assessment = score_hip_feature_vector(feature_vector)
+    repo_status = aggregate_hip_repo_status(
+        [assessment],
+        artifacts=[artifact],
+        catalog_entries=make_catalog_entries("HIP-1234"),
+        repos=["hiero-ledger/hiero-sdk-js"],
+    )[0]
 
     first_paths = export_hip_progression_results(
         tmp_path,
         artifacts=[artifact],
         feature_vectors=[feature_vector],
-        evidence_records=[evidence],
+        artifact_assessments=[assessment],
         repo_statuses=[repo_status],
+        export_profile="full",
     )
+
+    summary_df = pd.read_csv(first_paths["hip_repo_summary"], keep_default_na=False)
+    summary_df.loc[0, "reviewer_notes"] = "Needs maintainer validation."
+    summary_df.to_csv(first_paths["hip_repo_summary"], index=False)
 
     pr_eval_df = pd.read_csv(first_paths["pr_evaluation"], keep_default_na=False)
     pr_eval_df.loc[0, "human_observation"] = "Confirmed by manual review."
@@ -90,129 +201,25 @@ def test_export_hip_progression_results_preserves_manual_feedback_and_builds_rev
     pr_eval_df.loc[0, "is_confirmed_match"] = "true"
     pr_eval_df.to_csv(first_paths["pr_evaluation"], index=False)
 
-    issue_eval_df = pd.DataFrame(
-        [
-            {
-                "prediction_present": False,
-                "dataset_split": "test",
-                "repo": "hiero-ledger/hiero-sdk-js",
-                "artifact_type": "issue",
-                "artifact_number": 909,
-                "artifact_title": "Docs issue with no HIP relation",
-                "artifact_url": "https://github.com/hiero-ledger/hiero-sdk-js/issues/909",
-                "artifact_link": "[Issue #909](https://github.com/hiero-ledger/hiero-sdk-js/issues/909)",
-                "hip_id": "",
-                "extraction_source": "",
-                "text_match_reason": "",
-                "predicted_hip_candidate_score": "",
-                "predicted_implementation_score": "",
-                "predicted_completion_score": "",
-                "predicted_confidence_level": "",
-                "author_association": "NONE",
-                "merged": False,
-                "linked_issue_numbers": "",
-                "linked_issue_urls": "",
-                "linked_pr_numbers": "",
-                "linked_pr_urls": "",
-                "human_expected_outcome": "no_hip",
-                "human_observation": "Reviewed and confirmed unrelated to any HIP.",
-                "is_prediction_correct": "true",
-                "is_confirmed_match": "false",
-                "is_overcalled_match": "false",
-                "is_missed_match": "false",
-                "is_confirmed_non_match": "true",
-            }
-        ]
-    )
-    issue_eval_df.to_csv(first_paths["issue_evaluation"], index=False)
-
-    repo_eval_df = pd.read_csv(first_paths["repo_evaluation"], keep_default_na=False)
-    repo_eval_df.loc[0, "human_observation"] = "Predicted HIP is valid."
-    repo_eval_df.loc[0, "is_confirmed_match"] = "true"
-    repo_eval_df.loc[0, "is_prediction_correct"] = "true"
-    repo_eval_df = pd.concat(
-        [
-            repo_eval_df,
-            pd.DataFrame(
-                [
-                    {
-                        "prediction_present": False,
-                        "dataset_split": "test",
-                        "repo": "hiero-ledger/hiero-sdk-js",
-                        "hip_id": "HIP-9999",
-                        "predicted_status": "",
-                        "predicted_confidence_level": "",
-                        "supporting_artifact_numbers": "",
-                        "supporting_artifact_urls": "",
-                        "supporting_artifact_links": "",
-                        "supporting_issue_links": "",
-                        "supporting_pr_links": "",
-                        "has_supporting_issue": "",
-                        "has_supporting_pull_request": "",
-                        "has_merged_pull_request": "",
-                        "has_maintainer_like_pull_request": "",
-                        "has_linked_issue_pull_request_pair": "",
-                        "last_evidence_at": "",
-                        "rationale": "",
-                        "human_expected_outcome": "completed",
-                        "human_observation": "Model missed this HIP completely.",
-                        "is_prediction_correct": "false",
-                        "is_confirmed_match": "false",
-                        "is_overcalled_match": "false",
-                        "is_missed_match": "true",
-                        "is_confirmed_non_match": "false",
-                    }
-                ]
-            ),
-        ],
-        ignore_index=True,
-    )
-    repo_eval_df.to_csv(first_paths["repo_evaluation"], index=False)
-
     second_paths = export_hip_progression_results(
         tmp_path,
         artifacts=[artifact],
         feature_vectors=[feature_vector],
-        evidence_records=[evidence],
+        artifact_assessments=[assessment],
         repo_statuses=[repo_status],
+        export_profile="full",
     )
 
+    rerun_summary_df = pd.read_csv(second_paths["hip_repo_summary"], keep_default_na=False)
     rerun_pr_eval_df = pd.read_csv(second_paths["pr_evaluation"], keep_default_na=False)
-    rerun_issue_eval_df = pd.read_csv(second_paths["issue_evaluation"], keep_default_na=False)
-    rerun_repo_eval_df = pd.read_csv(second_paths["repo_evaluation"], keep_default_na=False)
     review_breakdown_df = pd.read_csv(second_paths["prediction_review_breakdown"], keep_default_na=False)
-    summary_df = pd.read_csv(second_paths["evaluation_summary"], keep_default_na=False)
 
+    assert rerun_summary_df.loc[0, "reviewer_notes"] == "Needs maintainer validation."
     assert rerun_pr_eval_df.loc[0, "human_observation"] == "Confirmed by manual review."
-    assert rerun_pr_eval_df.loc[0, "is_prediction_correct"] in {True, "True", "true"}
     assert rerun_pr_eval_df.loc[0, "is_confirmed_match"] in {True, "True", "true"}
-    assert rerun_issue_eval_df.loc[0, "is_confirmed_non_match"] in {True, "True", "true"}
 
-    false_negative_row = rerun_repo_eval_df.loc[rerun_repo_eval_df["hip_id"] == "HIP-9999"].iloc[0]
-    assert false_negative_row["prediction_present"] in {False, "False", "false"}
-    assert false_negative_row["is_missed_match"] == "true"
-
-    issue_all_breakdown = review_breakdown_df[
-        (review_breakdown_df["scope"] == "issue")
+    pr_all_breakdown = review_breakdown_df[
+        (review_breakdown_df["scope"] == "pull_request")
         & (review_breakdown_df["dataset_split"] == "all")
     ].iloc[0]
-    assert issue_all_breakdown["confirmed_non_match_rows"] == 1
-    assert float(issue_all_breakdown["accuracy_percent"]) == 100.0
-    assert float(issue_all_breakdown["non_match_accuracy_percent"]) == 100.0
-
-    repo_all_breakdown = review_breakdown_df[
-        (review_breakdown_df["scope"] == "repo")
-        & (review_breakdown_df["dataset_split"] == "all")
-    ].iloc[0]
-    assert repo_all_breakdown["confirmed_match_rows"] == 1
-    assert repo_all_breakdown["missed_match_rows"] == 1
-    assert float(repo_all_breakdown["accuracy_percent"]) == 50.0
-    assert float(repo_all_breakdown["match_quality_percent"]) == 100.0
-    assert float(repo_all_breakdown["match_coverage_percent"]) == 50.0
-    assert float(repo_all_breakdown["balance_score_percent"]) == 66.67
-
-    repo_test_summary = summary_df[
-        (summary_df["scope"] == "repo")
-        & (summary_df["dataset_split"] == "test")
-    ].iloc[0]
-    assert repo_test_summary["missed_match_rows"] == 1
+    assert pr_all_breakdown["confirmed_match_rows"] == 1

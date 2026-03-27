@@ -129,12 +129,22 @@ Run the test suite to ensure everything is working:
 uv run pytest
 ```
 
-### HIP Progression Pilot
+### HIP Progression
 
-Run the repo-scoped HIP progression pipeline for the current pilot target:
+The HIP progression pipeline now analyzes the official Hiero Improvement Proposal catalog against SDK repositories with deterministic, evidence-tiered inference.
+
+`High confidence` is intentionally rare. A repo-level `completed` call requires strong implementation evidence, test backing, merged state, and corroborating completion evidence such as a closed linked issue or changelog/docs update. Weak mentions, bot noise, docs-only changes, and follow-up or revert language are downweighted or penalized.
+
+Run the repo-scoped pipeline:
 
 ```bash
 uv run python -m hiero_analytics.run_hip_progression_for_repo --owner hiero-ledger --repo hiero-sdk-js
+```
+
+Run the default SDK batch pipeline and benchmark evaluation:
+
+```bash
+uv run python -m hiero_analytics.run_hip_progression_batch --evaluate
 ```
 
 Useful options:
@@ -144,18 +154,43 @@ uv run python -m hiero_analytics.run_hip_progression_for_repo --limit 25 --autho
 ```
 
 ```bash
-uv run python -m hiero_analytics.run_hip_progression_for_repo --train-ratio 0.8
+uv run python -m hiero_analytics.run_hip_progression_batch --repo hiero-sdk-js --repo hiero-sdk-python --limit 25
 ```
 
-The pipeline writes CSV outputs for all HIP tables and markdown tables for the derived feature, evidence, and status outputs under `outputs/hip_progression/<owner>_<repo>/`.
+Use the smaller review bundle by default, or opt into the full audit bundle when needed:
 
-The HIP progression runner now also creates a manual feedback loop:
-- `pr_evaluation.csv` and `issue_evaluation.csv` for artifact-level review, with direct links, `human_observation`, and correctness/error columns.
-- `repo_evaluation.csv` for repo-level HIP status review, including supporting artifact links and false-negative tracking.
-- `prediction_review_breakdown.csv` with a compact review breakdown for confirmed matches, overcalls, misses, clears, and overall accuracy by scope and split.
-- `evaluation_summary.csv` with review coverage plus accuracy, precision, and recall percentages for `train`, `test`, and `all`.
+```bash
+uv run python -m hiero_analytics.run_hip_progression_batch --evaluate --latest-hip-limit 10 --checklist-limit 10 --export-profile review
+```
 
-Manual review columns are preserved across reruns, so you can keep verifying predictions over time without losing prior annotations. Reviewed rows can now also be marked as `is_confirmed_non_match` when the model correctly leaves something unflagged.
+```bash
+uv run python -m hiero_analytics.run_hip_progression_batch --evaluate --latest-hip-limit 20 --export-profile full
+```
+
+The default scope now keeps the newest 10 official HIPs, ordered descending by HIP number, so reviewers are not overwhelmed by the full historical catalog. Increase `--latest-hip-limit` when you want a wider slice such as 20.
+
+The repo runner writes outputs under `outputs/hip_progression/<owner>_<repo>/`. The batch runner writes outputs under `outputs/hip_progression/batch/`.
+
+Primary reviewer-facing outputs:
+- `hip_repo_summary.csv` and `hip_repo_summary.md` with one row per `repo + hip_id`, including RAG label, status, confidence, evidence count, top artifacts, reviewer notes, reasons, and uncertainties.
+- `hip_checklist.md` for a fast checklist-style review pass limited to the newest 10 HIPs per repo by default.
+- `hip_high_confidence_completion.csv` and `hip_high_confidence_completion.md` to isolate only high-confidence completed HIPs by repo.
+- `hip_evidence_detail.csv` and `hip_evidence_detail.md` for auditor-focused evidence inspection.
+- `manual_accuracy_review.csv` with direct PR and issue links, `human_observation`, `is_prediction_correct`, and missed/overcalled review flags.
+- `manual_accuracy_report.md` with one-page PR, issue, and repo review sections plus current accuracy breakdown.
+- `recent_hip_status_counts.csv` and `recent_hip_status_counts.png` for a stacked view of the newest HIPs by repo-count status when multiple repos are in scope.
+- `sdk_completion_counts.csv` and `sdk_completion_counts.png` for high-confidence completion by SDK when multiple repos are in scope, with non-completed work grouped separately.
+- `benchmark_report.md` and `benchmark_report.json` for reproducible benchmark evaluation when `--evaluate` is enabled.
+
+Extra internal audit tables such as `artifact_features`, `hip_evidence`, and manual review sheets are only written when `--export-profile full` is used.
+
+Reviewer notes and manual review columns are preserved across reruns.
+
+The scoring remains conservative. Stronger evidence now comes from direct HIP references in pull requests, implementation language such as `feat`, `adds`, or `introduces`, substantial source deltas, linked maintainer-owned artifacts, and implementation shapes that touch both source and tests. Negative contexts such as `unblock`, `follow-up`, `prep`, `cleanup only`, and `reverted` reduce confidence instead of inflating it.
+
+Benchmark splits use a chronological 80/20 train-test partition separately for issues and pull requests so the newest slice stays untouched for later validation.
+
+For status semantics, evidence tiers, evaluation details, and example output locations, see [docs/hip_progression.md](docs/hip_progression.md).
 ---
 
 ## License

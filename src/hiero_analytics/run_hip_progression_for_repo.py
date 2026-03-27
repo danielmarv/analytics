@@ -6,14 +6,13 @@ import argparse
 from collections import Counter
 from pathlib import Path
 
-from hiero_analytics.analysis.hip_candidate_extraction import extract_hip_candidates
 from hiero_analytics.analysis.hip_evaluation import assign_dataset_splits
-from hiero_analytics.analysis.hip_feature_engineering import engineer_hip_feature_vectors
-from hiero_analytics.analysis.hip_scoring import score_hip_feature_vectors
-from hiero_analytics.analysis.hip_status_aggregation import aggregate_hip_repo_status
+from hiero_analytics.analysis.hip_progression_pipeline import run_hip_progression_pipeline
+from hiero_analytics.config.hip_progression import DEFAULT_HIP_PROGRESSION_CONFIG
 from hiero_analytics.config.logging import setup_logging
 from hiero_analytics.config.paths import OUTPUTS_DIR
 from hiero_analytics.data_sources.github_client import GitHubClient
+from hiero_analytics.data_sources.github_hip_catalog import fetch_official_hip_catalog
 from hiero_analytics.data_sources.github_hip_loader import (
     fetch_repo_hip_artifacts,
     filter_hip_artifacts_by_author_scope,
@@ -52,7 +51,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
         "--output-dir",
         type=Path,
         default=None,
-        help="Directory where HIP progression CSV outputs should be written.",
+        help="Directory where HIP progression outputs should be written.",
     )
     parser.add_argument(
         "--limit",
@@ -65,6 +64,24 @@ def build_argument_parser() -> argparse.ArgumentParser:
         type=float,
         default=0.8,
         help="Chronological fraction of issue and PR history reserved for training review.",
+    )
+    parser.add_argument(
+        "--latest-hip-limit",
+        type=int,
+        default=10,
+        help="Overall HIP scope limit. Keeps only the newest official HIPs, ordered descending by HIP number.",
+    )
+    parser.add_argument(
+        "--export-profile",
+        choices=["review", "full"],
+        default="review",
+        help="Write the smaller reviewer bundle by default, or the full audit bundle when needed.",
+    )
+    parser.add_argument(
+        "--checklist-limit",
+        type=int,
+        default=10,
+        help="Maximum number of newest HIPs to include in the checklist view.",
     )
     return parser
 
@@ -83,9 +100,13 @@ def run_pipeline(
     output_dir: Path,
     limit: int | None = None,
     train_ratio: float = 0.8,
+    latest_hip_limit: int = 10,
+    export_profile: str = "review",
+    checklist_limit: int = 10,
 ) -> dict[str, object]:
     """Execute the end-to-end HIP progression pipeline."""
     client = GitHubClient()
+    catalog_entries = fetch_official_hip_catalog(client)
     artifacts = fetch_repo_hip_artifacts(
         client,
         owner=owner,
@@ -94,30 +115,35 @@ def run_pipeline(
         include_prs=include_prs,
         limit=limit,
     )
-
     scoped_artifacts = filter_hip_artifacts_by_author_scope(artifacts, author_scope)
-    candidates = extract_hip_candidates(scoped_artifacts)
-    feature_vectors = engineer_hip_feature_vectors(candidates)
-    evidence_records = score_hip_feature_vectors(feature_vectors)
-    repo_statuses = aggregate_hip_repo_status(evidence_records, artifacts=scoped_artifacts)
+    result = run_hip_progression_pipeline(
+        artifacts=scoped_artifacts,
+        catalog_entries=catalog_entries,
+        repos=[f"{owner}/{repo}"],
+        latest_hip_limit=latest_hip_limit,
+        config=DEFAULT_HIP_PROGRESSION_CONFIG,
+    )
     dataset_splits = assign_dataset_splits(scoped_artifacts, train_ratio=train_ratio)
     exported_paths = export_hip_progression_results(
         output_dir,
         artifacts=scoped_artifacts,
-        feature_vectors=feature_vectors,
-        evidence_records=evidence_records,
-        repo_statuses=repo_statuses,
+        feature_vectors=result.feature_vectors,
+        artifact_assessments=result.artifact_assessments,
+        repo_statuses=result.repo_statuses,
         dataset_splits=dataset_splits,
+        export_profile=export_profile,
+        checklist_latest_limit=checklist_limit,
     )
     client.log_usage()
 
     return {
+        "catalog_entries": result.catalog_entries,
         "artifacts": artifacts,
         "scoped_artifacts": scoped_artifacts,
-        "candidates": candidates,
-        "feature_vectors": feature_vectors,
-        "evidence_records": evidence_records,
-        "repo_statuses": repo_statuses,
+        "candidates": result.candidates,
+        "feature_vectors": result.feature_vectors,
+        "artifact_assessments": result.artifact_assessments,
+        "repo_statuses": result.repo_statuses,
         "dataset_splits": dataset_splits,
         "exported_paths": exported_paths,
     }
@@ -143,6 +169,9 @@ def main(argv: list[str] | None = None) -> int:
         output_dir=output_dir,
         limit=args.limit,
         train_ratio=args.train_ratio,
+        latest_hip_limit=args.latest_hip_limit,
+        export_profile=args.export_profile,
+        checklist_limit=args.checklist_limit,
     )
 
     repo_statuses = results["repo_statuses"]
@@ -153,11 +182,12 @@ def main(argv: list[str] | None = None) -> int:
     split_counts = Counter(dataset_splits.values())
 
     print(f"HIP progression analysis complete for {args.owner}/{args.repo}")
+    print(f"Catalog HIPs in scope: {len(results['catalog_entries'])}")
     print(f"Artifacts fetched: {len(results['artifacts'])}")
     print(f"Artifacts kept after author scope '{args.author_scope}': {len(scoped_artifacts)}")
     print(f"HIP candidates extracted: {len(candidates)}")
-    print(f"Unique HIPs scored: {len({candidate.hip_id for candidate in candidates})}")
     print(f"Repo statuses produced: {len(repo_statuses)}")
+    print(f"Latest HIP limit: {args.latest_hip_limit}")
     if status_counts:
         print(f"Status breakdown: {dict(sorted(status_counts.items()))}")
     if split_counts:

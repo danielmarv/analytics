@@ -1,0 +1,47 @@
+[
+  {
+    "hip_id": "HIP-1234",
+    "number": 1234,
+    "title": "Completed Benchmark HIP",
+    "status": "Approved",
+    "hip_type": "Standards Track",
+    "category": "Core",
+    "url": "https://hips.hedera.com/hip/hip-1234"
+  },
+  {
+    "hip_id": "HIP-1235",
+    "number": 1235,
+    "title": "In Progress Benchmark HIP",
+    "status": "Approved",
+    "hip_type": "Standards Track",
+    "category": "Core",
+    "url": "https://hips.hedera.com/hip/hip-1235"
+  },
+  {
+    "hip_id": "HIP-1236",
+    "number": 1236,
+    "title": "Not Started Benchmark HIP",
+    "status": "Approved",
+    "hip_type": "Standards Track",
+    "category": "Core",
+    "url": "https://hips.hedera.com/hip/hip-1236"
+  },
+  {
+    "hip_id": "HIP-1237",
+    "number": 1237,
+    "title": "Unknown Benchmark HIP",
+    "status": "Approved",
+    "hip_type": "Standards Track",
+    "category": "Core",
+    "url": "https://hips.hedera.com/hip/hip-1237"
+  },
+  {
+    "hip_id": "HIP-1238",
+    "number": 1238,
+    "title": "Conflicting Benchmark HIP",
+    "status": "Approved",
+    "hip_type": "Standards Track",
+    "category": "Core",
+    "url": "https://hips.hedera.com/hip/hip-1238"
+  }
+]

@@ -9,11 +9,15 @@ from typing import Any
 
 from hiero_analytics.config.github import BASE_URL
 from hiero_analytics.domain.hip_progression_models import (
+    ArtifactComment,
+    ArtifactCommit,
     AuthorScope,
     ChangedFileStatus,
     HipArtifact,
     author_matches_scope,
     build_changed_file,
+    extract_artifact_reference_numbers,
+    flatten_text,
 )
 
 from .cache import load_records_cache, save_records_cache
@@ -23,6 +27,7 @@ from .pagination import paginate_page_number
 logger = logging.getLogger(__name__)
 
 REST_PAGE_SIZE = 100
+BOT_USER_TYPES = {"bot"}
 
 
 def _parse_datetime(value: str | None) -> datetime | None:
@@ -84,53 +89,78 @@ def _fetch_rest_collection(
     return paginate_page_number(page, page_size=REST_PAGE_SIZE, max_pages=max_pages)
 
 
-def _join_text_blocks(values: list[str]) -> str:
-    return "\n\n".join(value for value in values if value)
+def _is_bot_payload(user_payload: object) -> bool:
+    if not isinstance(user_payload, dict):
+        return False
+    login = str(user_payload.get("login") or "").lower()
+    user_type = str(user_payload.get("type") or "").lower()
+    return user_type in BOT_USER_TYPES or login.endswith("[bot]") or "bot" in login
 
 
-def _fetch_issue_comments_text(
+def _comment_from_payload(
+    payload: dict[str, Any],
+    *,
+    source_kind: str,
+) -> ArtifactComment:
+    user_payload = payload.get("user") if isinstance(payload.get("user"), dict) else {}
+    return ArtifactComment(
+        body=_normalize_text(payload.get("body")),
+        source_kind=source_kind,  # type: ignore[arg-type]
+        author_login=_normalize_text(user_payload.get("login")),
+        author_association=str(payload.get("author_association") or "NONE").upper(),
+        created_at=_parse_datetime(payload.get("created_at")),
+        url=_normalize_text(payload.get("html_url")),
+        is_bot=_is_bot_payload(user_payload),
+    )
+
+
+def _commit_from_payload(payload: dict[str, Any]) -> ArtifactCommit:
+    commit_payload = payload.get("commit") if isinstance(payload.get("commit"), dict) else {}
+    author_payload = commit_payload.get("author") if isinstance(commit_payload.get("author"), dict) else {}
+    return ArtifactCommit(
+        message=_normalize_text(commit_payload.get("message")),
+        sha=_normalize_text(payload.get("sha")),
+        authored_at=_parse_datetime(author_payload.get("date")),
+    )
+
+
+def _fetch_issue_comments(
     client: GitHubClient,
     owner: str,
     repo: str,
     issue_number: int,
-) -> str:
+) -> list[ArtifactComment]:
     comments = _fetch_rest_collection(
         client,
         f"{BASE_URL}/repos/{owner}/{repo}/issues/{issue_number}/comments",
     )
-    return _join_text_blocks([_normalize_text(comment.get("body")) for comment in comments])
+    return [_comment_from_payload(comment, source_kind="issue_comment") for comment in comments]
 
 
-def _fetch_pull_request_review_comments_text(
+def _fetch_pull_request_review_comments(
     client: GitHubClient,
     owner: str,
     repo: str,
     pull_number: int,
-) -> str:
+) -> list[ArtifactComment]:
     comments = _fetch_rest_collection(
         client,
         f"{BASE_URL}/repos/{owner}/{repo}/pulls/{pull_number}/comments",
     )
-    return _join_text_blocks([_normalize_text(comment.get("body")) for comment in comments])
+    return [_comment_from_payload(comment, source_kind="review_comment") for comment in comments]
 
 
-def _fetch_pull_request_commit_messages_text(
+def _fetch_pull_request_commits(
     client: GitHubClient,
     owner: str,
     repo: str,
     pull_number: int,
-) -> str:
+) -> list[ArtifactCommit]:
     commits = _fetch_rest_collection(
         client,
         f"{BASE_URL}/repos/{owner}/{repo}/pulls/{pull_number}/commits",
     )
-    messages = []
-    for commit in commits:
-        commit_data = commit.get("commit")
-        if not isinstance(commit_data, dict):
-            continue
-        messages.append(_normalize_text(commit_data.get("message")))
-    return _join_text_blocks(messages)
+    return [_commit_from_payload(commit) for commit in commits]
 
 
 def _fetch_pull_request_files(
@@ -159,6 +189,15 @@ def _fetch_pull_request_files(
     return changed_files
 
 
+def _artifact_linked_numbers(
+    title: str,
+    body: str,
+    comments_text: str,
+    commit_messages_text: str,
+) -> list[int]:
+    return extract_artifact_reference_numbers(title, body, comments_text, commit_messages_text)
+
+
 def _issue_from_summary(
     client: GitHubClient,
     owner: str,
@@ -166,19 +205,21 @@ def _issue_from_summary(
     summary: dict[str, Any],
 ) -> HipArtifact:
     number = int(summary["number"])
-    comments_count = int(summary.get("comments", 0) or 0)
-    comments_text = ""
-    if comments_count > 0:
-        comments_text = _fetch_issue_comments_text(client, owner, repo, number)
+    comments = _fetch_issue_comments(client, owner, repo, number) if int(summary.get("comments", 0) or 0) > 0 else []
+    comments_text = flatten_text([comment.body for comment in comments])
+    title = _normalize_text(summary.get("title"))
+    body = _normalize_text(summary.get("body"))
 
     return HipArtifact(
         repo=f"{owner}/{repo}",
         artifact_type="issue",
         number=number,
-        title=_normalize_text(summary.get("title")),
-        body=_normalize_text(summary.get("body")),
+        title=title,
+        body=body,
         comments_text=comments_text,
         commit_messages_text="",
+        comments=comments,
+        commits=[],
         author_login=_normalize_text((summary.get("user") or {}).get("login")),
         author_association=str(summary.get("author_association") or "NONE").upper(),
         state=str(summary.get("state") or "open").lower(),
@@ -190,6 +231,7 @@ def _issue_from_summary(
         additions=0,
         deletions=0,
         labels=_normalize_labels(summary.get("labels")),
+        linked_artifact_numbers=_artifact_linked_numbers(title, body, comments_text, ""),
         url=_normalize_text(summary.get("html_url")),
     )
 
@@ -203,30 +245,42 @@ def _pull_request_from_summary(
     number = int(summary["number"])
     detail = client.get(f"{BASE_URL}/repos/{owner}/{repo}/pulls/{number}")
 
-    issue_comment_count = int(detail.get("comments", 0) or 0)
-    review_comment_count = int(detail.get("review_comments", 0) or 0)
-    comments_blocks: list[str] = []
-    if issue_comment_count > 0:
-        comments_blocks.append(_fetch_issue_comments_text(client, owner, repo, number))
-    if review_comment_count > 0:
-        comments_blocks.append(_fetch_pull_request_review_comments_text(client, owner, repo, number))
-
-    commit_messages_text = ""
-    if int(detail.get("commits", 0) or 0) > 0:
-        commit_messages_text = _fetch_pull_request_commit_messages_text(client, owner, repo, number)
-
-    changed_files = []
-    if int(detail.get("changed_files", 0) or 0) > 0:
-        changed_files = _fetch_pull_request_files(client, owner, repo, number)
+    issue_comments = (
+        _fetch_issue_comments(client, owner, repo, number)
+        if int(detail.get("comments", 0) or 0) > 0
+        else []
+    )
+    review_comments = (
+        _fetch_pull_request_review_comments(client, owner, repo, number)
+        if int(detail.get("review_comments", 0) or 0) > 0
+        else []
+    )
+    comments = [*issue_comments, *review_comments]
+    commits = (
+        _fetch_pull_request_commits(client, owner, repo, number)
+        if int(detail.get("commits", 0) or 0) > 0
+        else []
+    )
+    changed_files = (
+        _fetch_pull_request_files(client, owner, repo, number)
+        if int(detail.get("changed_files", 0) or 0) > 0
+        else []
+    )
+    comments_text = flatten_text([comment.body for comment in comments])
+    commit_messages_text = flatten_text([commit.message for commit in commits])
+    title = _normalize_text(detail.get("title") or summary.get("title"))
+    body = _normalize_text(detail.get("body") or summary.get("body"))
 
     return HipArtifact(
         repo=f"{owner}/{repo}",
         artifact_type="pull_request",
         number=number,
-        title=_normalize_text(detail.get("title") or summary.get("title")),
-        body=_normalize_text(detail.get("body") or summary.get("body")),
-        comments_text=_join_text_blocks(comments_blocks),
+        title=title,
+        body=body,
+        comments_text=comments_text,
         commit_messages_text=commit_messages_text,
+        comments=comments,
+        commits=commits,
         author_login=_normalize_text((detail.get("user") or summary.get("user") or {}).get("login")),
         author_association=str(detail.get("author_association") or summary.get("author_association") or "NONE").upper(),
         state=str(detail.get("state") or summary.get("state") or "open").lower(),
@@ -238,6 +292,7 @@ def _pull_request_from_summary(
         additions=int(detail.get("additions", 0) or 0),
         deletions=int(detail.get("deletions", 0) or 0),
         labels=_normalize_labels(detail.get("labels") or summary.get("labels")),
+        linked_artifact_numbers=_artifact_linked_numbers(title, body, comments_text, commit_messages_text),
         url=_normalize_text(detail.get("html_url") or summary.get("html_url")),
     )
 

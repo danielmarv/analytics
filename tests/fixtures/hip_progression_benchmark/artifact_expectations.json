@@ -1,0 +1,242 @@
+[
+  {
+    "hip_id": "HIP-1234",
+    "expected_status": "not_started",
+    "rationale": "Tracking issue only; no implementation proof in the issue itself.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "issue",
+      "number": 5001,
+      "title": "Track HIP-1234 support",
+      "body": "Tracking HIP-1234 support for a future milestone.",
+      "comments": [],
+      "commits": [],
+      "author_login": "pm",
+      "author_association": "MEMBER",
+      "state": "closed",
+      "merged": false,
+      "changed_files": [],
+      "additions": 0,
+      "deletions": 0,
+      "labels": ["tracking"],
+      "linked_artifact_numbers": [5002],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/issues/5001"
+    }
+  },
+  {
+    "hip_id": "HIP-1234",
+    "expected_status": "completed",
+    "rationale": "Merged PR with code, tests, changelog, and linked closed issue.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "pull_request",
+      "number": 5002,
+      "title": "Implement HIP-1234 support",
+      "body": "Closes #5001 and completes HIP-1234 compliance for the SDK.",
+      "comments": [
+        {
+          "body": "Ready to merge.",
+          "source_kind": "review_comment",
+          "author_login": "reviewer",
+          "author_association": "MEMBER"
+        }
+      ],
+      "commits": [
+        {
+          "message": "feat: implement HIP-1234"
+        }
+      ],
+      "author_login": "alice",
+      "author_association": "MEMBER",
+      "state": "closed",
+      "merged": true,
+      "changed_files": [
+        {
+          "path": "src/client/hip1234.ts",
+          "additions": 80,
+          "deletions": 5,
+          "status": "added"
+        },
+        {
+          "path": "tests/unit/hip1234.test.ts",
+          "additions": 30,
+          "deletions": 0,
+          "status": "added"
+        },
+        {
+          "path": "CHANGELOG.md",
+          "additions": 5,
+          "deletions": 0,
+          "status": "modified"
+        }
+      ],
+      "additions": 115,
+      "deletions": 5,
+      "labels": ["hip"],
+      "linked_artifact_numbers": [5001],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/pull/5002"
+    }
+  },
+  {
+    "hip_id": "HIP-1235",
+    "expected_status": "in_progress",
+    "rationale": "Merged code and tests exist, but completion corroboration is missing.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "pull_request",
+      "number": 5003,
+      "title": "Implement HIP-1235 transport updates",
+      "body": "Implements HIP-1235 transport updates.",
+      "comments": [],
+      "commits": [
+        {
+          "message": "feat: implement HIP-1235 transport"
+        }
+      ],
+      "author_login": "alice",
+      "author_association": "MEMBER",
+      "state": "closed",
+      "merged": true,
+      "changed_files": [
+        {
+          "path": "src/client/hip1235.ts",
+          "additions": 60,
+          "deletions": 5,
+          "status": "added"
+        },
+        {
+          "path": "tests/unit/hip1235.test.ts",
+          "additions": 20,
+          "deletions": 0,
+          "status": "added"
+        }
+      ],
+      "additions": 80,
+      "deletions": 5,
+      "labels": ["hip"],
+      "linked_artifact_numbers": [],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/pull/5003"
+    }
+  },
+  {
+    "hip_id": "HIP-1236",
+    "expected_status": "not_started",
+    "rationale": "Planning issue with no implementation evidence.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "issue",
+      "number": 5004,
+      "title": "Plan HIP-1236 support",
+      "body": "Prep work for HIP-1236 support in a later release.",
+      "comments": [],
+      "commits": [],
+      "author_login": "pm",
+      "author_association": "MEMBER",
+      "state": "open",
+      "merged": false,
+      "changed_files": [],
+      "additions": 0,
+      "deletions": 0,
+      "labels": ["tracking"],
+      "linked_artifact_numbers": [],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/issues/5004"
+    }
+  },
+  {
+    "hip_id": "HIP-1237",
+    "expected_status": "unknown",
+    "rationale": "Only a bot-style comment references the HIP.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "issue",
+      "number": 5005,
+      "title": "Workflow noise ticket",
+      "body": "General workflow issue with no direct HIP plan.",
+      "comments": [
+        {
+          "body": "WorkflowBot: HIP-1237 cannot be merged until checks pass.",
+          "source_kind": "issue_comment",
+          "author_login": "workflowbot",
+          "author_association": "NONE",
+          "is_bot": true
+        }
+      ],
+      "commits": [],
+      "author_login": "workflowbot",
+      "author_association": "NONE",
+      "state": "open",
+      "merged": false,
+      "changed_files": [],
+      "additions": 0,
+      "deletions": 0,
+      "labels": ["workflow"],
+      "linked_artifact_numbers": [],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/issues/5005"
+    }
+  },
+  {
+    "hip_id": "HIP-1238",
+    "expected_status": "conflicting",
+    "rationale": "Implementation evidence exists, but the PR clearly states it is follow-up or reverted work.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "pull_request",
+      "number": 5006,
+      "title": "Follow-up for HIP-1238 after revert",
+      "body": "Follow-up for HIP-1238 after partial revert. This change implements remaining support while blocked by cleanup only.",
+      "comments": [],
+      "commits": [
+        {
+          "message": "feat: support HIP-1238"
+        }
+      ],
+      "author_login": "alice",
+      "author_association": "MEMBER",
+      "state": "closed",
+      "merged": true,
+      "changed_files": [
+        {
+          "path": "src/client/hip1238.ts",
+          "additions": 70,
+          "deletions": 10,
+          "status": "modified"
+        },
+        {
+          "path": "tests/unit/hip1238.test.ts",
+          "additions": 25,
+          "deletions": 2,
+          "status": "modified"
+        }
+      ],
+      "additions": 95,
+      "deletions": 12,
+      "labels": ["hip"],
+      "linked_artifact_numbers": [5007],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/pull/5006"
+    }
+  },
+  {
+    "hip_id": "HIP-1238",
+    "expected_status": "not_started",
+    "rationale": "Revert issue alone is negative context, not implementation proof.",
+    "artifact": {
+      "repo": "hiero-ledger/hiero-sdk-js",
+      "artifact_type": "issue",
+      "number": 5007,
+      "title": "Revert HIP-1238 rollout",
+      "body": "HIP-1238 work was reverted and needs follow-up before shipping.",
+      "comments": [],
+      "commits": [],
+      "author_login": "pm",
+      "author_association": "MEMBER",
+      "state": "closed",
+      "merged": false,
+      "changed_files": [],
+      "additions": 0,
+      "deletions": 0,
+      "labels": ["tracking"],
+      "linked_artifact_numbers": [5006],
+      "url": "https://github.com/hiero-ledger/hiero-sdk-js/issues/5007"
+    }
+  }
+]

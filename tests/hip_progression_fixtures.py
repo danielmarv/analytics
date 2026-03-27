@@ -5,14 +5,34 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from hiero_analytics.domain.hip_progression_models import (
+    ArtifactComment,
+    ArtifactCommit,
     HipArtifact,
     HipCandidate,
+    HipCatalogEntry,
     build_changed_file,
 )
 
 
+def make_catalog_entries(*hip_ids: str) -> list[HipCatalogEntry]:
+    """Build a small official HIP catalog snapshot for tests."""
+    return [
+        HipCatalogEntry(
+            hip_id=hip_id,
+            number=int(hip_id.split("-", maxsplit=1)[1]),
+            title=f"Test {hip_id}",
+            status="Approved",
+            hip_type="Standards Track",
+            category="Core",
+            url=f"https://hips.hedera.com/hip/{hip_id.lower()}",
+        )
+        for hip_id in hip_ids
+    ]
+
+
 def make_pull_request_artifact(
     *,
+    repo: str = "hiero-ledger/hiero-sdk-js",
     number: int = 101,
     title: str = "Implement HIP-1234 support",
     body: str = "This PR adds HIP-1234 support to the SDK.",
@@ -23,6 +43,7 @@ def make_pull_request_artifact(
     changed_files=None,
     additions: int = 120,
     deletions: int = 15,
+    linked_artifact_numbers: list[int] | None = None,
 ) -> HipArtifact:
     """Build a synthetic pull request artifact with realistic implementation signals."""
     if changed_files is None:
@@ -31,14 +52,25 @@ def make_pull_request_artifact(
             build_changed_file("tests/unit/hip1234.test.ts", additions=25, deletions=0, status="added"),
             build_changed_file("tests/integration/hip1234.e2e.ts", additions=15, deletions=0, status="added"),
         ]
+    comments = [
+        ArtifactComment(
+            body=comments_text,
+            source_kind="review_comment",
+            author_login="reviewer",
+            author_association="MEMBER",
+        )
+    ] if comments_text else []
+    commits = [ArtifactCommit(message=commit_messages_text)] if commit_messages_text else []
     return HipArtifact(
-        repo="hiero-ledger/hiero-sdk-js",
+        repo=repo,
         artifact_type="pull_request",
         number=number,
         title=title,
         body=body,
         comments_text=comments_text,
         commit_messages_text=commit_messages_text,
+        comments=comments,
+        commits=commits,
         author_login="alice",
         author_association=author_association,
         state="closed" if merged else "open",
@@ -50,39 +82,54 @@ def make_pull_request_artifact(
         additions=additions,
         deletions=deletions,
         labels=["hip"],
-        url=f"https://github.com/hiero-ledger/hiero-sdk-js/pull/{number}",
+        linked_artifact_numbers=list(linked_artifact_numbers or []),
+        url=f"https://github.com/{repo}/pull/{number}",
     )
 
 
 def make_issue_artifact(
     *,
+    repo: str = "hiero-ledger/hiero-sdk-js",
     number: int = 77,
     title: str = "Track HIP-1234 support",
     body: str = "We should discuss HIP-1234 support for a future release.",
     comments_text: str = "",
     author_association: str = "NONE",
+    state: str = "open",
+    linked_artifact_numbers: list[int] | None = None,
 ) -> HipArtifact:
     """Build a synthetic issue artifact with text-only HIP evidence."""
+    comments = [
+        ArtifactComment(
+            body=comments_text,
+            source_kind="issue_comment",
+            author_login="bob",
+            author_association=author_association,
+        )
+    ] if comments_text else []
     return HipArtifact(
-        repo="hiero-ledger/hiero-sdk-js",
+        repo=repo,
         artifact_type="issue",
         number=number,
         title=title,
         body=body,
         comments_text=comments_text,
         commit_messages_text="",
+        comments=comments,
+        commits=[],
         author_login="bob",
         author_association=author_association,
-        state="open",
+        state=state,
         merged=False,
         created_at=datetime(2025, 1, 2, tzinfo=UTC),
         updated_at=datetime(2025, 1, 6, tzinfo=UTC),
-        closed_at=None,
+        closed_at=datetime(2025, 1, 8, tzinfo=UTC) if state == "closed" else None,
         changed_files=[],
         additions=0,
         deletions=0,
         labels=["discussion"],
-        url=f"https://github.com/hiero-ledger/hiero-sdk-js/issues/{number}",
+        linked_artifact_numbers=list(linked_artifact_numbers or []),
+        url=f"https://github.com/{repo}/issues/{number}",
     )
 
 
@@ -95,6 +142,17 @@ def make_candidate(
 ) -> HipCandidate:
     """Build a synthetic HIP candidate tied to a test artifact."""
     matched_sources = matched_sources or ["title", "body"]
+    mentions = []
+    for source in matched_sources:
+        mentions.append(
+            {
+                "source_kind": source,
+                "source_id": source,
+                "matched_text": hip_id,
+            }
+        )
+    from hiero_analytics.domain.hip_progression_models import HipMention
+
     return HipCandidate(
         artifact=artifact,
         hip_id=hip_id,
@@ -103,6 +161,20 @@ def make_candidate(
             f"explicit HIP mention in {source.replace('_', ' ')}"
             for source in matched_sources
         ),
+        mentions=[
+            HipMention(
+                hip_id=hip_id,
+                source_kind=source["source_kind"],  # type: ignore[arg-type]
+                source_id=source["source_id"],
+                matched_text=source["matched_text"],
+                phrase_context=f"{source['matched_text']} context",
+                is_explicit_match=True,
+                is_semantic_match=source["source_kind"] in {"title", "body", "commit_message"},
+                is_negative_context=False,
+            )
+            for source in mentions
+        ],
         negative_context_flags=list(negative_context_flags or []),
         matched_sources=list(matched_sources),
+        linked_artifact_numbers=list(artifact.linked_artifact_numbers),
     )

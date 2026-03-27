@@ -14,7 +14,13 @@ from tempfile import NamedTemporaryFile
 from typing import TypeVar
 
 from hiero_analytics.config.paths import OUTPUTS_DIR
-from hiero_analytics.domain.hip_progression_models import ChangedFile, HipArtifact
+from hiero_analytics.domain.hip_progression_models import (
+    ArtifactComment,
+    ArtifactCommit,
+    ChangedFile,
+    HipArtifact,
+    HipCatalogEntry,
+)
 
 from .models import (
     ContributorActivityRecord,
@@ -37,9 +43,16 @@ _DATETIME_FIELDS: dict[type[object], tuple[str, ...]] = {
     PullRequestDifficultyRecord: ("pr_created_at", "pr_merged_at"),
     ContributorActivityRecord: ("occurred_at",),
     HipArtifact: ("created_at", "updated_at", "closed_at"),
+    ArtifactComment: ("created_at",),
+    ArtifactCommit: ("authored_at",),
+    HipCatalogEntry: (),
 }
 _NESTED_LIST_FIELDS: dict[type[object], dict[str, type[object]]] = {
-    HipArtifact: {"changed_files": ChangedFile},
+    HipArtifact: {
+        "changed_files": ChangedFile,
+        "comments": ArtifactComment,
+        "commits": ArtifactCommit,
+    },
 }
 RecordType = TypeVar(
     "RecordType",
@@ -48,6 +61,7 @@ RecordType = TypeVar(
     PullRequestDifficultyRecord,
     ContributorActivityRecord,
     HipArtifact,
+    HipCatalogEntry,
 )
 
 
@@ -139,12 +153,25 @@ def _deserialize_record(  # noqa: UP047
         if not isinstance(raw_items, list):
             continue
         restored[field_name] = [
-            nested_type(**item)
+            _deserialize_nested_item(nested_type, item)
             for item in raw_items
             if isinstance(item, dict)
         ]
 
     return record_type(**restored)  # type: ignore[arg-type]
+
+
+def _deserialize_nested_item(
+    nested_type: type[object],
+    payload: dict[str, object],
+) -> object:
+    """Deserialize a nested dataclass item inside a cached record."""
+    restored = dict(payload)
+    for field_name in _DATETIME_FIELDS.get(nested_type, ()):
+        raw_value = restored.get(field_name)
+        if raw_value is not None:
+            restored[field_name] = datetime.fromisoformat(str(raw_value))
+    return nested_type(**restored)
 
 
 def _normalize_cached_at(cached_at: datetime) -> datetime:

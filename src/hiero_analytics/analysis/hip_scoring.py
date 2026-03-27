@@ -1,304 +1,202 @@
-"""Deterministic scoring for HIP progression evidence."""
+"""Deterministic status inference for HIP progression evidence."""
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from dataclasses import dataclass
-
+from hiero_analytics.config.hip_progression import (
+    DEFAULT_HIP_PROGRESSION_CONFIG,
+    HipProgressionConfig,
+)
 from hiero_analytics.domain.hip_progression_models import (
-    ConfidenceLevel,
-    HipEvidence,
+    ArtifactHipAssessment,
+    ConfidenceBreakdown,
     HipFeatureVector,
 )
-
-NEGATIVE_FLAG_PENALTIES = {
-    "unblock": 12.0,
-    "blocked": 18.0,
-    "follow_up": 10.0,
-    "prep": 10.0,
-    "refactor_only": 15.0,
-    "cleanup_only": 15.0,
-}
-
-
-@dataclass(frozen=True, slots=True)
-class HipScoringConfig:
-    """Tunable deterministic weights for the HIP progression pilot."""
-
-    candidate_explicit_mention: float = 20.0
-    candidate_title_bonus: float = 30.0
-    candidate_body_bonus: float = 15.0
-    candidate_comments_bonus: float = 10.0
-    candidate_commit_bonus: float = 10.0
-    implementation_src_bonus: float = 30.0
-    implementation_large_src_bonus: float = 10.0
-    implementation_new_src_bonus: float = 10.0
-    implementation_test_bonus: float = 15.0
-    implementation_integration_bonus: float = 10.0
-    implementation_new_test_bonus: float = 10.0
-    implementation_merged_bonus: float = 20.0
-    implementation_keyword_bonus: float = 10.0
-    implementation_support_bonus: float = 8.0
-    implementation_feat_bonus: float = 6.0
-    implementation_maintainer_bonus: float = 8.0
-    implementation_committer_bonus: float = 5.0
-    implementation_large_diff_bonus: float = 10.0
-    implementation_no_code_penalty: float = 20.0
-    implementation_issue_without_code_penalty: float = 15.0
-    completion_merged_bonus: float = 30.0
-    completion_src_bonus: float = 25.0
-    completion_test_bonus: float = 20.0
-    completion_integration_bonus: float = 10.0
-    completion_new_src_bonus: float = 8.0
-    completion_new_test_bonus: float = 8.0
-    completion_keyword_bonus: float = 6.0
-    completion_support_bonus: float = 6.0
-    completion_maintainer_bonus: float = 4.0
-    completion_committer_bonus: float = 2.0
-    completion_missing_tests_penalty: float = 15.0
-    completion_not_merged_penalty: float = 20.0
-    completion_no_code_penalty: float = 25.0
-    completion_issue_without_code_penalty: float = 20.0
-
-
-DEFAULT_SCORING_CONFIG = HipScoringConfig()
-ExtraSignalHook = Callable[[HipFeatureVector], tuple[float, float, float, list[str]] | None]
 
 
 def _clamp_score(score: float) -> float:
     return max(0.0, min(100.0, round(score, 2)))
 
 
-def _add_reason(reasons: list[str], reason: str) -> None:
-    if reason not in reasons:
-        reasons.append(reason)
-
-
-def _apply_negative_penalties(
-    score: float,
-    reasons: list[str],
-    negative_context_flags: list[str],
-) -> float:
-    for flag in negative_context_flags:
-        penalty = NEGATIVE_FLAG_PENALTIES.get(flag, 0.0)
-        if penalty <= 0:
-            continue
-        score -= penalty
-        _add_reason(reasons, f"negative context: {flag.replace('_', ' ')}")
-    return score
-
-
-def _score_candidate(
-    feature_vector: HipFeatureVector,
-    config: HipScoringConfig,
-) -> tuple[float, list[str]]:
-    score = 0.0
-    reasons: list[str] = []
-
-    if feature_vector.explicit_hip_mention:
-        score += config.candidate_explicit_mention
-    if feature_vector.hip_in_title:
-        score += config.candidate_title_bonus
-        _add_reason(reasons, "explicit HIP mention in PR title" if feature_vector.artifact_type == "pull_request" else "explicit HIP mention in issue title")
-    if feature_vector.hip_in_body:
-        score += config.candidate_body_bonus
-        _add_reason(reasons, "explicit HIP mention in body")
-    if feature_vector.hip_in_comments:
-        score += config.candidate_comments_bonus
-        _add_reason(reasons, "explicit HIP mention in comments")
-    if feature_vector.hip_in_commit_messages:
-        score += config.candidate_commit_bonus
-        _add_reason(reasons, "explicit HIP mention in commit messages")
-
-    score = _apply_negative_penalties(score, reasons, feature_vector.negative_context_flags)
-    return _clamp_score(score), reasons
-
-
-def _score_implementation(
-    feature_vector: HipFeatureVector,
-    config: HipScoringConfig,
-) -> tuple[float, list[str]]:
-    score = 0.0
-    reasons: list[str] = []
-    has_code_evidence = (
-        feature_vector.src_files_changed_count > 0
-        or feature_vector.test_files_changed_count > 0
-        or feature_vector.integration_test_files_changed_count > 0
+def _positive_tier_count(feature_vector: HipFeatureVector) -> int:
+    return sum(
+        1
+        for value in [
+            feature_vector.tier_1_count,
+            feature_vector.tier_2_count,
+            feature_vector.tier_3_count,
+            feature_vector.tier_4_count,
+        ]
+        if value > 0
     )
 
-    if feature_vector.src_files_changed_count > 0:
-        score += config.implementation_src_bonus
-        _add_reason(reasons, "source files changed")
-    if feature_vector.src_files_changed_count >= 3:
-        score += config.implementation_large_src_bonus
-    if feature_vector.new_src_files_count > 0:
-        score += config.implementation_new_src_bonus
-        _add_reason(reasons, "source files added")
-    if feature_vector.test_files_changed_count > 0:
-        score += config.implementation_test_bonus
-        _add_reason(reasons, "unit tests changed")
-    if feature_vector.integration_test_files_changed_count > 0:
-        score += config.implementation_integration_bonus
-        _add_reason(reasons, "integration tests changed")
-    if feature_vector.new_test_files_count > 0:
-        score += config.implementation_new_test_bonus
-        _add_reason(reasons, "unit tests added")
-    if feature_vector.merged:
-        score += config.implementation_merged_bonus
-        _add_reason(reasons, "merged PR")
-    if feature_vector.has_implement_keyword:
-        score += config.implementation_keyword_bonus
-        _add_reason(reasons, "implementation keyword present")
-    if feature_vector.has_support_keyword:
-        score += config.implementation_support_bonus
-        _add_reason(reasons, "support keyword present")
-    if feature_vector.has_feat_keyword:
-        score += config.implementation_feat_bonus
-        _add_reason(reasons, "feature keyword present")
-    if feature_vector.author_is_maintainer_like:
-        score += config.implementation_maintainer_bonus
-        _add_reason(reasons, "maintainer-like author")
-    elif feature_vector.author_is_committer_like:
-        score += config.implementation_committer_bonus
-        _add_reason(reasons, "committer-like author")
 
-    if feature_vector.total_additions + feature_vector.total_deletions >= 50:
-        score += config.implementation_large_diff_bonus
-
-    if not has_code_evidence:
-        score -= config.implementation_no_code_penalty
-        _add_reason(reasons, "no code-change evidence")
-
-    if feature_vector.artifact_type == "issue" and not has_code_evidence:
-        score -= config.implementation_issue_without_code_penalty
-
-    score = _apply_negative_penalties(score, reasons, feature_vector.negative_context_flags)
-    return _clamp_score(score), reasons
-
-
-def _score_completion(
+def _build_confidence_breakdown(
     feature_vector: HipFeatureVector,
-    config: HipScoringConfig,
-) -> tuple[float, list[str]]:
-    score = 0.0
-    reasons: list[str] = []
-    has_src = feature_vector.src_files_changed_count > 0
-    has_tests = feature_vector.test_files_changed_count > 0
-    has_code_evidence = has_src or has_tests or feature_vector.integration_test_files_changed_count > 0
+    *,
+    config: HipProgressionConfig,
+) -> ConfidenceBreakdown:
+    positive_total = sum(
+        evidence.confidence_contribution
+        for evidence in feature_vector.evidence_records
+        if evidence.polarity == "positive"
+    )
+    negative_total = abs(
+        sum(
+            evidence.confidence_contribution
+            for evidence in feature_vector.evidence_records
+            if evidence.polarity == "negative"
+        )
+    )
+    score = positive_total - negative_total
+    if _positive_tier_count(feature_vector) >= 3:
+        score += config.weights.multi_tier_agreement_bonus
+    if feature_vector.positive_evidence_count > 0 and feature_vector.negative_evidence_count > 0:
+        score -= config.weights.contradiction_penalty
+    score = _clamp_score(score)
+    top_reasons = [
+        evidence.short_rationale
+        for evidence in sorted(
+            [evidence for evidence in feature_vector.evidence_records if evidence.polarity == "positive"],
+            key=lambda evidence: evidence.confidence_contribution,
+            reverse=True,
+        )[:4]
+    ]
+    uncertainty_reasons = list(
+        dict.fromkeys(
+            reason
+            for evidence in feature_vector.evidence_records
+            for reason in evidence.uncertainty_reasons
+        )
+    )
+    if not feature_vector.has_code_evidence:
+        uncertainty_reasons.append("No implementation file changes were detected.")
+    if feature_vector.has_code_evidence and not feature_vector.has_test_evidence:
+        uncertainty_reasons.append("Implementation exists, but test corroboration is missing.")
+    if not feature_vector.merged and feature_vector.has_code_evidence:
+        uncertainty_reasons.append("Code evidence is not merged yet.")
+    if feature_vector.has_docs_only_change:
+        uncertainty_reasons.append("Docs-only changes do not prove implementation.")
+    uncertainty_reasons = list(dict.fromkeys(uncertainty_reasons))
 
-    if feature_vector.merged:
-        score += config.completion_merged_bonus
-        _add_reason(reasons, "merged PR")
-    else:
-        score -= config.completion_not_merged_penalty
+    level = config.confidence.resolve_level(score)
+    if level == "high":
+        if (
+            _positive_tier_count(feature_vector) < config.confidence.high_min_positive_tiers
+            or feature_vector.negative_evidence_count > config.confidence.high_max_negative_evidence
+        ):
+            level = "medium"
 
-    if has_src:
-        score += config.completion_src_bonus
-        _add_reason(reasons, "source files changed")
-    if has_tests:
-        score += config.completion_test_bonus
-        _add_reason(reasons, "unit tests changed")
-    if feature_vector.integration_test_files_changed_count > 0:
-        score += config.completion_integration_bonus
-        _add_reason(reasons, "integration tests changed")
-    if feature_vector.new_src_files_count > 0:
-        score += config.completion_new_src_bonus
-        _add_reason(reasons, "source files added")
-    if feature_vector.new_test_files_count > 0:
-        score += config.completion_new_test_bonus
-        _add_reason(reasons, "unit tests added")
-    if feature_vector.has_implement_keyword:
-        score += config.completion_keyword_bonus
-    if feature_vector.has_support_keyword:
-        score += config.completion_support_bonus
-    if feature_vector.author_is_maintainer_like:
-        score += config.completion_maintainer_bonus
-    elif feature_vector.author_is_committer_like:
-        score += config.completion_committer_bonus
-
-    if feature_vector.merged and has_src and not has_tests:
-        score -= config.completion_missing_tests_penalty
-        _add_reason(reasons, "missing test evidence")
-
-    if not has_code_evidence:
-        score -= config.completion_no_code_penalty
-        _add_reason(reasons, "no code-change evidence")
-
-    if feature_vector.artifact_type == "issue" and not has_code_evidence:
-        score -= config.completion_issue_without_code_penalty
-
-    score = _apply_negative_penalties(score, reasons, feature_vector.negative_context_flags)
-    return _clamp_score(score), reasons
+    return ConfidenceBreakdown(
+        confidence_score=score,
+        confidence_level=level,
+        top_reasons=list(dict.fromkeys(top_reasons)),
+        uncertainty_reasons=uncertainty_reasons,
+    )
 
 
-def _resolve_confidence_level(
-    candidate_score: float,
-    implementation_score: float,
-    completion_score: float,
-) -> ConfidenceLevel:
-    if completion_score >= 75 or (candidate_score >= 60 and implementation_score >= 60):
-        return "high"
-    if implementation_score >= 35 or (candidate_score >= 70 and implementation_score >= 20):
-        return "medium"
-    return "low"
+def _progress_stage(feature_vector: HipFeatureVector) -> str:
+    if feature_vector.has_code_evidence and feature_vector.has_test_evidence and feature_vector.merged:
+        return "implementation_with_merge_and_tests"
+    if feature_vector.has_code_evidence and feature_vector.has_test_evidence:
+        return "implementation_with_tests"
+    if feature_vector.has_code_evidence:
+        return "partial_implementation"
+    if feature_vector.has_test_evidence:
+        return "tests_only"
+    if (
+        feature_vector.has_negative_blocked
+        or feature_vector.has_negative_follow_up
+        or feature_vector.has_negative_prep
+        or feature_vector.has_negative_refactor_only
+        or feature_vector.has_negative_cleanup_only
+    ):
+        return "planning_or_follow_up"
+    if feature_vector.direct_mention_count > 0:
+        return "mention_only"
+    return "ambiguous"
+
+
+def _infer_artifact_status(
+    feature_vector: HipFeatureVector,
+    *,
+    confidence_score: float,
+    config: HipProgressionConfig,
+) -> str:
+    strong_contradiction = (
+        feature_vector.has_negative_blocked
+        or feature_vector.has_negative_reverted
+        or feature_vector.has_negative_follow_up
+    )
+    if strong_contradiction and (feature_vector.has_code_evidence or feature_vector.has_test_evidence or feature_vector.merged):
+        return "conflicting"
+    if (
+        feature_vector.has_code_evidence
+        and feature_vector.has_test_evidence
+        and feature_vector.merged
+        and feature_vector.tier_4_count > 0
+        and confidence_score >= config.status_rules.completed_min_score
+        and not strong_contradiction
+    ):
+        return "completed"
+    if feature_vector.has_code_evidence or feature_vector.has_test_evidence:
+        return "in_progress"
+    if feature_vector.direct_mention_count > 0:
+        if (
+            feature_vector.has_negative_blocked
+            or feature_vector.has_negative_follow_up
+            or feature_vector.has_negative_prep
+            or feature_vector.has_negative_refactor_only
+            or feature_vector.has_negative_cleanup_only
+        ):
+            return "not_started"
+        if feature_vector.bot_mention_count > 0 or feature_vector.has_docs_only_change:
+            return "unknown"
+        return "not_started"
+    if confidence_score >= config.status_rules.unknown_min_score:
+        return "unknown"
+    return "not_started"
 
 
 def score_hip_feature_vector(
     feature_vector: HipFeatureVector,
     *,
-    config: HipScoringConfig = DEFAULT_SCORING_CONFIG,
-    extra_signal_hook: ExtraSignalHook | None = None,
-) -> HipEvidence:
-    """Score one feature vector into explainable HIP evidence."""
-    candidate_score, candidate_reasons = _score_candidate(feature_vector, config)
-    implementation_score, implementation_reasons = _score_implementation(feature_vector, config)
-    completion_score, completion_reasons = _score_completion(feature_vector, config)
-
-    reasons = []
-    for reason in [*candidate_reasons, *implementation_reasons, *completion_reasons]:
-        _add_reason(reasons, reason)
-
-    if extra_signal_hook is not None:
-        extra_scores = extra_signal_hook(feature_vector)
-        if extra_scores is not None:
-            candidate_delta, implementation_delta, completion_delta, extra_reasons = extra_scores
-            candidate_score = _clamp_score(candidate_score + candidate_delta)
-            implementation_score = _clamp_score(implementation_score + implementation_delta)
-            completion_score = _clamp_score(completion_score + completion_delta)
-            for reason in extra_reasons:
-                _add_reason(reasons, reason)
-
-    confidence_level = _resolve_confidence_level(
-        candidate_score,
-        implementation_score,
-        completion_score,
+    config: HipProgressionConfig = DEFAULT_HIP_PROGRESSION_CONFIG,
+) -> ArtifactHipAssessment:
+    """Score one feature vector into an explainable artifact-level HIP assessment."""
+    confidence = _build_confidence_breakdown(feature_vector, config=config)
+    status = _infer_artifact_status(
+        feature_vector,
+        confidence_score=confidence.confidence_score,
+        config=config,
     )
-
-    return HipEvidence(
+    return ArtifactHipAssessment(
         repo=feature_vector.repo,
         hip_id=feature_vector.hip_id,
         artifact_type=feature_vector.artifact_type,
         artifact_number=feature_vector.artifact_number,
-        hip_candidate_score=candidate_score,
-        implementation_score=implementation_score,
-        completion_score=completion_score,
-        confidence_level=confidence_level,
-        reasons=reasons,
+        status=status,  # type: ignore[arg-type]
+        progress_stage=_progress_stage(feature_vector),
+        confidence_score=confidence.confidence_score,
+        confidence_level=confidence.confidence_level,
+        evidence_count=feature_vector.evidence_count,
+        positive_evidence_count=feature_vector.positive_evidence_count,
+        negative_evidence_count=feature_vector.negative_evidence_count,
+        evidence_records=feature_vector.evidence_records,
+        top_reasons=confidence.top_reasons,
+        uncertainty_reasons=confidence.uncertainty_reasons,
     )
 
 
 def score_hip_feature_vectors(
     feature_vectors: list[HipFeatureVector],
     *,
-    config: HipScoringConfig = DEFAULT_SCORING_CONFIG,
-    extra_signal_hook: ExtraSignalHook | None = None,
-) -> list[HipEvidence]:
+    config: HipProgressionConfig = DEFAULT_HIP_PROGRESSION_CONFIG,
+) -> list[ArtifactHipAssessment]:
     """Score a batch of HIP feature vectors."""
     return [
         score_hip_feature_vector(
             feature_vector,
             config=config,
-            extra_signal_hook=extra_signal_hook,
         )
         for feature_vector in feature_vectors
     ]
