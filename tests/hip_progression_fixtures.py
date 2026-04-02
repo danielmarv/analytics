@@ -137,44 +137,13 @@ def make_candidate(
     artifact: HipArtifact,
     *,
     hip_id: str = "HIP-1234",
-    matched_sources: list[str] | None = None,
-    negative_context_flags: list[str] | None = None,
+    source: str = "title_or_body",
+    is_propagated: bool = False,
 ) -> HipCandidate:
     """Build a synthetic HIP candidate tied to a test artifact."""
-    matched_sources = matched_sources or ["title", "body"]
-    mentions = []
-    for source in matched_sources:
-        mentions.append(
-            {
-                "source_kind": source,
-                "source_id": source,
-                "matched_text": hip_id,
-            }
-        )
-    from hiero_analytics.domain.hip_progression_models import HipMention
-
     return HipCandidate(
         artifact=artifact,
         hip_id=hip_id,
-        extraction_source=", ".join(matched_sources),
-        text_match_reason="; ".join(
-            f"explicit HIP mention in {source.replace('_', ' ')}"
-            for source in matched_sources
-        ),
-        mentions=[
-            HipMention(
-                hip_id=hip_id,
-                source_kind=source["source_kind"],  # type: ignore[arg-type]
-                source_id=source["source_id"],
-                matched_text=source["matched_text"],
-                phrase_context=f"{source['matched_text']} context",
-                is_explicit_match=True,
-                is_semantic_match=source["source_kind"] in {"title", "body", "commit_message"},
-                is_negative_context=False,
-            )
-            for source in mentions
-        ],
-        negative_context_flags=list(negative_context_flags or []),
-        matched_sources=list(matched_sources),
-        linked_artifact_numbers=list(artifact.linked_artifact_numbers),
+        source=source,
+        is_propagated=is_propagated,
     )

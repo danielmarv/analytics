@@ -21,10 +21,8 @@ ArtifactSegmentKind = Literal[
 ]
 ChangedFileStatus = Literal["added", "modified", "removed", "renamed"]
 AuthorScope = Literal["all", "maintainers", "committers"]
-ConfidenceLevel = Literal["low", "medium", "high"]
-EvidencePolarity = Literal["positive", "negative", "neutral"]
-EvidenceTier = Literal["tier_1", "tier_2", "tier_3", "tier_4", "tier_5"]
-RepoHipStatus = Literal["not_started", "in_progress", "completed", "unknown", "conflicting"]
+ConfidenceLevel = Literal["low", "high"]
+DevelopmentStatus = Literal["not_raised", "raised", "in_progress", "completed"]
 
 MAINTAINER_AUTHOR_ASSOCIATIONS = {"OWNER", "MEMBER"}
 COMMITTER_AUTHOR_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
@@ -33,45 +31,13 @@ SOURCE_DIR_HINTS = {"src", "lib", "app", "package", "packages", "sdk", "client",
 TEST_DIR_HINTS = {"test", "tests", "__tests__", "spec", "specs"}
 INTEGRATION_DIR_HINTS = {"integration", "integrations", "e2e", "end-to-end", "acceptance"}
 DOC_DIR_HINTS = {
-    ".github",
-    "docs",
-    "documentation",
-    "examples",
-    "example",
-    "samples",
-    "sample",
-    "scripts",
-    "script",
-    "fixtures",
-    "fixture",
-}
-CHANGELOG_FILE_HINTS = {
-    "changelog.md",
-    "changes.md",
-    "release-notes.md",
-    "release_notes.md",
-    "release-notes.txt",
+    ".github", "docs", "documentation", "examples", "example",
+    "samples", "sample", "scripts", "script", "fixtures", "fixture",
 }
 NON_SOURCE_DIR_HINTS = DOC_DIR_HINTS | {"dist", "build", "coverage"}
 CODE_FILE_EXTENSIONS = {
-    ".c",
-    ".cc",
-    ".cpp",
-    ".cs",
-    ".go",
-    ".h",
-    ".hpp",
-    ".java",
-    ".js",
-    ".jsx",
-    ".kt",
-    ".mjs",
-    ".py",
-    ".rb",
-    ".rs",
-    ".swift",
-    ".ts",
-    ".tsx",
+    ".c", ".cc", ".cpp", ".cs", ".go", ".h", ".hpp", ".java",
+    ".js", ".jsx", ".kt", ".mjs", ".py", ".rb", ".rs", ".swift", ".ts", ".tsx",
 }
 ARTIFACT_REFERENCE_PATTERNS = (
     re.compile(r"(?:^|[^\w])#(\d+)\b"),
@@ -79,6 +45,7 @@ ARTIFACT_REFERENCE_PATTERNS = (
     re.compile(r"\b[\w.-]+/[\w.-]+#(\d+)\b"),
 )
 HIP_ID_PATTERN = re.compile(r"\bhip[-\s]?(\d+)\b", re.IGNORECASE)
+SUBSTANTIAL_DELTA_MIN = 500
 
 
 def _path_parts(path: str) -> tuple[str, ...]:
@@ -104,7 +71,7 @@ def is_docs_file_path(path: str) -> bool:
 def is_changelog_file_path(path: str) -> bool:
     """Return True when a changed file looks like a changelog or release note."""
     file_name = PurePosixPath(path.lower().replace("\\", "/")).name
-    return file_name in CHANGELOG_FILE_HINTS
+    return file_name in {"changelog.md", "changes.md", "release-notes.md", "release_notes.md"}
 
 
 def classify_changed_file_path(path: str) -> tuple[bool, bool, bool]:
@@ -290,6 +257,18 @@ class HipArtifact:
         """Return the best timestamp for artifact ordering."""
         return self.updated_at or self.closed_at or self.created_at
 
+    def has_code_changes(self) -> bool:
+        """Return True when the artifact touches source files."""
+        return any(f.is_src for f in self.changed_files)
+
+    def has_test_changes(self) -> bool:
+        """Return True when the artifact touches test files."""
+        return any(f.is_test for f in self.changed_files)
+
+    def has_substantial_delta(self) -> bool:
+        """Return True when the artifact has a large code change (500+ lines)."""
+        return (self.additions + self.deletions) >= SUBSTANTIAL_DELTA_MIN
+
     def text_segments(self) -> list[ArtifactTextSegment]:
         """Return structured text segments for candidate extraction and evidence linking."""
         segments: list[ArtifactTextSegment] = []
@@ -298,59 +277,6 @@ class HipArtifact:
         if self.body:
             segments.append(ArtifactTextSegment(source_kind="body", source_id="body", text=self.body))
 
-        if self.comments:
-            for index, comment in enumerate(self.comments, start=1):
-                if not comment.body:
-                    continue
-                segments.append(
-                    ArtifactTextSegment(
-                        source_kind=comment.source_kind,
-                        source_id=f"{comment.source_kind}:{index}",
-                        text=comment.body,
-                        author_login=comment.author_login,
-                        author_association=comment.author_association,
-                        created_at=comment.created_at,
-                        is_bot=comment.is_bot,
-                    )
-                )
-        elif self.comments_text:
-            segments.append(
-                ArtifactTextSegment(
-                    source_kind="issue_comment" if self.artifact_type == "issue" else "review_comment",
-                    source_id="comments",
-                    text=self.comments_text,
-                )
-            )
-
-        if self.commits:
-            for index, commit in enumerate(self.commits, start=1):
-                if not commit.message:
-                    continue
-                segments.append(
-                    ArtifactTextSegment(
-                        source_kind="commit_message",
-                        source_id=f"commit:{index}",
-                        text=commit.message,
-                        created_at=commit.authored_at,
-                    )
-                )
-        elif self.commit_messages_text:
-            segments.append(
-                ArtifactTextSegment(
-                    source_kind="commit_message",
-                    source_id="commit_messages",
-                    text=self.commit_messages_text,
-                )
-            )
-
-        for changed_file in self.changed_files:
-            segments.append(
-                ArtifactTextSegment(
-                    source_kind="changed_file",
-                    source_id=changed_file.path,
-                    text=changed_file.path,
-                )
-            )
         return segments
 
 
@@ -372,152 +298,46 @@ class HipCatalogEntry:
 
 
 @dataclass(slots=True)
-class HipMention:
-    """One candidate HIP mention or file hint observed inside an artifact."""
-
-    hip_id: str
-    source_kind: ArtifactSegmentKind
-    source_id: str
-    matched_text: str
-    phrase_context: str
-    is_explicit_match: bool
-    is_semantic_match: bool
-    is_negative_context: bool
-    negative_context_flags: list[str] = field(default_factory=list)
-    linked_artifact_numbers: list[int] = field(default_factory=list)
-    is_bot: bool = False
-
-
-@dataclass(slots=True)
 class HipCandidate:
     """A candidate HIP association extracted from one artifact."""
 
     artifact: HipArtifact
     hip_id: str
-    extraction_source: str
-    text_match_reason: str
-    mentions: list[HipMention] = field(default_factory=list)
-    negative_context_flags: list[str] = field(default_factory=list)
-    matched_sources: list[str] = field(default_factory=list)
-    linked_artifact_numbers: list[int] = field(default_factory=list)
-    propagated_from_artifacts: list[int] = field(default_factory=list)
-
-
-@dataclass(slots=True)
-class ArtifactEvidence:
-    """One explainable evidence item for an artifact-to-HIP association."""
-
-    hip_id: str
-    artifact_type: ArtifactType
-    artifact_number: int
-    source_artifact: str
-    evidence_type: str
-    evidence_tier: EvidenceTier
-    source_kind: ArtifactSegmentKind | str
-    short_rationale: str
-    polarity: EvidencePolarity
-    confidence_contribution: float
-    top_reasons: list[str] = field(default_factory=list)
-    uncertainty_reasons: list[str] = field(default_factory=list)
-    fingerprint: str = ""
-
-
-@dataclass(slots=True)
-class HipFeatureVector:
-    """Engineered features summarizing one artifact-to-HIP association."""
-
-    repo: str
-    hip_id: str
-    artifact_type: ArtifactType
-    artifact_number: int
-    evidence_count: int
-    positive_evidence_count: int
-    negative_evidence_count: int
-    tier_1_count: int
-    tier_2_count: int
-    tier_3_count: int
-    tier_4_count: int
-    tier_5_count: int
-    direct_mention_count: int
-    semantic_phrase_count: int
-    propagated_mention_count: int
-    bot_mention_count: int
-    src_files_changed_count: int
-    test_files_changed_count: int
-    integration_test_files_changed_count: int
-    docs_files_changed_count: int
-    changelog_files_changed_count: int
-    new_src_files_count: int
-    new_test_files_count: int
-    merged: bool
-    linked_artifact_numbers: list[int] = field(default_factory=list)
-    has_direct_reference: bool = False
-    has_code_evidence: bool = False
-    has_test_evidence: bool = False
-    has_docs_only_change: bool = False
-    has_changelog_update: bool = False
-    has_negative_blocked: bool = False
-    has_negative_follow_up: bool = False
-    has_negative_prep: bool = False
-    has_negative_refactor_only: bool = False
-    has_negative_cleanup_only: bool = False
-    has_negative_reverted: bool = False
-    evidence_records: list[ArtifactEvidence] = field(default_factory=list)
-    top_evidence_types: list[str] = field(default_factory=list)
-
-
-@dataclass(slots=True)
-class ConfidenceBreakdown:
-    """Explainable confidence payload attached to artifact and repo assessments."""
-
-    confidence_score: float
-    confidence_level: ConfidenceLevel
-    top_reasons: list[str] = field(default_factory=list)
-    uncertainty_reasons: list[str] = field(default_factory=list)
+    source: str
+    is_propagated: bool = False
 
 
 @dataclass(slots=True)
 class ArtifactHipAssessment:
-    """Final artifact-level inference for one HIP."""
+    """Artifact-level HIP classification: status + confidence."""
 
     repo: str
     hip_id: str
     artifact_type: ArtifactType
     artifact_number: int
-    status: RepoHipStatus
-    progress_stage: str
-    confidence_score: float
-    confidence_level: ConfidenceLevel
-    evidence_count: int
-    positive_evidence_count: int
-    negative_evidence_count: int
-    evidence_records: list[ArtifactEvidence] = field(default_factory=list)
-    top_reasons: list[str] = field(default_factory=list)
-    uncertainty_reasons: list[str] = field(default_factory=list)
+    status: DevelopmentStatus
+    confidence: ConfidenceLevel
+    has_code: bool = False
+    has_tests: bool = False
+    merged: bool = False
+    is_committer: bool = False
 
 
 @dataclass(slots=True)
-class RepoHipAssessment:
+class HipRepoStatus:
     """Aggregated repository-level status for one HIP."""
 
     repo: str
     hip_id: str
-    status: RepoHipStatus
-    rag_label: str
-    confidence_score: float
-    confidence_level: ConfidenceLevel
-    evidence_count: int
-    top_artifacts: list[str] = field(default_factory=list)
+    status: DevelopmentStatus
+    confidence: ConfidenceLevel
     supporting_artifact_numbers: list[int] = field(default_factory=list)
-    top_reasons: list[str] = field(default_factory=list)
-    uncertainty_reasons: list[str] = field(default_factory=list)
-    reviewer_notes: str = ""
-    rationale: list[str] = field(default_factory=list)
+    top_artifacts: list[str] = field(default_factory=list)
     last_evidence_at: datetime | None = None
 
 
+# Backward-compatible aliases used by the data loader and evaluation code.
 HipEvidence = ArtifactHipAssessment
-HipRepoStatus = RepoHipAssessment
 
 
 @dataclass(frozen=True, slots=True)
@@ -534,25 +354,3 @@ class RepositoryTargetConfig:
     def full_name(self) -> str:
         """Return the GitHub ``owner/repo`` identifier."""
         return f"{self.owner}/{self.repo}"
-
-
-@dataclass(slots=True)
-class ArtifactBenchmarkExpectation:
-    """Expected artifact-level status in the benchmark dataset."""
-
-    repo: str
-    artifact_type: ArtifactType
-    artifact_number: int
-    hip_id: str
-    expected_status: RepoHipStatus
-    rationale: str = ""
-
-
-@dataclass(slots=True)
-class RepoBenchmarkExpectation:
-    """Expected repo-level status in the benchmark dataset."""
-
-    repo: str
-    hip_id: str
-    expected_status: RepoHipStatus
-    rationale: str = ""

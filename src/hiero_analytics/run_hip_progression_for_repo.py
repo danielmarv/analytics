@@ -8,7 +8,6 @@ from pathlib import Path
 
 from hiero_analytics.analysis.hip_evaluation import assign_dataset_splits
 from hiero_analytics.analysis.hip_progression_pipeline import run_hip_progression_pipeline
-from hiero_analytics.config.hip_progression import DEFAULT_HIP_PROGRESSION_CONFIG
 from hiero_analytics.config.logging import setup_logging
 from hiero_analytics.config.paths import OUTPUTS_DIR
 from hiero_analytics.data_sources.github_client import GitHubClient
@@ -77,12 +76,6 @@ def build_argument_parser() -> argparse.ArgumentParser:
         default="review",
         help="Write the smaller reviewer bundle by default, or the full audit bundle when needed.",
     )
-    parser.add_argument(
-        "--checklist-limit",
-        type=int,
-        default=10,
-        help="Maximum number of newest HIPs to include in the checklist view.",
-    )
     return parser
 
 
@@ -102,7 +95,6 @@ def run_pipeline(
     train_ratio: float = 0.8,
     latest_hip_limit: int = 10,
     export_profile: str = "review",
-    checklist_limit: int = 10,
 ) -> dict[str, object]:
     """Execute the end-to-end HIP progression pipeline."""
     client = GitHubClient()
@@ -121,20 +113,17 @@ def run_pipeline(
         catalog_entries=catalog_entries,
         repos=[f"{owner}/{repo}"],
         latest_hip_limit=latest_hip_limit,
-        config=DEFAULT_HIP_PROGRESSION_CONFIG,
     )
     dataset_splits = assign_dataset_splits(scoped_artifacts, train_ratio=train_ratio)
     exported_paths = export_hip_progression_results(
         output_dir,
         artifacts=scoped_artifacts,
         catalog_entries=result.catalog_entries,
-        feature_vectors=result.feature_vectors,
-        artifact_assessments=result.artifact_assessments,
+        assessments=result.assessments,
         repo_statuses=result.repo_statuses,
         dataset_splits=dataset_splits,
         export_profile=export_profile,
         export_scope="repo",
-        checklist_latest_limit=checklist_limit,
     )
     client.log_usage()
 
@@ -143,8 +132,7 @@ def run_pipeline(
         "artifacts": artifacts,
         "scoped_artifacts": scoped_artifacts,
         "candidates": result.candidates,
-        "feature_vectors": result.feature_vectors,
-        "artifact_assessments": result.artifact_assessments,
+        "assessments": result.assessments,
         "repo_statuses": result.repo_statuses,
         "dataset_splits": dataset_splits,
         "exported_paths": exported_paths,
@@ -173,7 +161,6 @@ def main(argv: list[str] | None = None) -> int:
         train_ratio=args.train_ratio,
         latest_hip_limit=args.latest_hip_limit,
         export_profile=args.export_profile,
-        checklist_limit=args.checklist_limit,
     )
 
     repo_statuses = results["repo_statuses"]

@@ -36,4 +36,4 @@ def test_run_pipeline_scopes_predictions_to_latest_catalog_entries():
     assert [entry.hip_id for entry in result.catalog_entries] == ["HIP-200"]
     assert result.candidates == []
     assert [repo_status.hip_id for repo_status in result.repo_statuses] == ["HIP-200"]
-    assert result.repo_statuses[0].status == "not_started"
+    assert result.repo_statuses[0].status == "not_raised"
