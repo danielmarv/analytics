@@ -317,17 +317,18 @@ def export_hip_progression_results(
             repo_issue_path,
         )
         chart_df = _repo_status_chart_df(repo_statuses)
+        n_hips = len(chart_df)
         if not chart_df.empty:
             plot_stacked_bar(
                 chart_df,
                 x_col="hip_id",
                 stack_cols=PRESENTATION_STATUS_ORDER,
                 labels=PRESENTATION_STATUS_ORDER,
-                title=f"HIP Development Status | {scope_label}",
+                title=f"Development Status per HIP ({n_hips} HIPs) | {scope_label}",
                 output_path=repo_chart_path,
                 colors=STATUS_CHART_COLORS,
                 rotate_x=20,
-                annotate_totals=True,
+                annotate_totals=False,
                 sort_categorical=False,
             )
 
@@ -345,13 +346,14 @@ def export_hip_progression_results(
         save_dataframe(_sdk_rollup_df(repo_statuses, catalog_entries=catalog_entries), sdk_rollup_path)
 
         status_chart_df = _sdk_status_chart_df(repo_statuses)
+        n_hips = len({rs.hip_id for rs in repo_statuses})
         if not status_chart_df.empty:
             plot_stacked_bar(
                 status_chart_df,
                 x_col="sdk",
                 stack_cols=PRESENTATION_STATUS_ORDER,
                 labels=PRESENTATION_STATUS_ORDER,
-                title=f"SDK HIP Development Status | {scope_label}",
+                title=f"HIP Count by Status per SDK ({n_hips} HIPs) | {scope_label}",
                 output_path=sdk_status_chart_path,
                 colors=STATUS_CHART_COLORS,
                 rotate_x=20,
@@ -365,7 +367,7 @@ def export_hip_progression_results(
                 completion_df,
                 x_col="sdk",
                 y_col="completion_rate_percent",
-                title=f"SDK HIP Completion Rate | {scope_label}",
+                title=f"HIP Completion Rate per SDK ({n_hips} HIPs) | {scope_label}",
                 output_path=sdk_completion_chart_path,
                 rotate_x=20,
             )
