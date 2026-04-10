@@ -213,7 +213,6 @@ def plot_multiline(
         layout_rect=layout_rect,
     )
 
-
 def plot_stacked_area(
     df: pd.DataFrame,
     x_col: str,
