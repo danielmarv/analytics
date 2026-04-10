@@ -10,7 +10,10 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import pandas as pd
+
 from hiero_analytics.analysis.dataframe_utils import issues_to_dataframe
+from hiero_analytics.analysis.timeseries import get_difficulty_over_time
 from hiero_analytics.config.charts import DIFFICULTY_COLORS
 from hiero_analytics.config.paths import ORG, ensure_org_dirs
 from hiero_analytics.data_sources.github_client import GitHubClient
@@ -22,7 +25,16 @@ from hiero_analytics.domain.labels import (
 )
 from hiero_analytics.export.save import save_dataframe
 from hiero_analytics.plotting.bars import plot_stacked_bar
+from hiero_analytics.plotting.lines import plot_stacked_area
 from hiero_analytics.plotting.pie import plot_pie
+
+DIFFICULTY_OVER_TIME_STACK_COLS = ["gfi", "beginner", "intermediate", "advanced"]
+DIFFICULTY_OVER_TIME_LABELS = [
+    "Good First Issue",
+    "Beginner",
+    "Intermediate",
+    "Advanced",
+]
 
 
 def assign_difficulty(labels, specs):
@@ -40,11 +52,31 @@ def main() -> None:
     print(f"Running difficulty analytics for org: {ORG}")
 
     client = GitHubClient()
-    issues = fetch_org_issues_graphql(client, org=ORG)
+    issues = fetch_org_issues_graphql(client, org=ORG, states=["OPEN", "CLOSED"])
 
     print(f"Fetched {len(issues)} issues")
 
     df = issues_to_dataframe(issues)
+
+    difficulty_over_time = pd.DataFrame(get_difficulty_over_time(issues))
+
+    if not difficulty_over_time.empty:
+        save_dataframe(
+            difficulty_over_time,
+            org_data_dir / "difficulty_over_time_weekly.csv",
+        )
+
+        plot_stacked_area(
+            difficulty_over_time,
+            x_col="date",
+            stack_cols=DIFFICULTY_OVER_TIME_STACK_COLS,
+            labels=DIFFICULTY_OVER_TIME_LABELS,
+            title="Open Issues by Difficulty Over Time",
+            output_path=org_charts_dir / "difficulty_over_time_weekly.png",
+            colors=DIFFICULTY_COLORS,
+            xlabel="Date",
+            ylabel="Open issues",
+        )
 
     cutoff = datetime.now(UTC) - timedelta(days=30)
 
@@ -52,9 +84,6 @@ def main() -> None:
 
     # Remove org prefix from repo name
     df["repo"] = df["repo"].str.split("/").str[-1]
-
-    # Only analyze OPEN issues
-    df = df[df["state"] == "open"].copy()
 
     # Assign difficulty
     df["difficulty"] = df["labels"].apply(lambda labels: assign_difficulty(labels, DIFFICULTY_LEVELS))

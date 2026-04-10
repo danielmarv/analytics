@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import hiero_analytics.plotting.pie as pie_module
 from hiero_analytics.plotting.bars import _compute_annotation_padding, _round_bar_patches, plot_bar
 from hiero_analytics.plotting.base import create_figure, style_axes
-from hiero_analytics.plotting.lines import plot_multiline
+from hiero_analytics.plotting.lines import plot_multiline, plot_stacked_area
 from hiero_analytics.plotting.pie import plot_pie
 
 
@@ -74,10 +74,20 @@ def test_plotters_write_chart_files(tmp_path):
             "count": [7, 9, 4],
         }
     )
+    area_df = pd.DataFrame(
+        {
+            "date": ["2024-01-01", "2024-01-08", "2024-01-15"],
+            "gfi": [2, 3, 4],
+            "beginner": [0, 1, 1],
+            "intermediate": [0, 1, 2],
+            "advanced": [0, 0, 1],
+        }
+    )
 
     bar_output = tmp_path / "difficulty_by_repo.png"
     line_output = tmp_path / "gfi_state_line.png"
     pie_output = tmp_path / "difficulty_donut.png"
+    area_output = tmp_path / "difficulty_over_time.png"
 
     plot_bar(
         bar_df,
@@ -102,10 +112,21 @@ def test_plotters_write_chart_files(tmp_path):
         title="Issue Difficulty Distribution",
         output_path=pie_output,
     )
+    plot_stacked_area(
+        area_df,
+        x_col="date",
+        stack_cols=["gfi", "beginner", "intermediate", "advanced"],
+        labels=["Good First Issue", "Beginner", "Intermediate", "Advanced"],
+        title="Open Issues by Difficulty Over Time",
+        output_path=area_output,
+        xlabel="Date",
+        ylabel="Open issues",
+    )
 
     assert bar_output.exists() and bar_output.stat().st_size > 0
     assert line_output.exists() and line_output.stat().st_size > 0
     assert pie_output.exists() and pie_output.stat().st_size > 0
+    assert area_output.exists() and area_output.stat().st_size > 0
 
 
 def test_plot_pie_rejects_non_positive_totals(tmp_path):

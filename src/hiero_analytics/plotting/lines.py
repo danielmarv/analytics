@@ -4,13 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
 import pandas as pd
+from matplotlib.patches import Patch
 
-from hiero_analytics.config.charts import FIGURE_BACKGROUND_COLOR, PRIMARY_PALETTE
+from hiero_analytics.config.charts import FIGURE_BACKGROUND_COLOR, PLOT_BACKGROUND_COLOR, PRIMARY_PALETTE
 
 from .base import create_figure, finalize_chart, prepare_dataframe
-from .primitives import annotate_endpoint_badge, build_palette, format_chart_value
+from .primitives import annotate_endpoint_badge, build_palette, format_chart_value, is_numeric_or_datetime
 
 
 def plot_line(
@@ -209,4 +211,79 @@ def plot_multiline(
         legend_ncol=legend_ncol,
         legend_kwargs={"borderaxespad": 0.0},
         layout_rect=layout_rect,
+    )
+
+
+def plot_stacked_area(
+    df: pd.DataFrame,
+    x_col: str,
+    stack_cols: list[str],
+    labels: list[str],
+    title: str,
+    output_path: Path,
+    colors: dict[str, str] | None = None,
+    rotate_x: int | None = None,
+    xlabel: str | None = None,
+    ylabel: str = "count",
+) -> None:
+    """Plot a stacked area chart for time-oriented series."""
+    data = prepare_dataframe(df, x_col, *stack_cols).copy()
+
+    if len(stack_cols) != len(labels):
+        raise ValueError("stack_cols and labels must have the same length")
+
+    if not pd.api.types.is_numeric_dtype(data[x_col]):
+        parsed_x = pd.to_datetime(data[x_col], errors="coerce", utc=True)
+        if parsed_x.notna().all():
+            data[x_col] = parsed_x.dt.tz_convert(None)
+        elif not is_numeric_or_datetime(data[x_col]):
+            raise ValueError("Stacked area chart requires numeric or datetime x-axis values")
+
+    data = data.sort_values(x_col)
+
+    fig, ax = create_figure()
+    palette = build_palette(len(stack_cols))
+    series_colors = [colors.get(label) if colors else palette[index] for index, label in enumerate(labels)]
+    legend_handles = [Patch(facecolor=color, edgecolor="none", label=label) for color, label in zip(series_colors, labels, strict=True)]
+
+    collections = ax.stackplot(
+        data[x_col],
+        *[data[col].astype(float) for col in stack_cols],
+        colors=series_colors,
+        alpha=0.96,
+        linewidth=0.9,
+        labels=labels,
+        zorder=3,
+    )
+
+    for collection in collections:
+        collection.set_edgecolor(PLOT_BACKGROUND_COLOR)
+
+    if pd.api.types.is_datetime64_any_dtype(data[x_col]):
+        locator = mdates.AutoDateLocator(minticks=4, maxticks=8)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter(locator))
+    else:
+        ax.xaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+
+    ax.yaxis.set_major_locator(ticker.MaxNLocator(integer=True))
+    ax.margins(x=0.02, y=0.08)
+
+    finalize_chart(
+        fig=fig,
+        ax=ax,
+        title=title,
+        xlabel=xlabel or x_col,
+        ylabel=ylabel,
+        output_path=output_path,
+        legend=True,
+        rotate_x=rotate_x,
+        grid_axis="y",
+        legend_handles=legend_handles,
+        legend_labels=labels,
+        legend_loc="lower center",
+        legend_bbox_to_anchor=(0.5, -0.14),
+        legend_ncol=min(len(labels), 4),
+        legend_kwargs={"borderaxespad": 0.0},
+        layout_rect=(0, 0.14, 1.0, 1.0),
     )
