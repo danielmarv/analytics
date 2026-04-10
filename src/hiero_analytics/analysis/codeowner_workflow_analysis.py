@@ -5,7 +5,6 @@ from hiero_analytics.data_sources.models import CodeOwnersRecord, RunnerRecord
 
 logger = logging.getLogger(__name__)
 
-
 def prepare_org_codeowners_summary(codeowners: list[CodeOwnersRecord]) -> pd.DataFrame:
     """Aggregates CODEOWNERS presence into an organization level summary."""
     if not codeowners:
