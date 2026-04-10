@@ -19,7 +19,6 @@ def prepare_org_codeowners_summary(codeowners: list[CodeOwnersRecord]) -> pd.Dat
         "count": [present_count, missing_count]
     })
 
-
 def prepare_repo_level_codeowner_summary(codeowners: list[CodeOwnersRecord]) -> pd.DataFrame:
     """Transforms a list of CodeOwnersRecords into a repository level DataFrame"""
     if not codeowners:
