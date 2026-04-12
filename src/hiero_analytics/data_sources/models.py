@@ -8,9 +8,9 @@ issues, and merged pull request difficulty metrics.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Mapping
 
 
 def _parse_dt(value: str | None) -> datetime | None:
@@ -53,6 +53,7 @@ class RepositoryRecord(BaseRecord):
 
     @classmethod
     def from_github_node(cls, node: dict, context: dict) -> list[RepositoryRecord]:
+        """Hydrate repository records from a GraphQL repository node."""
         return [
             cls(
                 full_name=f"{cls._owner(context)}/{node['name']}",
@@ -78,6 +79,7 @@ class IssueRecord(BaseRecord):
 
     @classmethod
     def from_github_node(cls, node: dict, context: dict) -> list[IssueRecord]:
+        """Hydrate issue records from a GraphQL issue node."""
         repo_name = cls._repo_name(context)
         labels = [label["name"].lower() for label in node.get("labels", {}).get("nodes", [])]
         return [
@@ -91,6 +93,52 @@ class IssueRecord(BaseRecord):
                 labels=labels,
             )
         ]
+
+
+@dataclass(frozen=True)
+class IssueTimelineEventRecord:
+    """A normalized issue timeline event used for historical state reconstruction."""
+
+    repo: str
+    issue_number: int
+    event_type: str
+    occurred_at: datetime
+    label: str | None = None
+
+    @classmethod
+    def from_rest_event(
+        cls,
+        event: dict,
+        *,
+        owner: str,
+        repo: str,
+        issue_number: int,
+    ) -> IssueTimelineEventRecord | None:
+        """Hydrate a normalized timeline event from the REST timeline endpoint."""
+        event_type = str(event.get("event", "")).lower()
+
+        if event_type not in {"labeled", "unlabeled", "closed", "reopened"}:
+            return None
+
+        occurred_at = _parse_dt(event.get("created_at"))
+        if occurred_at is None:
+            return None
+
+        label_name: str | None = None
+        if event_type in {"labeled", "unlabeled"}:
+            label_node = event.get("label")
+            if isinstance(label_node, Mapping):
+                raw_label = label_node.get("name")
+                if isinstance(raw_label, str):
+                    label_name = raw_label.lower()
+
+        return cls(
+            repo=f"{owner}/{repo}",
+            issue_number=issue_number,
+            event_type=event_type,
+            occurred_at=occurred_at,
+            label=label_name,
+        )
 
 
 @dataclass(frozen=True)
@@ -109,6 +157,7 @@ class PullRequestDifficultyRecord(BaseRecord):
 
     @classmethod
     def from_github_node(cls, node: dict, context: dict) -> list[PullRequestDifficultyRecord]:
+        """Hydrate pull-request difficulty records from a GraphQL PR node."""
         repo_name = cls._repo_name(context)
         author_node = node.get("author")
         author = author_node.get("login") if isinstance(author_node, Mapping) else None
@@ -148,6 +197,7 @@ class ContributorActivityRecord(BaseRecord):
 
     @classmethod
     def from_github_node(cls, node: dict, context: dict) -> list[ContributorActivityRecord]:
+        """Hydrate contributor activity records from a GraphQL PR node."""
         repo_name = cls._repo_name(context)
         cutoff = context.get("cutoff")
         pr_number = node["number"]
@@ -211,6 +261,7 @@ class ContributorMergedPRCountRecord(BaseRecord):
 
     @classmethod
     def from_github_node(cls, node: dict, context: dict) -> list[ContributorMergedPRCountRecord]:
+        """Hydrate merged-PR count records from a GraphQL search node."""
         repo_name = cls._repo_name(context)
         login = context.get("login", "")
         return [

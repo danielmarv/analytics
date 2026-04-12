@@ -1,20 +1,22 @@
 """
-This module provides functions to search for issues on GitHub using the REST API. 
+This module provides functions to search for issues on GitHub using the REST API.
+
 It supports pagination to handle large result sets and allows for complex search queries using GitHub's search syntax.
 """
 
 from __future__ import annotations
 
 import base64
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import re
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 import yaml
 
 from .github_client import GitHubClient
 from .pagination import paginate_page_number
+from hiero_analytics.config.github import SEARCH_REQUEST_DELAY_SECONDS
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +35,8 @@ GITHUB_HOSTED_EXACT = {
 def search_issues(
     client: GitHubClient,
     query: str,
+    *,
+    max_pages: int | None = None,
 ) -> list[dict[str, Any]]:
     """
     Search GitHub issues and pull requests using the REST search API.
@@ -40,6 +44,7 @@ def search_issues(
     Args:
         client: Authenticated GitHub client.
         query: GitHub search query string.
+        max_pages: Optional cap on the number of pages to request.
 
     Returns:
         A list of issue objects returned by the GitHub API.
@@ -62,7 +67,17 @@ def search_issues(
 
         return [item for item in items if isinstance(item, dict)]
 
-    return paginate_page_number(page)
+    if max_pages is None:
+        return paginate_page_number(
+            page,
+            delay_seconds=SEARCH_REQUEST_DELAY_SECONDS,
+        )
+
+    return paginate_page_number(
+        page,
+        max_pages=max_pages,
+        delay_seconds=SEARCH_REQUEST_DELAY_SECONDS,
+    )
 
 def has_codeowners_file(client: GitHubClient, org: str, repo: str) -> bool:
     """Checks for the existence of a CODEOWNERS file in standard repository locations."""
@@ -86,17 +101,18 @@ def has_codeowners_file(client: GitHubClient, org: str, repo: str) -> bool:
 def _is_self_hosted(label: str) -> bool | None:
     """
     Determines if a runner is self-hosted.
+
     Returns:
         True: Explicitly a custom/self-hosted runner.
         False: Explicitly a standard GitHub-hosted runner.
         None: Indeterminate (complex expressions/matrix variables).
     """
-    l = str(label).lower().strip()
+    label_value = str(label).lower().strip()
 
-    if l in GITHUB_HOSTED_EXACT or any(re.match(p, l) for p in GITHUB_HOSTED_PATTERNS):
+    if label_value in GITHUB_HOSTED_EXACT or any(re.match(p, label_value) for p in GITHUB_HOSTED_PATTERNS):
         return False
 
-    if "${{" in l:
+    if "${{" in label_value:
         return None
 
     return True
@@ -130,13 +146,13 @@ def _process_workflow_file(client: GitHubClient, wf: dict) -> list[dict]:
             
             final_status = False 
             
-            for l in labels:
-                status = _is_self_hosted(str(l))
+            for label_value in labels:
+                status = _is_self_hosted(str(label_value))
                 
                 if status is True:
                     final_status = True
                     break 
-                elif status is None:
+                if status is None:
                     final_status = None
 
             results.append({

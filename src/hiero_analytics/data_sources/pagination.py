@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Callable
+import time
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ def paginate_page_number(
     fetch_page: Callable[[int], list[Any]],
     page_size: int = DEFAULT_PAGE_SIZE,
     max_pages: int | None = None,
+    delay_seconds: float = 0.0,
 ) -> list[Any]:
     """
     Collect items from a page-number-based API.
@@ -71,6 +73,9 @@ def paginate_page_number(
         if max_pages is not None and page > max_pages:
             logger.warning("Pagination stopped after max_pages=%d", max_pages)
             break
+
+        if delay_seconds > 0:
+            time.sleep(delay_seconds)
 
     logger.info("Pagination collected %d items total", len(results))
 

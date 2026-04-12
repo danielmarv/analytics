@@ -1,3 +1,6 @@
+"""Tests for normalized GitHub data record models."""
+
+from dataclasses import FrozenInstanceError
 from datetime import datetime
 
 import pytest
@@ -6,6 +9,7 @@ from hiero_analytics.data_sources.models import (
     ContributorActivityRecord,
     ContributorMergedPRCountRecord,
     IssueRecord,
+    IssueTimelineEventRecord,
     PullRequestDifficultyRecord,
     RepositoryRecord,
     _parse_dt,
@@ -16,7 +20,7 @@ from hiero_analytics.data_sources.models import (
 # ---------------------------------------------------------
 
 def test_repository_record_creation():
-
+    """Repository records should initialize required fields."""
     repo = RepositoryRecord(
         full_name="org/repo",
         name="repo",
@@ -32,7 +36,7 @@ def test_repository_record_creation():
 
 
 def test_repository_record_optional_fields():
-
+    """Repository records should keep optional metadata when provided."""
     dt = datetime(2024, 1, 1)
 
     repo = RepositoryRecord(
@@ -54,7 +58,7 @@ def test_repository_record_optional_fields():
 # ---------------------------------------------------------
 
 def test_issue_record_creation():
-
+    """Issue records should store the normalized issue payload."""
     created = datetime(2024, 1, 1)
 
     issue = IssueRecord(
@@ -79,7 +83,7 @@ def test_issue_record_creation():
 # ---------------------------------------------------------
 
 def test_pr_difficulty_record_creation():
-
+    """PR difficulty records should link pull requests to issue labels."""
     created = datetime(2024, 1, 1)
     merged = datetime(2024, 1, 2)
 
@@ -101,7 +105,7 @@ def test_pr_difficulty_record_creation():
 
 
 def test_contributor_activity_record_creation():
-
+    """Contributor activity records should store normalized PR events."""
     occurred = datetime(2024, 1, 1)
 
     record = ContributorActivityRecord(
@@ -121,12 +125,30 @@ def test_contributor_activity_record_creation():
     assert record.target_number == 10
 
 
+def test_issue_timeline_event_record_creation():
+    """Issue timeline records should preserve normalized event metadata."""
+    occurred = datetime(2024, 1, 1)
+
+    record = IssueTimelineEventRecord(
+        repo="org/repo",
+        issue_number=10,
+        event_type="labeled",
+        occurred_at=occurred,
+        label="good first issue",
+    )
+
+    assert record.repo == "org/repo"
+    assert record.issue_number == 10
+    assert record.event_type == "labeled"
+    assert record.label == "good first issue"
+
+
 # ---------------------------------------------------------
 # dataclass equality
 # ---------------------------------------------------------
 
 def test_repository_record_equality():
-
+    """Repository records should compare by value."""
     r1 = RepositoryRecord("org/repo", "repo", "org")
     r2 = RepositoryRecord("org/repo", "repo", "org")
 
@@ -138,15 +160,15 @@ def test_repository_record_equality():
 # ---------------------------------------------------------
 
 def test_repository_record_is_frozen():
-
+    """Repository records should be immutable."""
     repo = RepositoryRecord("org/repo", "repo", "org")
 
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         repo.name = "new-name"
 
 
 def test_issue_record_is_frozen():
-
+    """Issue records should be immutable."""
     issue = IssueRecord(
         repo="org/repo",
         number=1,
@@ -157,7 +179,7 @@ def test_issue_record_is_frozen():
         labels=["bug"],
     )
 
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         issue.number = 2
 
 
@@ -197,7 +219,7 @@ def test_contributor_merged_pr_count_record_is_frozen():
         merged_pr_count=10,
     )
 
-    with pytest.raises(Exception):
+    with pytest.raises(FrozenInstanceError):
         record.merged_pr_count = 20
 
 
@@ -215,6 +237,7 @@ def test_contributor_merged_pr_count_record_equality():
 # ---------------------------------------------------------
 
 def test_parse_dt():
+    """ISO timestamps should parse into datetime objects."""
     value = "2024-01-01T00:00:00Z"
 
     dt = _parse_dt(value)
@@ -224,5 +247,6 @@ def test_parse_dt():
 
 
 def test_parse_dt_none():
+    """A missing timestamp should remain missing."""
     assert _parse_dt(None) is None
 

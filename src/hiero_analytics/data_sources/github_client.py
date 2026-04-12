@@ -21,6 +21,7 @@ from hiero_analytics.config.github import (
     GITHUB_TOKEN,
     HTTP_TIMEOUT_SECONDS,
     REQUEST_DELAY_SECONDS,
+    SECONDARY_RATE_LIMIT_FALLBACK_SECONDS,
 )
 from .rate_limit import (
     Action,
@@ -194,6 +195,31 @@ class GitHubClient:
                 action = self._apply_decision(rest_decision)
                 if action == Action.DELAY_THEN_RETRY_LOOP:
                     logger.info("Retrying due to REST rate limit...")
+                    continue
+
+            if response.status_code == 403 and attempt < MAX_RETRIES:
+                retry_after = response.headers.get("Retry-After")
+                message = ""
+                if retry_after is None:
+                    try:
+                        payload = response.json()
+                        if isinstance(payload, dict):
+                            message = str(payload.get("message", ""))
+                    except ValueError:
+                        message = ""
+                is_rate_limited = "rate limit" in message.lower()
+
+                if retry_after is not None or is_rate_limited:
+                    if retry_after is not None and retry_after.isdigit():
+                        sleep_seconds = max(int(retry_after), 1)
+                    else:
+                        sleep_seconds = SECONDARY_RATE_LIMIT_FALLBACK_SECONDS
+                    logger.warning(
+                        "Secondary rate limit hit (403). Sleeping %ds before retry %d.",
+                        sleep_seconds,
+                        attempt + 1,
+                    )
+                    time.sleep(sleep_seconds)
                     continue
                 
             response.raise_for_status()

@@ -10,7 +10,11 @@ import pytest
 
 import hiero_analytics.data_sources.cache as cache
 import hiero_analytics.data_sources.github_ingest as ingest
-from hiero_analytics.data_sources.models import ContributorActivityRecord, IssueRecord
+from hiero_analytics.data_sources.models import (
+    ContributorActivityRecord,
+    IssueRecord,
+    IssueTimelineEventRecord,
+)
 
 
 @pytest.fixture(name="_temp_cache_dir")
@@ -94,6 +98,44 @@ def test_contributor_activity_record_cache_round_trip(_temp_cache_dir):
         "org_repo",
         parameters,
         ContributorActivityRecord,
+        use_cache=True,
+        ttl_seconds=60,
+    )
+
+    assert loaded == records
+
+
+def test_issue_timeline_event_record_cache_round_trip(_temp_cache_dir):
+    """Cached issue timeline events should deserialize back correctly."""
+    records = [
+        IssueTimelineEventRecord(
+            repo="org/repo",
+            issue_number=10,
+            event_type="labeled",
+            occurred_at=datetime(2024, 1, 2, tzinfo=UTC),
+            label="good first issue",
+        )
+    ]
+    parameters = {
+        "owner": "org",
+        "repo": "repo",
+        "issue_number": 10,
+    }
+
+    cache.save_records_cache(
+        "repo_issue_timeline_events",
+        "org_repo_10",
+        parameters,
+        IssueTimelineEventRecord,
+        records,
+        use_cache=True,
+    )
+
+    loaded = cache.load_records_cache(
+        "repo_issue_timeline_events",
+        "org_repo_10",
+        parameters,
+        IssueTimelineEventRecord,
         use_cache=True,
         ttl_seconds=60,
     )
