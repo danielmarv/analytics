@@ -195,6 +195,5 @@ def main() -> None:
 
     print("Historical difficulty-over-time analytics complete")
 
-
 if __name__ == "__main__":
     main()
