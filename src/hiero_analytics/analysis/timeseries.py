@@ -460,6 +460,8 @@ def get_difficulty_over_time_event_based(
     if not issue_entry_points:
         return []
 
+    issues_by_key = {(issue.repo, issue.number): issue for issue in filtered_issues}
+
     # Build sample points.
     sample_points = _weekly_sample_points(start_at, end_at)
 
@@ -476,11 +478,7 @@ def get_difficulty_over_time_event_based(
         }
 
         for (repo, number), (bucket, label_timestamp) in issue_entry_points.items():
-            # Find the issue object.
-            issue = next(
-                (iss for iss in filtered_issues if iss.repo == repo and iss.number == number),
-                None,
-            )
+            issue = issues_by_key.get((repo, number))
             if issue is None:
                 continue
 
