@@ -378,6 +378,128 @@ def get_difficulty_over_time_windowed(
     return series
 
 
+def get_difficulty_over_time_event_based(
+    issues: list[IssueRecord],
+    timeline_events: list[IssueTimelineEventRecord],
+    *,
+    start_at: datetime,
+    today: datetime | None = None,
+) -> list[dict[str, str | int]]:
+    """
+    Build weekly open-issue counts using only event-based forward tracking.
+
+    Rules:
+    - Only include issues created within the observation window.
+    - Use the label application date (most recent labeled event) as the entry point.
+    - Track forward only from the label event to the end of the window.
+    - Exclude issues with no difficulty label event in the timeline.
+
+    This approach avoids reconstructing historical state or mixing present-day
+    snapshot data with historical events. Every data point is grounded in a
+    recorded event.
+    """
+    if not issues:
+        return []
+
+    end_at = _normalize_datetime(today) or datetime.now(UTC)
+    start_at = _normalize_datetime(start_at) or end_at
+
+    if end_at < start_at:
+        end_at = start_at
+
+    # Normalize sample points to midnight UTC for calendar-aligned buckets.
+    start_at = start_at.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_at = end_at.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Filter: only issues created within the window.
+    filtered_issues = [
+        issue
+        for issue in issues
+        if (created := _normalize_datetime(issue.created_at)) is not None
+        and start_at <= created <= end_at
+    ]
+
+    if not filtered_issues:
+        return []
+
+    # Group events by issue.
+    events_by_issue = _timeline_events_by_issue(timeline_events)
+
+    # For each issue, find the most recent labeled event for its current difficulty.
+    issue_entry_points: dict[tuple[str, int], tuple[str, datetime]] = {}
+
+    for issue in filtered_issues:
+        current_difficulty = _difficulty_key(set(issue.labels or []))
+        if current_difficulty is None:
+            # Skip issues with no current difficulty label.
+            continue
+
+        issue_events = events_by_issue.get((issue.repo, issue.number), [])
+
+        # Find the most recent labeled event for this difficulty.
+        most_recent_label_event: IssueTimelineEventRecord | None = None
+        for event in reversed(issue_events):
+            if event.event_type == "labeled" and _difficulty_key_for_label(event.label) == current_difficulty:
+                most_recent_label_event = event
+                break
+
+        if most_recent_label_event is None:
+            # Skip issues with no recorded label event.
+            continue
+
+        label_timestamp = _normalize_datetime(most_recent_label_event.occurred_at)
+        if label_timestamp is None:
+            continue
+
+        # Only track from the label event onward; skip if label event is after window.
+        if label_timestamp > end_at:
+            continue
+
+        issue_entry_points[(issue.repo, issue.number)] = (current_difficulty, label_timestamp)
+
+    if not issue_entry_points:
+        return []
+
+    # Build sample points.
+    sample_points = _weekly_sample_points(start_at, end_at)
+
+    # Generate weekly rows.
+    series: list[dict[str, str | int]] = []
+
+    for sample_point in sample_points:
+        row: dict[str, str | int] = {
+            "date": sample_point.date().isoformat(),
+            "gfi": 0,
+            "beginner": 0,
+            "intermediate": 0,
+            "advanced": 0,
+        }
+
+        for (repo, number), (bucket, label_timestamp) in issue_entry_points.items():
+            # Find the issue object.
+            issue = next(
+                (iss for iss in filtered_issues if iss.repo == repo and iss.number == number),
+                None,
+            )
+            if issue is None:
+                continue
+
+            # Issue enters the dataset at its label event.
+            if sample_point < label_timestamp:
+                continue
+
+            # Issue is open if no closed_at or closed_at is after the sample point.
+            closed_at = _normalize_datetime(issue.closed_at)
+            if closed_at is not None and closed_at <= sample_point:
+                continue
+
+            row[bucket] += 1
+
+        series.append(row)
+
+    return series
+
+
 def getDifficultyOverTime(
     issues: list[IssueRecord],
     timeline_events: list[IssueTimelineEventRecord],
