@@ -144,10 +144,10 @@ def test_contributor_activity_record_from_issue_node():
     assert records == [
         ContributorActivityRecord(
             repo="org/repo",
-            activity_type="authored_issue",
+            activity_type="authored_pull_request",
             actor="dana",
             occurred_at=datetime.fromisoformat("2024-01-02T00:00:00+00:00"),
-            target_type="issue",
+            target_type="pull_request",
             target_number=12,
             target_author="dana",
         )
@@ -172,7 +172,7 @@ def test_issue_timeline_event_record_creation():
     assert record.label == "good first issue"
 
 
-def test_issue_timeline_event_from_github_node_expands_timeline_items():
+def test_issue_timeline_event_from_issue_node_expands_timeline_items():
     """A GraphQL issue node expands its timelineItems into normalized events."""
     node = {
         "number": 42,

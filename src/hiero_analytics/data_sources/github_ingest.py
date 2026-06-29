@@ -19,7 +19,7 @@ import requests
 from hiero_analytics.config.github import BASE_URL
 from hiero_analytics.config.paths import load_query
 
-from .cache import load_records_cache, save_records_cache
+from .cache import FetchCacheOptions, GitHubRecordCache
 from .github_client import GitHubClient
 from .models import (
     BaseRecord,
@@ -35,6 +35,20 @@ from .pagination import extract_graphql_cursor_page, paginate_cursor
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseRecord)
+
+class _CacheProxy:
+    def resolve_cache_options(self, options: FetchCacheOptions | None) -> FetchCacheOptions:
+        return GitHubRecordCache().resolve_cache_options(options)
+
+    def load_records(self, *args, **kwargs):
+        return GitHubRecordCache().load_records(*args, **kwargs)
+
+    def save_records(self, *args, **kwargs):
+        return GitHubRecordCache().save_records(*args, **kwargs)
+
+
+cache = _CacheProxy()
+
 _CONTRIBUTOR_ACTIVITY_TYPES = [
     "authored_issue",
     "authored_pull_request",
@@ -45,34 +59,6 @@ _ISSUE_TIMELINE_HEADERS = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
 }
-
-def _cache_kwargs(
-    use_cache: bool | None,
-    cache_ttl_seconds: int | None,
-    refresh: bool,
-) -> dict[str, object]:
-    """Build keyword arguments for nested cache-aware fetch calls."""
-    kwargs: dict[str, object] = {}
-
-    if use_cache is not None:
-        kwargs["use_cache"] = use_cache
-    if cache_ttl_seconds is not None:
-        kwargs["cache_ttl_seconds"] = cache_ttl_seconds
-    if refresh:
-        kwargs["refresh"] = True
-
-    return kwargs
-
-
-def _parse_graphql_datetime(value: object) -> datetime | None:
-    """Parse an ISO datetime string from a GitHub GraphQL response."""
-    if not isinstance(value, str):
-        return None
-
-    try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
 
 # --------------------------------------------------------
 # GENERIC RESOURCE FETCHER ENGINE
@@ -90,19 +76,18 @@ def fetch_github_resource(  # noqa: UP047
     cache_scope: str,
     cache_parameters: dict[str, object],
     context_builder: Callable[[dict], dict] | None = None,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
+    cache_options: FetchCacheOptions | None = None,
     ) -> list[T]:
     """Generic engine for fetching paginated GitHub resources."""
-    cached = load_records_cache(
+    opts = cache.resolve_cache_options(cache_options)
+    cached = cache.load_records(
         cache_key,
         cache_scope,
         cache_parameters,
         model_class,
-        use_cache=use_cache,
-        ttl_seconds=cache_ttl_seconds,
-        refresh=refresh,
+        use_cache=opts.use_cache,
+        ttl_seconds=opts.cache_ttl_seconds,
+        refresh=opts.refresh,
     )
     if cached is not None:
         return cached
@@ -124,7 +109,11 @@ def fetch_github_resource(  # noqa: UP047
         return items, next_cursor, has_next
 
     records = paginate_cursor(page)
-    save_records_cache(cache_key, cache_scope, cache_parameters, model_class, records, use_cache=use_cache)
+    cache.save_records(
+        cache_key, cache_scope, cache_parameters, model_class,
+        records,
+        use_cache=opts.use_cache,
+    )
     return records
 
 
@@ -138,29 +127,26 @@ def fetch_org_resource_parallel(  # noqa: UP047
     cache_parameters: dict[str, object],
     repos: list[str] | None = None,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
+    cache_options: FetchCacheOptions | None = None,
     task_desc: str = "records",
 ) -> list[T]:
     """Generic engine for orchestrating parallel organization repository fetches."""
-    cached = load_records_cache(
+    opts = cache.resolve_cache_options(cache_options)
+    cached = cache.load_records(
         cache_key,
         org,
         cache_parameters,
         model_class,
-        use_cache=use_cache,
-        ttl_seconds=cache_ttl_seconds,
-        refresh=refresh,
+        use_cache=opts.use_cache,
+        ttl_seconds=opts.cache_ttl_seconds,
+        refresh=opts.refresh,
     )
     if cached is not None:
         return cached
 
     logger.info("Fetching %s across %s (max_workers=%d)", task_desc, org, max_workers)
 
-    all_repos = fetch_org_repos_graphql(
-        client, org, **_cache_kwargs(use_cache, cache_ttl_seconds, refresh)
-    )
+    all_repos = fetch_org_repos_graphql(client, org, cache_options=cache_options)
 
     if repos:
         allowed = set(repos)
@@ -178,11 +164,13 @@ def fetch_org_resource_parallel(  # noqa: UP047
                     all_records.extend(result)
                 else:
                     all_records.append(result)
-            except Exception as exc:
+            except (requests.HTTPError, ValueError) as exc:  # noqa: BLE001
                 logger.exception("Failed fetching %s for %s: %s", task_desc, repo.full_name, exc)
 
     logger.info("Collected %d %s across %s", len(all_records), task_desc, org)
-    save_records_cache(cache_key, org, cache_parameters, model_class, all_records, use_cache=use_cache)
+    cache.save_records(cache_key, org, cache_parameters, model_class,
+                       all_records, use_cache=opts.use_cache,
+    )
     return all_records
 
 
@@ -194,9 +182,7 @@ def fetch_org_repos_graphql(
     client: GitHubClient,
     org: str,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    cache_options: FetchCacheOptions | None = None,
     ) -> list[RepositoryRecord]:
     """Fetch all repository full names for an organization using GraphQL."""
     REPOS_QUERY = load_query("repos")
@@ -204,7 +190,7 @@ def fetch_org_repos_graphql(
         client, REPOS_QUERY, {"org": org}, RepositoryRecord, ["organization", "repositories"],
         cache_key="org_repos", cache_scope=org, cache_parameters={"org": org},
         context_builder=lambda _node: {"owner": org},
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
 
 # --------------------------------------------------------
@@ -217,10 +203,8 @@ def fetch_repo_issues_graphql(
     repo: str,
     states: list[str] | None = None,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
-    ) -> list[IssueRecord]:
+    cache_options: FetchCacheOptions | None = None,
+) -> list[IssueRecord]:
     """Fetch all issues for a repository using GraphQL."""
     ISSUES_QUERY = load_query("issues")
     norm_states = [s.upper() for s in states] if states else None
@@ -229,7 +213,7 @@ def fetch_repo_issues_graphql(
         cache_key="repo_issues", cache_scope=f"{owner}_{repo}",
         cache_parameters={"owner": owner, "repo": repo, "states": sorted(norm_states or [])},
         context_builder=lambda _node: {"owner": owner, "repo": repo},
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
 
 def fetch_org_issues_graphql(
@@ -238,19 +222,17 @@ def fetch_org_issues_graphql(
     states: list[str] | None = None,
     max_workers: int = 5,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    cache_options: FetchCacheOptions | None = None,
     ) -> list[IssueRecord]:
     """Fetch all issues across all repositories in an organization."""
     def fetch_func(repo):
         """Fetch issues for a single repository."""
-        return fetch_repo_issues_graphql(client, repo.owner, repo.name, states=states, **_cache_kwargs(use_cache, cache_ttl_seconds, refresh))
+        return fetch_repo_issues_graphql(client, repo.owner, repo.name, states=states, cache_options=cache_options)
     return fetch_org_resource_parallel(
         client, org, fetch_func, IssueRecord, max_workers, "org_issues",
         {"org": org, "states": sorted(s.upper() for s in states) if states else []},
         task_desc="organization issues",
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
 
 
@@ -260,9 +242,7 @@ def fetch_repo_issue_label_events_graphql(
     repo: str,
     states: list[str] | None = None,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
+    cache_options: FetchCacheOptions | None = None,
 ) -> list[IssueTimelineEventRecord]:
     """Fetch label add/remove events for a repo's issues via GraphQL ``timelineItems``.
 
@@ -284,7 +264,8 @@ def fetch_repo_issue_label_events_graphql(
         cache_scope=f"{owner}_{repo}",
         cache_parameters={"owner": owner, "repo": repo, "states": sorted(norm_states or [])},
         context_builder=lambda _node: {"owner": owner, "repo": repo},
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
+
     )
 
 
@@ -294,138 +275,22 @@ def fetch_org_issue_label_events_graphql(
     states: list[str] | None = None,
     max_workers: int = 5,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
+    cache_options: FetchCacheOptions | None = None,
 ) -> list[IssueTimelineEventRecord]:
     """Fetch label add/remove events for all issues across an organization via GraphQL."""
     def fetch_func(repo):
         """Fetch label events for a single repository."""
         return fetch_repo_issue_label_events_graphql(
             client, repo.owner, repo.name, states=states,
-            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+            cache_options=cache_options
         )
 
     return fetch_org_resource_parallel(
         client, org, fetch_func, IssueTimelineEventRecord, max_workers, "org_issue_label_events",
         {"org": org, "states": sorted(s.upper() for s in states) if states else []},
         task_desc="organization issue label events",
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
-
-
-def fetch_repo_issue_timeline_events_rest(
-    client: GitHubClient,
-    owner: str,
-    repo: str,
-    issue_number: int,
-    *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
-) -> list[IssueTimelineEventRecord]:
-    """Fetch REST timeline events for one issue."""
-    cache_scope = f"{owner}_{repo}_{issue_number}"
-    cache_parameters = {
-        "owner": owner,
-        "repo": repo,
-        "issue_number": issue_number,
-    }
-    cached = load_records_cache(
-        "repo_issue_timeline_events",
-        cache_scope,
-        cache_parameters,
-        IssueTimelineEventRecord,
-        use_cache=use_cache,
-        ttl_seconds=cache_ttl_seconds,
-        refresh=refresh,
-    )
-    if cached is not None:
-        return cached
-
-    records: list[IssueTimelineEventRecord] = []
-    page = 1
-
-    while True:
-        payload = client.get(
-            f"{BASE_URL}/repos/{owner}/{repo}/issues/{issue_number}/timeline",
-            params={"per_page": 100, "page": page},
-            headers=_ISSUE_TIMELINE_HEADERS,
-        )
-
-        if not isinstance(payload, list):
-            raise ValueError("Issue timeline payload must be a list")
-
-        for event in payload:
-            if not isinstance(event, dict):
-                continue
-
-            record = IssueTimelineEventRecord.from_rest_event(
-                event,
-                owner=owner,
-                repo=repo,
-                issue_number=issue_number,
-            )
-            if record is not None:
-                records.append(record)
-
-        if len(payload) < 100:
-            break
-
-        page += 1
-
-    save_records_cache(
-        "repo_issue_timeline_events",
-        cache_scope,
-        cache_parameters,
-        IssueTimelineEventRecord,
-        records,
-        use_cache=use_cache,
-    )
-    return records
-
-
-def fetch_issue_timeline_events_rest(
-    client: GitHubClient,
-    issues: list[IssueRecord],
-    *,
-    max_workers: int = 8,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
-) -> list[IssueTimelineEventRecord]:
-    """Fetch timeline events for a provided issue collection in parallel."""
-    unique_issues = {(issue.repo, issue.number): issue for issue in issues}
-
-    def fetch_func(issue: IssueRecord) -> list[IssueTimelineEventRecord]:
-        """Fetch timeline events for a single issue."""
-        owner, repo = issue.repo.split("/", maxsplit=1)
-        return fetch_repo_issue_timeline_events_rest(
-            client,
-            owner,
-            repo,
-            issue.number,
-            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
-        )
-
-    records: list[IssueTimelineEventRecord] = []
-    issue_items = list(unique_issues.values())
-
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(fetch_func, issue): issue for issue in issue_items}
-        for future in as_completed(futures):
-            issue = futures[future]
-            try:
-                records.extend(future.result())
-            except Exception as exc:
-                logger.exception(
-                    "Failed fetching issue timeline events for %s#%s: %s",
-                    issue.repo,
-                    issue.number,
-                    exc,
-                )
-
-    return records
 
 
 def fetch_repo_issue_events_rest_since(
@@ -434,9 +299,7 @@ def fetch_repo_issue_events_rest_since(
     repo: str,
     *,
     since: datetime,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
+    cache_options: FetchCacheOptions | None = None,
 ) -> list[IssueTimelineEventRecord]:
     """Fetch repository issue events since a cutoff date."""
     max_pages = 300
@@ -448,14 +311,15 @@ def fetch_repo_issue_events_rest_since(
         "repo": repo,
         "since": cutoff_iso,
     }
-    cached = load_records_cache(
+    opts = cache.resolve_cache_options(cache_options)
+    cached = cache.load_records(
         "repo_issue_events_since",
         cache_scope,
         cache_parameters,
         IssueTimelineEventRecord,
-        use_cache=use_cache,
-        ttl_seconds=cache_ttl_seconds,
-        refresh=refresh,
+        use_cache=opts.use_cache,
+        ttl_seconds=opts.cache_ttl_seconds,
+        refresh=opts.refresh,
     )
     if cached is not None:
         return cached
@@ -529,13 +393,80 @@ def fetch_repo_issue_events_rest_since(
 
         page += 1
 
-    save_records_cache(
+    cache.save_records(
         "repo_issue_events_since",
         cache_scope,
         cache_parameters,
         IssueTimelineEventRecord,
         records,
-        use_cache=use_cache,
+        use_cache=opts.use_cache,
+    )
+    return records
+
+
+def fetch_repo_issue_timeline_events_graphql(
+    client: GitHubClient,
+    owner: str,
+    repo: str,
+    issue_number: int,
+    *,
+    since: datetime | None = None,
+    cache_options: FetchCacheOptions | None = None,
+) -> list[IssueTimelineEventRecord]:
+    """Fetch issue timeline events for one issue using GraphQL."""
+    query = load_query("issue_timeline")
+    since_value = since.astimezone(UTC).isoformat() if since is not None else None
+    cache_scope = f"{owner}_{repo}_{issue_number}"
+    cache_parameters = {
+        "owner": owner,
+        "repo": repo,
+        "issue_number": issue_number,
+        "since": since_value,
+    }
+    opts = cache.resolve_cache_options(cache_options)
+    cached = cache.load_records(
+        "repo_issue_timeline_events_graphql",
+        cache_scope,
+        cache_parameters,
+        IssueTimelineEventRecord,
+        use_cache=opts.use_cache,
+        ttl_seconds=opts.cache_ttl_seconds,
+        refresh=opts.refresh,
+    )
+    if cached is not None:
+        return cached
+
+    def page(cursor: str | None) -> tuple[list[IssueTimelineEventRecord], str | None, bool]:
+        data = client.graphql(
+            query,
+            {
+                "owner": owner,
+                "repo": repo,
+                "number": issue_number,
+                "cursor": cursor,
+            },
+        )
+        nodes, next_cursor, has_next = extract_graphql_cursor_page(
+            data, ["repository", "issue", "timelineItems"]
+        )
+
+        records: list[IssueTimelineEventRecord] = []
+        context = {"owner": owner, "repo": repo, "issue_number": issue_number, "since": since}
+        for node in nodes:
+            if not isinstance(node, dict):
+                continue
+            records.extend(IssueTimelineEventRecord.from_timeline_item(node, context))
+
+        return records, next_cursor, has_next
+
+    records = paginate_cursor(page)
+    cache.save_records(
+        "repo_issue_timeline_events_graphql",
+        cache_scope,
+        cache_parameters,
+        IssueTimelineEventRecord,
+        records,
+        use_cache=opts.use_cache,
     )
     return records
 
@@ -546,9 +477,7 @@ def fetch_repo_issue_events_for_issues_since(
     *,
     since: datetime,
     max_workers: int = 5,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False,
+    cache_options: FetchCacheOptions | None = None,
 ) -> list[IssueTimelineEventRecord]:
     """Fetch repository-level issue events since a cutoff for repos present in the issue set."""
     repos = sorted({issue.repo for issue in issues})
@@ -561,7 +490,7 @@ def fetch_repo_issue_events_for_issues_since(
             owner,
             repo,
             since=since,
-            **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+            cache_options=cache_options,
         )
 
     records: list[IssueTimelineEventRecord] = []
@@ -583,6 +512,7 @@ def fetch_repo_issue_events_for_issues_since(
     return records
 
 
+
 # --------------------------------------------------------
 # FETCH MERGED PR DIFFICULTY
 # --------------------------------------------------------
@@ -591,9 +521,7 @@ def fetch_repo_merged_pr_difficulty_graphql(
     owner: str,
     repo: str,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    cache_options: FetchCacheOptions | None = None,
     ) -> list[PullRequestDifficultyRecord]:
     """Fetch merged pull requests and their linked closing issues for a repository."""
     MERGED_PR_QUERY = load_query("merged_pr")
@@ -602,7 +530,7 @@ def fetch_repo_merged_pr_difficulty_graphql(
         cache_key="repo_merged_pr_difficulty", cache_scope=f"{owner}_{repo}", 
         cache_parameters={"owner": owner, "repo": repo},
         context_builder=lambda _node: {"owner": owner, "repo": repo},
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
 
 def fetch_org_merged_pr_difficulty_graphql(
@@ -610,92 +538,22 @@ def fetch_org_merged_pr_difficulty_graphql(
     org: str,
     max_workers: int = 5,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    cache_options: FetchCacheOptions | None = None
     ) -> list[PullRequestDifficultyRecord]:
     """Fetch merged pull request difficulty records across all repositories in an organization."""
     def fetch_func(repo):
         """Fetch merged PR difficulty metrics for a repository."""
         return fetch_repo_merged_pr_difficulty_graphql(client,
-        repo.owner, repo.name, **_cache_kwargs(use_cache, cache_ttl_seconds, refresh))
+        repo.owner, repo.name, cache_options=cache_options)
     return fetch_org_resource_parallel(
         client, org, fetch_func, PullRequestDifficultyRecord, max_workers, "org_merged_pr_difficulty",
         {"org": org}, task_desc="merged PR difficulty records",
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
 
 # --------------------------------------------------------
 # FETCH CONTRIBUTOR ACTIVITY
 # --------------------------------------------------------
-
-def _fetch_repo_pull_request_activity_graphql(
-    client: GitHubClient,
-    owner: str,
-    repo: str,
-    cutoff: datetime | None,
-) -> list[ContributorActivityRecord]:
-    """Fetch contributor activity signals from pull request lifecycle data."""
-    contributor_activity_query = load_query("contributor_activity")
-    return fetch_github_resource(
-        client,
-        contributor_activity_query,
-        {"owner": owner, "repo": repo},
-        ContributorActivityRecord,
-        ["repository", "pullRequests"],
-        cache_key="repo_contributor_pull_request_activity",
-        cache_scope=f"{owner}_{repo}",
-        cache_parameters={"owner": owner, "repo": repo},
-        context_builder=lambda _node: {
-            "owner": owner,
-            "repo": repo,
-            "cutoff": cutoff,
-            "target_type": "pull_request",
-        },
-        use_cache=False,
-    )
-
-
-def _fetch_repo_issue_activity_graphql(
-    client: GitHubClient,
-    owner: str,
-    repo: str,
-    cutoff: datetime | None,
-) -> list[ContributorActivityRecord]:
-    """Fetch contributor activity signals from recently opened issues."""
-    contributor_issue_activity_query = load_query("contributor_issue_activity")
-
-    def page(cursor: str | None) -> tuple[list[ContributorActivityRecord], str | None, bool]:
-        """Fetch a single page of issues."""
-        data = client.graphql(
-            contributor_issue_activity_query,
-            {"owner": owner, "repo": repo, "cursor": cursor},
-        )
-        nodes, next_cursor, has_next = extract_graphql_cursor_page(data, ["repository", "issues"])
-
-        records: list[ContributorActivityRecord] = []
-        page_has_older_issues = False
-
-        for node in nodes:
-            created_at = _parse_graphql_datetime(node.get("createdAt"))
-            if cutoff is not None and created_at is not None and created_at < cutoff:
-                page_has_older_issues = True
-
-            records.extend(
-                ContributorActivityRecord.from_github_node(
-                    node,
-                    {
-                        "owner": owner,
-                        "repo": repo,
-                        "cutoff": cutoff,
-                        "target_type": "issue",
-                    },
-                )
-            )
-
-        return records, next_cursor, has_next and not page_has_older_issues
-
-    return paginate_cursor(page)
 
 
 def fetch_repo_contributor_activity_graphql(
@@ -703,41 +561,27 @@ def fetch_repo_contributor_activity_graphql(
     owner: str,
     repo: str,
     *,
-    lookback_days: int | None = 183,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    lookback_days: int = 183,
+    cache_options: FetchCacheOptions | None = None,
     ) -> list[ContributorActivityRecord]:
-    """Fetch contributor activity signals from recent issue and PR lifecycle data.
-
-    Issue activity (issues opened by a contributor) and pull request
-    activity (PRs authored, reviewed, or merged) are combined into a
-    single stream of ``ContributorActivityRecord`` instances.
-
-    When ``lookback_days`` is *None* all historical activity
-    is returned, which is required for stable yearly aggregate charts.
+    """
+    Fetch contributor activity signals from pull request and issue lifecycle data.
 
     Signals include:
-    - authored_issue (issues opened within the lookback window)
     - authored_pull_request
     - reviewed_pull_request
     - merged_pull_request
+    - created_issue
     """
-    cache_scope = f"{owner}_{repo}"
-    cache_parameters = {
-        "owner": owner,
-        "repo": repo,
-        "lookback_days": lookback_days,
-        "activity_types": _CONTRIBUTOR_ACTIVITY_TYPES,
-    }
-    cached = load_records_cache(
+    opts = cache.resolve_cache_options(cache_options)
+    cached = cache.load_records(
         "repo_contributor_activity",
-        cache_scope,
-        cache_parameters,
+        f"{owner}_{repo}",
+        {"owner": owner, "repo": repo, "lookback_days": lookback_days},
         ContributorActivityRecord,
-        use_cache=use_cache,
-        ttl_seconds=cache_ttl_seconds,
-        refresh=refresh,
+        use_cache=opts.use_cache,
+        ttl_seconds=opts.cache_ttl_seconds,
+        refresh=opts.refresh,
     )
     if cached is not None:
         return cached
@@ -747,19 +591,43 @@ def fetch_repo_contributor_activity_graphql(
         if lookback_days is not None
         else None
     )
-    records = [
-        *_fetch_repo_pull_request_activity_graphql(client, owner, repo, cutoff),
-        *_fetch_repo_issue_activity_graphql(client, owner, repo, cutoff),
-    ]
-
-    save_records_cache(
-        "repo_contributor_activity",
-        cache_scope,
-        cache_parameters,
+    pr_records = fetch_github_resource(
+        client,
+        load_query("contributor_activity"),
+        {"owner": owner, "repo": repo},
         ContributorActivityRecord,
-        records,
-        use_cache=use_cache,
+        ["repository", "pullRequests"],
+        cache_key="repo_contributor_activity_prs",
+        cache_scope=f"{owner}_{repo}",
+        cache_parameters={"owner": owner, "repo": repo, "lookback_days": lookback_days},
+        context_builder=lambda node: {
+            "owner": owner,
+            "repo": repo,
+            "cutoff": cutoff,
+            "activity_source": "pull_request",
+        },
+        cache_options=FetchCacheOptions(use_cache=False),
     )
+
+    issue_records = fetch_github_resource(
+        client,
+        load_query("contributor_issue_activity"),
+        {"owner": owner, "repo": repo},
+        ContributorActivityRecord,
+        ["repository", "issues"],
+        cache_key="repo_contributor_activity_issues",
+        cache_scope=f"{owner}_{repo}",
+        cache_parameters={"owner": owner, "repo": repo, "lookback_days": lookback_days},
+        context_builder=lambda node: {
+            "owner": owner,
+            "repo": repo,
+            "cutoff": cutoff,
+            "activity_source": "issue",
+        },
+        cache_options=FetchCacheOptions(use_cache=False),
+    )
+
+    records = [*pr_records, *issue_records]
     return records
 
 def fetch_org_contributor_activity_graphql(
@@ -769,9 +637,7 @@ def fetch_org_contributor_activity_graphql(
     *,
     repos: list[str] | None = None,
     lookback_days: int | None = 183,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    cache_options: FetchCacheOptions | None = None,
     ) -> list[ContributorActivityRecord]:
     """Fetch contributor activity records across all repositories in an organization.
 
@@ -781,7 +647,7 @@ def fetch_org_contributor_activity_graphql(
     """
     def fetch_func(repo):
         """Fetch contributor activity for a repository."""
-        return fetch_repo_contributor_activity_graphql(client, repo.owner, repo.name, lookback_days=lookback_days, **_cache_kwargs(use_cache, cache_ttl_seconds, refresh))
+        return fetch_repo_contributor_activity_graphql(client, repo.owner, repo.name, lookback_days=lookback_days, cache_options=cache_options)
     return fetch_org_resource_parallel(
         client, org, fetch_func, ContributorActivityRecord, max_workers, "org_contributor_activity",
         {
@@ -791,7 +657,7 @@ def fetch_org_contributor_activity_graphql(
             "activity_types": _CONTRIBUTOR_ACTIVITY_TYPES,
         }, repos=repos,
         task_desc="contributor activity",
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
 
 # --------------------------------------------------------
@@ -804,9 +670,7 @@ def fetch_repo_contributor_merged_pr_count_graphql(
     repo: str,
     login: str,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+    cache_options: FetchCacheOptions | None = None
     ) -> ContributorMergedPRCountRecord:
     """Fetch contributor merged pull request count for a specific user in a repository."""
     CONTRIBUTOR_MERGED_PRS_COUNT_QUERY = load_query("contributor_merged_prs_count")
@@ -816,7 +680,7 @@ def fetch_repo_contributor_merged_pr_count_graphql(
         cache_key="repo_contributor_merged_pr_count", cache_scope=f"{owner}_{repo}_{login}",
         cache_parameters={"owner": owner, "repo": repo, "login": login},
         context_builder=lambda _node: {"owner": owner, "repo": repo, "login": login},
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+        cache_options=cache_options,
     )
     return records[0] if records else ContributorMergedPRCountRecord(repo=f"{owner}/{repo}", login=login, merged_pr_count=0)
 
@@ -827,20 +691,18 @@ def fetch_org_contributor_merged_pr_count_graphql(
     repos: list[str] | None = None,
     max_workers: int = 5,
     *,
-    use_cache: bool | None = None,
-    cache_ttl_seconds: int | None = None,
-    refresh: bool = False
+   cache_options: FetchCacheOptions | None = None,
 ) -> list[ContributorMergedPRCountRecord]:
     """Fetch contributor merged pull request count for a specific user in an org."""
     def fetch_func(repo):
         """Fetch merged PR counts for a contributor in a repository."""
         return fetch_repo_contributor_merged_pr_count_graphql(client,
         repo.owner, repo.name, login=login,
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh))
+        cache_options=cache_options)
     return fetch_org_resource_parallel(
         client, org, fetch_func, ContributorMergedPRCountRecord,
         max_workers, "org_contributor_merged_pr_count",
         {"org": org, "login": login, "repos": sorted(repos) if repos else []}, repos=repos,
         task_desc=f"merged PR count for {login}",
-        **_cache_kwargs(use_cache, cache_ttl_seconds, refresh),
+         cache_options=cache_options,
     )

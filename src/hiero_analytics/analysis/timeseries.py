@@ -6,110 +6,28 @@ from datetime import UTC, datetime, timedelta
 
 import pandas as pd
 
+from hiero_analytics.analysis.timeseries_utils import (
+    DIFFICULTY_OVER_TIME_COLUMN_ORDER as _DIFFICULTY_OVER_TIME_COLUMN_ORDER,
+)
+from hiero_analytics.analysis.timeseries_utils import (
+    aggregate_intervals_to_series,
+    difficulty_key,
+    difficulty_key_for_label,
+    init_row_for_sample,
+    normalize_datetime,
+    timeline_events_by_issue,
+    weekly_sample_points,
+)
 from hiero_analytics.data_sources.models import IssueRecord, IssueTimelineEventRecord
-from hiero_analytics.domain.labels import (
-    DIFFICULTY_ADVANCED,
-    DIFFICULTY_BEGINNER,
-    DIFFICULTY_GOOD_FIRST_ISSUE,
-    DIFFICULTY_INTERMEDIATE,
-)
 
-DIFFICULTY_OVER_TIME_COLUMN_ORDER = [
-    "gfi",
-    "beginner",
-    "intermediate",
-    "advanced",
-]
-
-_DIFFICULTY_OVER_TIME_SPECS = (
-    ("gfi", DIFFICULTY_GOOD_FIRST_ISSUE),
-    ("beginner", DIFFICULTY_BEGINNER),
-    ("intermediate", DIFFICULTY_INTERMEDIATE),
-    ("advanced", DIFFICULTY_ADVANCED),
-)
 TIMELINE_EVENT_ORDER = {
     "unlabeled": 0,
     "labeled": 1,
     "closed": 2,
     "reopened": 3,
 }
-
-
-def normalize_datetime(value: datetime | None) -> datetime | None:
-    """Return a timezone-aware UTC datetime for stable comparisons."""
-    if value is None:
-        return None
-
-    if value.tzinfo is None:
-        return value.replace(tzinfo=UTC)
-
-    return value.astimezone(UTC)
-
-
-def _difficulty_key(labels: set[str]) -> str | None:
-    """Return the first configured difficulty key that matches an active label set."""
-    normalized = set(labels or [])
-
-    for key, spec in _DIFFICULTY_OVER_TIME_SPECS:
-        if spec.matches(normalized):
-            return key
-
-    return None
-
-
-def _weekly_sample_points(start_at: datetime, end_at: datetime) -> list[datetime]:
-    """Build inclusive weekly sample points from the first issue to now."""
-    points: list[datetime] = []
-    current = start_at
-
-    while current <= end_at:
-        points.append(current)
-        current += timedelta(days=7)
-
-    if not points or points[-1] < end_at:
-        points.append(end_at)
-
-    return points
-
-
-def _difficulty_key_for_label(label: str | None) -> str | None:
-    """Map a single label name to its logical difficulty bucket key."""
-    if not label:
-        return None
-
-    for key, spec in _DIFFICULTY_OVER_TIME_SPECS:
-        if label.lower() in spec.labels:
-            return key
-
-    return None
-
-
-def _bucket_from_active_labels(active_labels: set[str], is_open: bool) -> str | None:
-    """Resolve the visible difficulty bucket for an issue at a point in time."""
-    if not is_open:
-        return None
-
-    return _difficulty_key(active_labels)
-
-
-def _timeline_events_by_issue(
-    timeline_events: list[IssueTimelineEventRecord],
-) -> dict[tuple[str, int], list[IssueTimelineEventRecord]]:
-    """Group relevant timeline events by issue identity."""
-    grouped: dict[tuple[str, int], list[IssueTimelineEventRecord]] = {}
-
-    for event in timeline_events:
-        grouped.setdefault((event.repo, event.issue_number), []).append(event)
-
-    for key in grouped:
-        grouped[key].sort(
-            key=lambda event: (
-                normalize_datetime(event.occurred_at),
-                TIMELINE_EVENT_ORDER.get(event.event_type, 99),
-            )
-        )
-
-    return grouped
+# Re-export column order for consumers expecting it from this module.
+DIFFICULTY_OVER_TIME_COLUMN_ORDER = _DIFFICULTY_OVER_TIME_COLUMN_ORDER
 
 
 def _difficulty_intervals_for_issue(
@@ -127,7 +45,7 @@ def _difficulty_intervals_for_issue(
 
     active_difficulty_labels: set[str] = set()
     is_open = True
-    current_bucket = _bucket_from_active_labels(active_difficulty_labels, is_open)
+    current_bucket = difficulty_key(active_difficulty_labels) if is_open else None
     current_start = created_at
     intervals: list[tuple[str, datetime, datetime]] = []
 
@@ -136,17 +54,17 @@ def _difficulty_intervals_for_issue(
         if occurred_at is None or occurred_at < created_at:
             continue
 
-        difficulty_key = _difficulty_key_for_label(event.label)
-        if event.event_type == "labeled" and difficulty_key is not None and event.label is not None:
-            active_difficulty_labels.add(event.label)
-        elif event.event_type == "unlabeled" and difficulty_key is not None and event.label is not None:
-            active_difficulty_labels.discard(event.label)
+        label_key = difficulty_key_for_label(event.label)
+        if event.event_type == "labeled" and label_key is not None and event.label is not None:
+            active_difficulty_labels.add(event.label.lower())
+        elif event.event_type == "unlabeled" and label_key is not None and event.label is not None:
+            active_difficulty_labels.discard(event.label.lower())
         elif event.event_type == "closed":
             is_open = False
         elif event.event_type == "reopened":
             is_open = True
 
-        next_bucket = _bucket_from_active_labels(active_difficulty_labels, is_open)
+        next_bucket = difficulty_key(active_difficulty_labels) if is_open else None
         if next_bucket == current_bucket:
             continue
 
@@ -176,7 +94,7 @@ def _current_difficulty_labels(issue: IssueRecord) -> set[str]:
     return {
         label.lower()
         for label in issue.labels
-        if _difficulty_key_for_label(label) is not None
+        if difficulty_key_for_label(label) is not None
     }
 
 
@@ -221,35 +139,35 @@ def _windowed_difficulty_intervals_for_issue(
         ]
 
         for event in reversed(relevant_events):
-            difficulty_key = _difficulty_key_for_label(event.label)
+            label_k = difficulty_key_for_label(event.label)
 
-            if event.event_type == "labeled" and difficulty_key is not None and event.label is not None:
+            if event.event_type == "labeled" and label_k is not None and event.label is not None:
                 active_difficulty_labels.discard(event.label.lower())
-            elif event.event_type == "unlabeled" and difficulty_key is not None and event.label is not None:
+            elif event.event_type == "unlabeled" and label_k is not None and event.label is not None:
                 active_difficulty_labels.add(event.label.lower())
             elif event.event_type == "closed":
                 is_open = True
             elif event.event_type == "reopened":
                 is_open = False
 
-    current_bucket = _bucket_from_active_labels(active_difficulty_labels, is_open)
+    current_bucket = difficulty_key(active_difficulty_labels) if is_open else None
 
     for event in issue_events:
         occurred_at = normalize_datetime(event.occurred_at)
         if occurred_at is None or occurred_at < effective_start or occurred_at > end_at:
             continue
 
-        difficulty_key = _difficulty_key_for_label(event.label)
-        if event.event_type == "labeled" and difficulty_key is not None and event.label is not None:
+        label_k = difficulty_key_for_label(event.label)
+        if event.event_type == "labeled" and label_k is not None and event.label is not None:
             active_difficulty_labels.add(event.label.lower())
-        elif event.event_type == "unlabeled" and difficulty_key is not None and event.label is not None:
+        elif event.event_type == "unlabeled" and label_k is not None and event.label is not None:
             active_difficulty_labels.discard(event.label.lower())
         elif event.event_type == "closed":
             is_open = False
         elif event.event_type == "reopened":
             is_open = True
 
-        next_bucket = _bucket_from_active_labels(active_difficulty_labels, is_open)
+        next_bucket = difficulty_key(active_difficulty_labels) if is_open else None
         if next_bucket == current_bucket:
             continue
 
@@ -293,7 +211,10 @@ def get_difficulty_over_time(
     if end_at < start_at:
         end_at = start_at
 
-    events_by_issue = _timeline_events_by_issue(timeline_events)
+    events_by_issue = timeline_events_by_issue(
+        timeline_events,
+        event_type_order=TIMELINE_EVENT_ORDER,
+    )
     intervals_by_issue = [
         _difficulty_intervals_for_issue(
             issue,
@@ -305,22 +226,7 @@ def get_difficulty_over_time(
 
     series: list[dict[str, str | int]] = []
 
-    for sample_point in _weekly_sample_points(start_at, end_at):
-        row: dict[str, str | int] = {
-            "date": sample_point.date().isoformat(),
-            "gfi": 0,
-            "beginner": 0,
-            "intermediate": 0,
-            "advanced": 0,
-        }
-
-        for intervals in intervals_by_issue:
-            for bucket, interval_start, interval_end in intervals:
-                if interval_start <= sample_point < interval_end:
-                    row[bucket] += 1
-                    break
-
-        series.append(row)
+    series = aggregate_intervals_to_series(intervals_by_issue, weekly_sample_points(start_at, end_at))
 
     return series
 
@@ -346,7 +252,10 @@ def get_difficulty_over_time_windowed(
     if not filtered_issues:
         return []
 
-    events_by_issue = _timeline_events_by_issue(timeline_events)
+    events_by_issue = timeline_events_by_issue(
+        timeline_events,
+        event_type_order=TIMELINE_EVENT_ORDER,
+    )
     intervals_by_issue = [
         _windowed_difficulty_intervals_for_issue(
             issue,
@@ -356,26 +265,7 @@ def get_difficulty_over_time_windowed(
         )
         for issue in filtered_issues
     ]
-
-    series: list[dict[str, str | int]] = []
-    for sample_point in _weekly_sample_points(start_at, end_at):
-        row: dict[str, str | int] = {
-            "date": sample_point.date().isoformat(),
-            "gfi": 0,
-            "beginner": 0,
-            "intermediate": 0,
-            "advanced": 0,
-        }
-
-        for intervals in intervals_by_issue:
-            for bucket, interval_start, interval_end in intervals:
-                if interval_start <= sample_point < interval_end:
-                    row[bucket] += 1
-                    break
-
-        series.append(row)
-
-    return series
+    return aggregate_intervals_to_series(intervals_by_issue, weekly_sample_points(start_at, end_at))
 
 
 def get_difficulty_over_time_event_based(
@@ -423,13 +313,16 @@ def get_difficulty_over_time_event_based(
         return []
 
     # Group events by issue.
-    events_by_issue = _timeline_events_by_issue(timeline_events)
+    events_by_issue = timeline_events_by_issue(
+        timeline_events,
+        event_type_order=TIMELINE_EVENT_ORDER,
+    )
 
     # For each issue, find the most recent labeled event for its current difficulty.
     issue_entry_points: dict[tuple[str, int], tuple[str, datetime]] = {}
 
     for issue in filtered_issues:
-        current_difficulty = _difficulty_key(set(issue.labels or []))
+        current_difficulty = difficulty_key(set(issue.labels or []))
         if current_difficulty is None:
             # Skip issues with no current difficulty label.
             continue
@@ -439,7 +332,7 @@ def get_difficulty_over_time_event_based(
         # Find the most recent labeled event for this difficulty.
         most_recent_label_event: IssueTimelineEventRecord | None = None
         for event in reversed(issue_events):
-            if event.event_type == "labeled" and _difficulty_key_for_label(event.label) == current_difficulty:
+            if event.event_type == "labeled" and difficulty_key_for_label(event.label) == current_difficulty:
                 most_recent_label_event = event
                 break
 
@@ -463,19 +356,13 @@ def get_difficulty_over_time_event_based(
     issues_by_key = {(issue.repo, issue.number): issue for issue in filtered_issues}
 
     # Build sample points.
-    sample_points = _weekly_sample_points(start_at, end_at)
+    sample_points = weekly_sample_points(start_at, end_at)
 
     # Generate weekly rows.
     series: list[dict[str, str | int]] = []
 
     for sample_point in sample_points:
-        row: dict[str, str | int] = {
-            "date": sample_point.date().isoformat(),
-            "gfi": 0,
-            "beginner": 0,
-            "intermediate": 0,
-            "advanced": 0,
-        }
+        row = init_row_for_sample(sample_point)
 
         for (repo, number), (bucket, label_timestamp) in issue_entry_points.items():
             issue = issues_by_key.get((repo, number))

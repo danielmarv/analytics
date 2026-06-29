@@ -139,93 +139,6 @@ def test_fetch_repo_issues_normalizes_states(mock_client, bypass_pagination):
     assert variables["states"] == ["OPEN"]
 
 
-def test_fetch_repo_issue_timeline_events_rest(mock_client):
-    """Timeline fetches should normalize relevant REST timeline events."""
-    mock_client.get.return_value = [
-        {
-            "event": "labeled",
-            "created_at": "2024-01-02T00:00:00Z",
-            "label": {"name": "Good First Issue"},
-        },
-        {
-            "event": "closed",
-            "created_at": "2024-01-03T00:00:00Z",
-        },
-    ]
-
-    records = ingest.fetch_repo_issue_timeline_events_rest(
-        mock_client,
-        "org",
-        "repo",
-        1,
-        use_cache=False,
-    )
-
-    assert records == [
-        IssueTimelineEventRecord(
-            repo="org/repo",
-            issue_number=1,
-            event_type="labeled",
-            occurred_at=datetime.fromisoformat("2024-01-02T00:00:00+00:00"),
-            label="good first issue",
-        ),
-        IssueTimelineEventRecord(
-            repo="org/repo",
-            issue_number=1,
-            event_type="closed",
-            occurred_at=datetime.fromisoformat("2024-01-03T00:00:00+00:00"),
-            label=None,
-        ),
-    ]
-
-
-def test_fetch_issue_timeline_events_rest_parallel(monkeypatch, mock_client):
-    """Parallel issue timeline fetches should aggregate records across issues."""
-    issues = [
-        IssueRecord(
-            repo="org/repo1",
-            number=1,
-            title="Issue A",
-            state="OPEN",
-            created_at=datetime.fromisoformat("2024-01-01T00:00:00+00:00"),
-            closed_at=None,
-            labels=[],
-        ),
-        IssueRecord(
-            repo="org/repo2",
-            number=2,
-            title="Issue B",
-            state="OPEN",
-            created_at=datetime.fromisoformat("2024-01-01T00:00:00+00:00"),
-            closed_at=None,
-            labels=[],
-        ),
-    ]
-
-    monkeypatch.setattr(
-        ingest,
-        "fetch_repo_issue_timeline_events_rest",
-        lambda _client, owner, repo, issue_number, **_kwargs: [
-            IssueTimelineEventRecord(
-                repo=f"{owner}/{repo}",
-                issue_number=issue_number,
-                event_type="labeled",
-                occurred_at=datetime.fromisoformat("2024-01-02T00:00:00+00:00"),
-                label="good first issue",
-            )
-        ],
-    )
-
-    records = ingest.fetch_issue_timeline_events_rest(
-        mock_client,
-        issues,
-        max_workers=2,
-        use_cache=False,
-    )
-
-    assert len(records) == 2
-    assert {record.repo for record in records} == {"org/repo1", "org/repo2"}
-
 
 def test_fetch_repo_issue_events_rest_since(mock_client):
     """Repository issue event fetches should stop once events are older than the cutoff."""
@@ -250,7 +163,7 @@ def test_fetch_repo_issue_events_rest_since(mock_client):
         "org",
         "repo",
         since=datetime.fromisoformat("2025-04-11T00:00:00+00:00"),
-        use_cache=False,
+        cache_options=None,
     )
 
     assert records == [
@@ -276,12 +189,11 @@ def test_fetch_org_issues_graphql_parallel(monkeypatch, mock_client):
     ]
 
     monkeypatch.setattr(
-        ingest,
-        "fetch_org_repos_graphql",
-        lambda _client, _org: repos,
+    ingest,
+    "fetch_org_repos_graphql",
+    lambda _client, _org, cache_options=None: repos,
     )
-
-    def fetch_repo_issues(_client, owner, repo, states=None):
+    def fetch_repo_issues(_client, owner, repo, states=None, cache_options=None):
         _ = states
         return [
             IssueRecord(
@@ -295,13 +207,14 @@ def test_fetch_org_issues_graphql_parallel(monkeypatch, mock_client):
             )
         ]
 
+
     monkeypatch.setattr(
         ingest,
         "fetch_repo_issues_graphql",
         fetch_repo_issues,
     )
 
-    issues = ingest.fetch_org_issues_graphql(mock_client, "org", max_workers=2)
+    issues = ingest.fetch_org_issues_graphql(mock_client, "org", cache_options=None)
 
     repos_returned = {i.repo for i in issues}
 
@@ -329,6 +242,7 @@ def test_fetch_repo_merged_pr_difficulty_graphql(mock_client, bypass_pagination)
                             "additions": 5,
                             "deletions": 3,
                             "changedFiles": 2,
+                            "author": {"login": "test-user"},
                             "closingIssuesReferences": {
                                 "nodes": [
                                     {
@@ -380,23 +294,24 @@ def test_fetch_org_merged_pr_difficulty_graphql(monkeypatch, mock_client):
     monkeypatch.setattr(
         ingest,
         "fetch_org_repos_graphql",
-        lambda _client, _org: repos,
+        lambda _client, _org, cache_options=None: repos,
     )
 
+
     monkeypatch.setattr(
-        ingest,
-        "fetch_repo_merged_pr_difficulty_graphql",
-        lambda _client, owner, repo: [
-            PullRequestDifficultyRecord(
-                repo=f"{owner}/{repo}",
-                pr_number=1,
-                pr_created_at=None,
-                pr_merged_at=None,
-                pr_additions=1,
-                pr_deletions=1,
-                pr_changed_files=1,
-                issue_number=1,
-                issue_labels=[],
+    ingest,
+    "fetch_repo_merged_pr_difficulty_graphql",
+    lambda _client, owner, repo, cache_options=None: [
+        PullRequestDifficultyRecord(
+            repo=f"{owner}/{repo}",
+            pr_number=1,
+            pr_created_at=None,
+            pr_merged_at=None,
+            pr_additions=1,
+            pr_deletions=1,
+            pr_changed_files=1,
+            issue_number=1,
+            issue_labels=[],
             )
         ],
     )
@@ -404,7 +319,7 @@ def test_fetch_org_merged_pr_difficulty_graphql(monkeypatch, mock_client):
     records = ingest.fetch_org_merged_pr_difficulty_graphql(
         mock_client,
         "org",
-        max_workers=2,
+        max_workers=5,
     )
 
     repos_returned = {r.repo for r in records}
@@ -456,7 +371,7 @@ def test_fetch_repo_issue_label_events_graphql_parses_events(mock_client, bypass
     mock_client.graphql.return_value = _label_events_payload()
 
     events = ingest.fetch_repo_issue_label_events_graphql(
-        mock_client, "org", "repo", states=["OPEN"], use_cache=False,
+        mock_client, "org", "repo", states=["OPEN"], cache_options=None
     )
 
     assert [(e.issue_number, e.event_type, e.label) for e in events] == [
@@ -480,8 +395,8 @@ def test_fetch_repo_issue_label_events_graphql_uses_stable_cache_key(
         captured["scope"] = scope
         captured["parameters"] = parameters  # cache miss -> implicit return None
 
-    monkeypatch.setattr(ingest, "load_records_cache", fake_load)
-    monkeypatch.setattr(ingest, "save_records_cache", lambda *_a, **_k: None)
+    monkeypatch.setattr(ingest.cache, "load_records", fake_load)
+    monkeypatch.setattr(ingest.cache, "save_records", lambda *_a, **_k: None)
 
     ingest.fetch_repo_issue_label_events_graphql(mock_client, "org", "repo", states=["OPEN"])
 

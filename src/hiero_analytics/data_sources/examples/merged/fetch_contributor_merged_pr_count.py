@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from hiero_analytics.data_sources.github_client import GitHubClient
 from hiero_analytics.data_sources.github_ingest import (
+    FetchCacheOptions,
     fetch_repo_contributor_merged_pr_count_graphql,
     fetch_org_contributor_merged_pr_count_graphql,
 )
@@ -28,7 +29,7 @@ def main():
         owner=org,
         repo=repo,
         login=user,
-        use_cache=False
+        options=FetchCacheOptions(use_cache=False)
     )
     
     print("\n--- Result ---")
@@ -48,7 +49,7 @@ def main():
         login=user,
         repos=repos_to_check,
         max_workers=3,
-        use_cache=False
+        options=FetchCacheOptions(use_cache=False)
     )
     
     print("\n--- Multi-Repo Results ---")

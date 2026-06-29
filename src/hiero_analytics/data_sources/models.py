@@ -40,6 +40,15 @@ class BaseRecord:
         """Hydrate appropriate model(s) from a GitHub GraphQL node."""
         raise NotImplementedError(f"Mapping not implemented for {cls.__name__}")
 
+    @staticmethod
+    def _login(payload: dict | None) -> str | None:
+        """Extract a login from a payload and filter out dependabot."""
+        if not payload:
+            return None
+        login = payload.get("login")
+        if login == "dependabot":
+            return None
+        return login
 
 @dataclass(frozen=True)
 class RepositoryRecord(BaseRecord):
@@ -113,6 +122,50 @@ class IssueTimelineEventRecord:
     event_type: str
     occurred_at: datetime
     label: str | None = None
+
+    @classmethod
+    def from_timeline_item(cls, node: dict, context: dict) -> list[IssueTimelineEventRecord]:
+        """Hydrate a normalized timeline event from a GraphQL timeline node."""
+        typename = str(node.get("__typename", "")).lower()
+        event_type_map = {
+            "labeledevent": "labeled",
+            "unlabeledevent": "unlabeled",
+            "closedevent": "closed",
+            "reopenedevent": "reopened",
+        }
+
+        event_type = event_type_map.get(typename)
+        if event_type is None:
+            return []
+
+        occurred_at = _parse_dt(node.get("createdAt"))
+        if occurred_at is None:
+            return []
+
+        since = context.get("since")
+        if isinstance(since, datetime) and occurred_at < since:
+            return []
+
+        label_name: str | None = None
+        label_node = node.get("label")
+        if isinstance(label_node, Mapping):
+            raw_label = label_node.get("name")
+            if isinstance(raw_label, str):
+                label_name = raw_label.lower()
+
+        owner = str(context.get("owner", ""))
+        repo = str(context.get("repo", ""))
+        repo_name = f"{owner}/{repo}" if owner and repo else ""
+
+        return [
+            cls(
+                repo=repo_name,
+                issue_number=int(context.get("issue_number", 0)),
+                event_type=event_type,
+                occurred_at=occurred_at,
+                label=label_name,
+            )
+        ]
 
     @classmethod
     def from_rest_event(
@@ -219,8 +272,9 @@ class PullRequestDifficultyRecord(BaseRecord):
     def from_github_node(cls, node: dict, context: dict) -> list[PullRequestDifficultyRecord]:
         """Hydrate pull-request difficulty records from a GraphQL PR node."""
         repo_name = cls._repo_name(context)
-        author_node = node.get("author")
-        author = author_node.get("login") if isinstance(author_node, Mapping) else None
+        author = cls._login(node.get("author"))
+        if not author:
+            return []
         issues = node.get("closingIssuesReferences", {}).get("nodes", [])
         records = []
         for issue in issues:
@@ -257,21 +311,34 @@ class ContributorActivityRecord(BaseRecord):
 
     @classmethod
     def from_github_node(cls, node: dict, context: dict) -> list[ContributorActivityRecord]:
-        """Hydrate contributor activity records from a GraphQL activity node."""
-        if context.get("target_type") == "issue":
-            return cls._from_issue_node(node, context)
-
-        return cls._from_pull_request_node(node, context)
-
-    @classmethod
-    def _from_pull_request_node(cls, node: dict, context: dict) -> list[ContributorActivityRecord]:
-        """Hydrate contributor activity records from a GraphQL PR node."""
         repo_name = cls._repo_name(context)
         cutoff = context.get("cutoff")
-        pr_number = node["number"]
         records = []
-        
-        pr_author = node.get("author", {}).get("login") if node.get("author") else None
+
+        activity_source = context.get("activity_source", "pull_request")
+
+        pr_author = cls._login(node.get("author"))
+
+        if activity_source == "issue":
+            issue_number = node["number"]
+            issue_author = pr_author
+            issue_created_at = _parse_dt(node.get("createdAt"))
+            if issue_created_at and (cutoff is None or issue_created_at >= cutoff) and issue_author:
+                records.append(
+                    cls(
+                        repo=repo_name,
+                        activity_type="created_issue",
+                        actor=issue_author,
+                        occurred_at=issue_created_at,
+                        target_type="issue",
+                        target_number=issue_number,
+                        target_author=issue_author,
+                    )
+                )
+
+            return records
+
+        pr_number = node["number"]
         pr_created_at = _parse_dt(node.get("createdAt"))
         if pr_created_at and (cutoff is None or pr_created_at >= cutoff) and pr_author:
             records.append(
@@ -285,9 +352,9 @@ class ContributorActivityRecord(BaseRecord):
                     target_author=pr_author,
                 )
             )
-            
+
         for review in node.get("reviews", {}).get("nodes", []):
-            review_author = review.get("author", {}).get("login") if review.get("author") else None
+            review_author = cls._login(review.get("author"))
             reviewed_at = _parse_dt(review.get("submittedAt"))
             if reviewed_at and (cutoff is None or reviewed_at >= cutoff) and review_author:
                 records.append(
@@ -302,9 +369,9 @@ class ContributorActivityRecord(BaseRecord):
                         detail=review.get("state"),
                     )
                 )
-                
+
         merged_at = _parse_dt(node.get("mergedAt"))
-        merged_by = node.get("mergedBy", {}).get("login") if node.get("mergedBy") else None
+        merged_by = cls._login(node.get("mergedBy"))
         if merged_at and (cutoff is None or merged_at >= cutoff) and merged_by:
             records.append(
                 cls(
@@ -319,29 +386,6 @@ class ContributorActivityRecord(BaseRecord):
             )
         return records
 
-    @classmethod
-    def _from_issue_node(cls, node: dict, context: dict) -> list[ContributorActivityRecord]:
-        """Hydrate contributor activity records from a GraphQL issue node."""
-        repo_name = cls._repo_name(context)
-        cutoff = context.get("cutoff")
-        issue_number = node["number"]
-
-        issue_author = node.get("author", {}).get("login") if node.get("author") else None
-        issue_created_at = _parse_dt(node.get("createdAt"))
-        if not issue_created_at or (cutoff is not None and issue_created_at < cutoff) or not issue_author:
-            return []
-
-        return [
-            cls(
-                repo=repo_name,
-                activity_type="authored_issue",
-                actor=issue_author,
-                occurred_at=issue_created_at,
-                target_type="issue",
-                target_number=issue_number,
-                target_author=issue_author,
-            )
-        ]
 
 
 @dataclass(frozen=True)
@@ -355,7 +399,9 @@ class ContributorMergedPRCountRecord(BaseRecord):
     def from_github_node(cls, node: dict, context: dict) -> list[ContributorMergedPRCountRecord]:
         """Hydrate merged-PR count records from a GraphQL search node."""
         repo_name = cls._repo_name(context)
-        login = context.get("login", "")
+        login = cls._login({"login": context.get("login", "")})
+        if not login:
+            return []
         return [
             cls(
                 repo=repo_name,
