@@ -35,6 +35,8 @@ CHART_MACROS = [
                     "description": "How the maintainer/committer pipeline has moved over time and across repos.",
                     "files": [
                         ("By year", "maintainer_pipeline_yearly.png"),
+                        ("By month", "maintainer_pipeline_monthly.png"),
+                        ("By week", "maintainer_pipeline_weekly.png"),
                         ("By repo", "maintainer_pipeline_by_repo.png"),
                     ],
                 },
