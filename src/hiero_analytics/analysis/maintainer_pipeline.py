@@ -87,7 +87,9 @@ def activity_to_role_dataframe(
     )
 
 
-def _active_window_for_year(year: int, today: datetime, window_days: int = 183) -> tuple[datetime, datetime]:
+def _active_window_for_year(
+    year: int, today: datetime, window_days: int = ACTIVE_WINDOW_DAYS
+) -> tuple[datetime, datetime]:
     """Return the (start, end) activity window for a given year.
 
     Completed years use a fixed H2 window (Jul 1 – Dec 31) so historical
@@ -104,17 +106,6 @@ def _active_window_for_year(year: int, today: datetime, window_days: int = 183) 
         window_start = today - timedelta(days=window_days)
 
     return window_start, window_end
-
-
-def _bucket_label_month(year: int, month: int) -> str:
-    """Format a month bucket as 'YYYY-MM'."""
-    return f"{year:04d}-{month:02d}"
-
-
-def _bucket_label_week(dt: datetime) -> str:
-    """Format a week bucket as 'YYYY-Www' (ISO week)."""
-    iso_year, iso_week, _ = dt.isocalendar()
-    return f"{iso_year:04d}-W{iso_week:02d}"
 
 
 def _counts_by_bucket(labelled: pd.DataFrame, bucket_col: str) -> pd.DataFrame:
@@ -156,7 +147,8 @@ def build_maintainer_monthly_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
     if stage_df.empty:
         return pd.DataFrame(columns=["month", *STAGE_COLUMNS])
 
-    labelled = stage_df.assign(_bucket=stage_df["occurred_at"].apply(lambda dt: _bucket_label_month(dt.year, dt.month)))
+    # Vectorized 'YYYY-MM' label (occurred_at is UTC-normalized upstream).
+    labelled = stage_df.assign(_bucket=stage_df["occurred_at"].dt.strftime("%Y-%m"))
     return _counts_by_bucket(labelled, "month")
 
 
@@ -170,7 +162,10 @@ def build_maintainer_weekly_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
     if stage_df.empty:
         return pd.DataFrame(columns=["week", *STAGE_COLUMNS])
 
-    labelled = stage_df.assign(_bucket=stage_df["occurred_at"].apply(_bucket_label_week))
+    # Vectorized 'YYYY-Www' ISO-week label.
+    iso = stage_df["occurred_at"].dt.isocalendar()
+    week_label = iso["year"].astype(str).str.zfill(4) + "-W" + iso["week"].astype(str).str.zfill(2)
+    labelled = stage_df.assign(_bucket=week_label)
     return _counts_by_bucket(labelled, "week")
 
 
@@ -198,7 +193,7 @@ def build_maintainer_pipeline(
 def build_maintainer_yearly_pipeline(
     stage_df: pd.DataFrame,
     *,
-    active_window_days: int = 183,
+    active_window_days: int = ACTIVE_WINDOW_DAYS,
 ) -> pd.DataFrame:
     """Build yearly counts of distinct active people by their highest governance role.
 
@@ -250,7 +245,7 @@ def build_maintainer_yearly_pipeline(
 def build_maintainer_repo_pipeline(
     stage_df: pd.DataFrame,
     *,
-    active_window_days: int = 183,
+    active_window_days: int = ACTIVE_WINDOW_DAYS,
 ) -> pd.DataFrame:
     """Build repository-level active contributor counts per governance stage.
 
