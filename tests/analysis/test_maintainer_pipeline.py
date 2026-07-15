@@ -7,8 +7,6 @@ import pandas as pd
 
 from hiero_analytics.analysis.maintainer_pipeline import (
     Granularity,
-    _active_window_for_month,
-    _active_window_for_week,
     _active_window_for_year,
     activity_to_role_dataframe,
     build_maintainer_monthly_pipeline,
@@ -276,64 +274,6 @@ def test_collapse_repo_pipeline_tail_noop_when_below_limit():
 
 
 # ---------------------------------------------------------------------------
-# _active_window_for_month
-# ---------------------------------------------------------------------------
-
-
-def test_active_window_for_completed_month_is_calendar_month():
-    """Completed months should use a fixed first-to-last-day window."""
-    today = datetime(2026, 7, 14, tzinfo=UTC)
-    start, end = _active_window_for_month(2026, 3, today)
-
-    assert start == datetime(2026, 3, 1, tzinfo=UTC)
-    assert end == datetime(2026, 3, 31, 23, 59, 59, tzinfo=UTC)
-
-
-def test_active_window_for_current_month_is_trailing():
-    """The current month should use a trailing window ending today."""
-    today = datetime(2026, 7, 14, tzinfo=UTC)
-    start, end = _active_window_for_month(2026, 7, today)
-
-    assert end == today
-    assert (end - start).days == 183
-
-
-def test_active_window_for_december_completed():
-    """December of a past year should end at Dec 31."""
-    today = datetime(2026, 3, 1, tzinfo=UTC)
-    start, end = _active_window_for_month(2025, 12, today)
-
-    assert start == datetime(2025, 12, 1, tzinfo=UTC)
-    assert end == datetime(2025, 12, 31, 23, 59, 59, tzinfo=UTC)
-
-
-# ---------------------------------------------------------------------------
-# _active_window_for_week
-# ---------------------------------------------------------------------------
-
-
-def test_active_window_for_completed_week_is_mon_to_sun():
-    """Completed weeks should use a fixed Mon–Sun window."""
-    today = datetime(2026, 7, 14, tzinfo=UTC)  # Monday
-    # A week that ended before today:
-    week_start = datetime(2026, 6, 29, tzinfo=UTC)  # Monday Jun 29
-    start, end = _active_window_for_week(week_start, today)
-
-    assert start == week_start
-    assert end == datetime(2026, 7, 5, 23, 59, 59, tzinfo=UTC)
-
-
-def test_active_window_for_current_week_is_trailing():
-    """The current week should use a trailing window ending today."""
-    today = datetime(2026, 7, 14, tzinfo=UTC)  # Monday
-    week_start = datetime(2026, 7, 13, tzinfo=UTC)  # This Mon
-    start, end = _active_window_for_week(week_start, today)
-
-    assert end == today
-    assert (end - start).days == 183
-
-
-# ---------------------------------------------------------------------------
 # build_maintainer_monthly_pipeline
 # ---------------------------------------------------------------------------
 
@@ -382,6 +322,29 @@ def test_monthly_pipeline_multiple_months():
     assert "2024-08" in monthly["month"].values
 
 
+def test_monthly_pipeline_current_month_is_month_to_date_not_trailing():
+    """The current month is counted month-to-date, not as a 6-month trailing window.
+
+    Activity from earlier periods must land in its own bucket and never leak into
+    the current month's count.
+    """
+    now = datetime.now(UTC)
+    role_lookup = {"repo-a": {}}
+    records = [
+        _record("authored_pull_request", "current_person", "org/repo-a", now.year, month=now.month),
+        _record("authored_pull_request", "old_person", "org/repo-a", 2020, month=1),
+    ]
+
+    stage_df = activity_to_role_dataframe(records, role_lookup)
+    monthly = build_maintainer_monthly_pipeline(stage_df)
+
+    current_label = f"{now.year:04d}-{now.month:02d}"
+    current_row = monthly[monthly["month"] == current_label].iloc[0]
+
+    assert current_row["general_user"] == 1  # only the current-month contributor
+    assert "2020-01" in monthly["month"].values  # older activity stays in its own bucket
+
+
 # ---------------------------------------------------------------------------
 # build_maintainer_weekly_pipeline
 # ---------------------------------------------------------------------------
@@ -428,6 +391,23 @@ def test_weekly_pipeline_iso_week_labels():
     assert len(weekly) >= 1
     # ISO week label for July 1 2024 (Monday) is 2024-W27
     assert weekly.iloc[0]["week"] == "2024-W27"
+
+
+def test_weekly_pipeline_counts_each_week_separately():
+    """Weekly counts are strictly per-week — one week's activity never leaks into another."""
+    role_lookup = {"repo-a": {}}
+    records = [
+        _record("authored_pull_request", "alice", "org/repo-a", 2024, month=7),  # 2024-W27
+        _record("authored_pull_request", "bob", "org/repo-a", 2020, month=1),  # 2020-W01
+    ]
+
+    stage_df = activity_to_role_dataframe(records, role_lookup)
+    weekly = build_maintainer_weekly_pipeline(stage_df)
+
+    assert len(weekly) == 2
+    assert set(weekly["general_user"]) == {1}  # each week has only its own contributor
+    assert "2024-W27" in weekly["week"].values
+    assert "2020-W01" in weekly["week"].values
 
 
 # ---------------------------------------------------------------------------

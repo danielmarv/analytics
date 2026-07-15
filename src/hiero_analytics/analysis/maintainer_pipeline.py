@@ -106,46 +106,6 @@ def _active_window_for_year(year: int, today: datetime, window_days: int = 183) 
     return window_start, window_end
 
 
-def _active_window_for_month(
-    year: int, month: int, today: datetime, window_days: int = ACTIVE_WINDOW_DAYS
-) -> tuple[datetime, datetime]:
-    """Return the (start, end) activity window for a given month bucket.
-
-    Completed months use a fixed calendar-month window (1st to last day).
-    The current month uses a trailing ``window_days``-day window ending today.
-    """
-    if year < today.year or (year == today.year and month < today.month):
-        # Past month: fixed calendar-month window.
-        window_start = datetime(year, month, 1, tzinfo=UTC)
-        # Last day of month: go to 1st of next month then back one day.
-        if month == 12:
-            window_end = datetime(year, 12, 31, 23, 59, 59, tzinfo=UTC)
-        else:
-            window_end = datetime(year, month + 1, 1, tzinfo=UTC) - timedelta(seconds=1)
-    else:
-        # Current month: trailing window from today.
-        window_end = today
-        window_start = today - timedelta(days=window_days)
-
-    return window_start, window_end
-
-
-def _active_window_for_week(
-    week_start: datetime, today: datetime, window_days: int = ACTIVE_WINDOW_DAYS
-) -> tuple[datetime, datetime]:
-    """Return the (start, end) activity window for a given ISO-week bucket.
-
-    Completed weeks use a fixed 7-day window (Monday to Sunday).
-    The current week uses a trailing ``window_days``-day window ending today.
-    """
-    week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
-    if week_end < today:
-        # Completed week: fixed Mon–Sun window.
-        return week_start, week_end
-    # Current week: trailing window from today.
-    return today - timedelta(days=window_days), today
-
-
 def _bucket_label_month(year: int, month: int) -> str:
     """Format a month bucket as 'YYYY-MM'."""
     return f"{year:04d}-{month:02d}"
@@ -157,128 +117,61 @@ def _bucket_label_week(dt: datetime) -> str:
     return f"{iso_year:04d}-W{iso_week:02d}"
 
 
-def _iso_week_start(dt: datetime) -> datetime:
-    """Return the Monday 00:00 UTC of the ISO week containing ``dt``."""
-    monday = dt - timedelta(days=dt.weekday())
-    return monday.replace(hour=0, minute=0, second=0, microsecond=0)
+def _counts_by_bucket(labelled: pd.DataFrame, bucket_col: str) -> pd.DataFrame:
+    """Count distinct people per ``_bucket`` under their highest governance role.
+
+    ``labelled`` must carry a ``_bucket`` column holding each row's
+    chronologically-sortable period label. Each person is counted once per bucket,
+    under the highest role they held in any repo that period, so the stacked bands
+    are mutually exclusive and a bucket's total is the number of distinct active
+    people.
+    """
+    highest = (
+        labelled.assign(_rank=labelled["stage"].map(_STAGE_RANK))
+        .sort_values("_rank")
+        .drop_duplicates(subset=["_bucket", "actor"], keep="last")
+    )
+
+    counts = (
+        highest.groupby(["_bucket", "stage"])["actor"]
+        .nunique()
+        .unstack(fill_value=0)
+        .reindex(columns=STAGE_COLUMNS, fill_value=0)
+        .reset_index()
+        .rename(columns={"_bucket": bucket_col})
+        .sort_values(bucket_col)
+    )
+
+    return counts.astype({column: int for column in STAGE_COLUMNS})
 
 
-def build_maintainer_monthly_pipeline(
-    stage_df: pd.DataFrame,
-    *,
-    active_window_days: int = ACTIVE_WINDOW_DAYS,
-) -> pd.DataFrame:
+def build_maintainer_monthly_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
     """Build monthly counts of distinct active people by their highest governance role.
 
-    Completed months use a fixed calendar-month window. The current month uses
-    a trailing ``active_window_days``-day window from today. Each person is counted
-    once per month under their highest role.
+    Each person is counted once per calendar month, under the highest role they held
+    in any repo that month. Counts are strictly per-month (not a trailing window):
+    someone active one month but not the next appears only in the month they were
+    active, and the current, in-progress month reflects activity month-to-date.
     """
     if stage_df.empty:
         return pd.DataFrame(columns=["month", *STAGE_COLUMNS])
 
-    today = datetime.now(UTC)
-
-    # Extract unique (year, month) pairs.
-    stage_df = stage_df.copy()
-    stage_df["_month"] = stage_df["occurred_at"].dt.month
-    year_months = stage_df[["year", "_month"]].drop_duplicates().values.tolist()
-
-    filtered_frames: list[pd.DataFrame] = []
-
-    for year, month in sorted(year_months):
-        window_start, window_end = _active_window_for_month(int(year), int(month), today, active_window_days)
-        mask = (
-            (stage_df["year"] == year)
-            & (stage_df["_month"] == month)
-            & (stage_df["occurred_at"] >= window_start)
-            & (stage_df["occurred_at"] <= window_end)
-        )
-        matched = stage_df.loc[mask]
-        if not matched.empty:
-            filtered_frames.append(matched.assign(_bucket=_bucket_label_month(int(year), int(month))))
-
-    if not filtered_frames:
-        return pd.DataFrame(columns=["month", *STAGE_COLUMNS])
-
-    active_df = pd.concat(filtered_frames, ignore_index=True)
-
-    highest = (
-        active_df.assign(_rank=active_df["stage"].map(_STAGE_RANK))
-        .sort_values("_rank")
-        .drop_duplicates(subset=["_bucket", "actor"], keep="last")
-    )
-
-    monthly = (
-        highest.groupby(["_bucket", "stage"])["actor"]
-        .nunique()
-        .unstack(fill_value=0)
-        .reindex(columns=STAGE_COLUMNS, fill_value=0)
-        .reset_index()
-        .rename(columns={"_bucket": "month"})
-        .sort_values("month")
-    )
-
-    return monthly.astype({column: int for column in STAGE_COLUMNS})
+    labelled = stage_df.assign(_bucket=stage_df["occurred_at"].apply(lambda dt: _bucket_label_month(dt.year, dt.month)))
+    return _counts_by_bucket(labelled, "month")
 
 
-def build_maintainer_weekly_pipeline(
-    stage_df: pd.DataFrame,
-    *,
-    active_window_days: int = ACTIVE_WINDOW_DAYS,
-) -> pd.DataFrame:
+def build_maintainer_weekly_pipeline(stage_df: pd.DataFrame) -> pd.DataFrame:
     """Build weekly counts of distinct active people by their highest governance role.
 
-    Completed weeks use a fixed Mon–Sun window. The current week uses a trailing
-    ``active_window_days``-day window from today. Each person is counted once per
-    week under their highest role.
+    Each person is counted once per ISO week (Mon–Sun), under the highest role they
+    held in any repo that week. Counts are strictly per-week (not a trailing window),
+    and the current, in-progress week reflects activity week-to-date.
     """
     if stage_df.empty:
         return pd.DataFrame(columns=["week", *STAGE_COLUMNS])
 
-    today = datetime.now(UTC)
-
-    # Assign ISO week start to each record.
-    stage_df = stage_df.copy()
-    stage_df["_week_start"] = stage_df["occurred_at"].apply(_iso_week_start)
-
-    week_starts = sorted(stage_df["_week_start"].unique())
-
-    filtered_frames: list[pd.DataFrame] = []
-    for ws in week_starts:
-        ws_dt = pd.Timestamp(ws).to_pydatetime().replace(tzinfo=UTC)
-        window_start, window_end = _active_window_for_week(ws_dt, today, active_window_days)
-        mask = (
-            (stage_df["_week_start"] == ws)
-            & (stage_df["occurred_at"] >= window_start)
-            & (stage_df["occurred_at"] <= window_end)
-        )
-        matched = stage_df.loc[mask]
-        if not matched.empty:
-            filtered_frames.append(matched.assign(_bucket=_bucket_label_week(ws_dt)))
-
-    if not filtered_frames:
-        return pd.DataFrame(columns=["week", *STAGE_COLUMNS])
-
-    active_df = pd.concat(filtered_frames, ignore_index=True)
-
-    highest = (
-        active_df.assign(_rank=active_df["stage"].map(_STAGE_RANK))
-        .sort_values("_rank")
-        .drop_duplicates(subset=["_bucket", "actor"], keep="last")
-    )
-
-    weekly = (
-        highest.groupby(["_bucket", "stage"])["actor"]
-        .nunique()
-        .unstack(fill_value=0)
-        .reindex(columns=STAGE_COLUMNS, fill_value=0)
-        .reset_index()
-        .rename(columns={"_bucket": "week"})
-        .sort_values("week")
-    )
-
-    return weekly.astype({column: int for column in STAGE_COLUMNS})
+    labelled = stage_df.assign(_bucket=stage_df["occurred_at"].apply(_bucket_label_week))
+    return _counts_by_bucket(labelled, "week")
 
 
 def build_maintainer_pipeline(
@@ -287,13 +180,17 @@ def build_maintainer_pipeline(
     *,
     active_window_days: int = ACTIVE_WINDOW_DAYS,
 ) -> pd.DataFrame:
-    """Dispatch to the appropriate pipeline builder based on granularity."""
+    """Dispatch to the appropriate pipeline builder based on granularity.
+
+    ``active_window_days`` applies only to the yearly view; the monthly and weekly
+    views count activity strictly within each calendar period.
+    """
     if granularity == Granularity.YEAR:
         return build_maintainer_yearly_pipeline(stage_df, active_window_days=active_window_days)
     if granularity == Granularity.MONTH:
-        return build_maintainer_monthly_pipeline(stage_df, active_window_days=active_window_days)
+        return build_maintainer_monthly_pipeline(stage_df)
     if granularity == Granularity.WEEK:
-        return build_maintainer_weekly_pipeline(stage_df, active_window_days=active_window_days)
+        return build_maintainer_weekly_pipeline(stage_df)
     msg = f"Unsupported granularity: {granularity}"
     raise ValueError(msg)
 
@@ -417,14 +314,20 @@ def recent_buckets(pipeline_df: pd.DataFrame, max_buckets: int, *, newest_first:
     fine-grained charts legible while the full history stays in the CSV.
 
     With ``newest_first=True`` the rows are returned in reverse-chronological order,
-    which places the latest bucket at the top of a horizontal bar chart. The table
-    is returned unchanged (aside from ordering) when it is already within the limit
-    or ``max_buckets`` is not positive.
+    which places the latest bucket at the top of a horizontal bar chart. All rows
+    are kept when the table is already within the limit or ``max_buckets`` is not
+    positive.
     """
-    if pipeline_df.empty or max_buckets <= 0 or len(pipeline_df) <= max_buckets:
-        result = pipeline_df.copy()
-    else:
-        result = pipeline_df.tail(max_buckets)
+    if pipeline_df.empty:
+        return pipeline_df.copy()
+
+    # Sort by the bucket-label column (always first) so ``tail`` is genuinely the
+    # newest window regardless of the caller's row order.
+    bucket_col = pipeline_df.columns[0]
+    result = pipeline_df.sort_values(bucket_col)
+
+    if max_buckets > 0 and len(result) > max_buckets:
+        result = result.tail(max_buckets)
 
     if newest_first:
         result = result.iloc[::-1]
