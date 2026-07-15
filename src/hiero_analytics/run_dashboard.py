@@ -99,9 +99,18 @@ def _chart_sections(org: str, chart_specs: list[dict]) -> list[dict]:
                 src = _img_data_uri(chart_dir / filename)
                 if src is None:
                     continue
-                variants.append({"label": label, "src": src})
-                note = note or CHART_NOTES.get(filename)
-                methodology = methodology or CHART_METHODOLOGY.get(filename)
+                variant = {"label": label, "src": src}
+                # Each variant carries its own note/methodology when it has one (the
+                # maintainer-pipeline tabs are genuinely different charts). The chart-level
+                # note stays the first available one, shared by variants without their own
+                # (as with the All/Active pairs, where only the base image is annotated).
+                if v_note := CHART_NOTES.get(filename):
+                    variant["note"] = v_note
+                if v_methodology := CHART_METHODOLOGY.get(filename):
+                    variant["methodology"] = v_methodology
+                variants.append(variant)
+                note = note or variant.get("note")
+                methodology = methodology or variant.get("methodology")
                 wide = wide or filename in WIDE_CHARTS
             if not variants:
                 continue

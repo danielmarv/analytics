@@ -115,6 +115,58 @@ def test_chart_section_renders_embedded_images():
     assert "class='glossary'" not in doc  # column glossary doesn't apply to a chart-only macro
 
 
+def test_tabbed_chart_renders_a_switcher_with_one_figcaption():
+    """A variant chart renders tab buttons + one image per variant, first visible, one caption."""
+    sections = [
+        {
+            "id": "ch",
+            "title": "Charts",
+            "description": "pictures",
+            "charts": [
+                {
+                    "title": "Pipeline",
+                    "variants": [
+                        {"label": "By year", "src": "data:image/png;base64,AAAA"},
+                        {"label": "By month", "src": "data:image/png;base64,BBBB"},
+                    ],
+                }
+            ],
+        }
+    ]
+    doc = build_dashboard_html([_macro([_tab("hiero-ledger", sections, metrics=())], "Community")])
+    assert 'class="charttabs"' in doc  # the tab bar
+    assert "chartTab(this,0)" in doc and "chartTab(this,1)" in doc  # a button per view
+    assert ">By year<" in doc and ">By month<" in doc  # tab labels
+    assert 'data-i="1"' in doc  # second variant image present
+    assert 'style="display:none"' in doc  # non-first variant starts hidden
+    assert doc.count("<figcaption>Pipeline</figcaption>") == 1  # one caption for the whole switcher
+
+
+def test_tabbed_chart_carries_per_variant_override_notes():
+    """A variant whose note differs from the shared one gets its own data-i lightbox note."""
+    sections = [
+        {
+            "id": "ch",
+            "title": "Charts",
+            "description": "pictures",
+            "charts": [
+                {
+                    "title": "Pipeline",
+                    "note": "Yearly note.",  # shared = first variant's note
+                    "variants": [
+                        {"label": "By year", "src": "data:image/png;base64,AAAA", "note": "Yearly note."},
+                        {"label": "By repo", "src": "data:image/png;base64,BBBB", "note": "By-repo note."},
+                    ],
+                }
+            ],
+        }
+    ]
+    doc = build_dashboard_html([_macro([_tab("hiero-ledger", sections, metrics=())], "Community")])
+    assert "<div class='lbinfo' hidden>" in doc and "Yearly note." in doc  # shared note (fallback)
+    assert "class='lbinfo' data-i='1'" in doc and "By-repo note." in doc  # differing variant overrides
+    assert "class='lbinfo' data-i='0'" not in doc  # matching variant reuses the shared note, no dup
+
+
 def test_chart_note_and_methodology_only_appear_in_zoom_view():
     """The note and step-by-step methodology are carried hidden, for the lightbox only."""
     sections = [

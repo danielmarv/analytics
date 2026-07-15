@@ -33,11 +33,18 @@ CHART_MACROS = [
                     "id": "maintainer-pipeline",
                     "title": "Maintainer pipeline",
                     "description": "How the maintainer/committer pipeline has moved over time and across repos.",
+                    # One chart, four views: a tab switcher (By year / month / week / repo)
+                    # shows a single chart at a time instead of stacking all four.
                     "files": [
-                        ("By year", "maintainer_pipeline_yearly.png"),
-                        ("By month", "maintainer_pipeline_monthly.png"),
-                        ("By week", "maintainer_pipeline_weekly.png"),
-                        ("By repo", "maintainer_pipeline_by_repo.png"),
+                        (
+                            "Unique active contributors by role",
+                            [
+                                ("By year", "maintainer_pipeline_yearly.png"),
+                                ("By month", "maintainer_pipeline_monthly.png"),
+                                ("By week", "maintainer_pipeline_weekly.png"),
+                                ("By repo", "maintainer_pipeline_by_repo.png"),
+                            ],
+                        ),
                     ],
                 },
                 {
@@ -524,6 +531,18 @@ CHART_NOTES = {
         "window for past years, so old bars stay put; a trailing six-month window for the current year). "
         "Each person is counted once, under the highest governance role they hold in any repo "
         "(general → triage → committer → maintainer), so the bar's total is the distinct people active."
+    ),
+    "maintainer_pipeline_monthly.png": (
+        "Each bar is a calendar month, counting the distinct people active that month — once each, under "
+        "the highest governance role they hold in any repo (general → triage → committer → maintainer). "
+        "Counts are strictly per-month (not a trailing window), so the current month is month-to-date. "
+        "Only the most recent 24 months are charted; full history stays in the CSV."
+    ),
+    "maintainer_pipeline_weekly.png": (
+        "Each bar is an ISO week (Mon–Sun), counting the distinct people active that week — once each, "
+        "under the highest governance role they hold in any repo (general → triage → committer → "
+        "maintainer). Counts are strictly per-week (not a trailing window), so the current week is "
+        "week-to-date. Only the most recent 26 weeks are charted; full history stays in the CSV."
     ),
     "maintainer_pipeline_by_repo.png": (
         "Each bar is a repository, counting people active there in the last six months, grouped by the "

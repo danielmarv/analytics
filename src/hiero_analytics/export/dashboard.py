@@ -90,17 +90,31 @@ def _fmt(value: object) -> str:
     return str(value)
 
 
-def _chart_caption_html(chart: Mapping, esc) -> str:
-    """A chart's caption; the note and methodology are carried hidden, revealed only on zoom."""
-    caption = f"<figcaption>{esc(chart['title'])}</figcaption>"
-    note = chart.get("note")
-    methodology = chart.get("methodology")
+def _lbinfo_inner(note: object, methodology: object, esc) -> str:
+    """Inner HTML for a lightbox note block (the short note + expandable methodology).
+
+    Returns an empty string when there is nothing to show, so callers can skip the
+    wrapping ``.lbinfo`` div entirely.
+    """
     if not note and not methodology:
-        return caption
+        return ""
     info = f"<p class='chartnote'>{esc(note)}</p>" if note else ""
     if methodology:
         steps = "".join(f"<li>{esc(step)}</li>" for step in methodology)
         info += f"<details class='lbmethod'><summary>Step-by-step methodology</summary><ol>{steps}</ol></details>"
+    return info
+
+
+def _chart_caption_html(chart: Mapping, esc) -> str:
+    """A chart's caption; the note and methodology are carried hidden, revealed only on zoom.
+
+    For a tabbed chart this carries the *shared* note (used by any variant that has no
+    note of its own); per-variant overrides are emitted separately by ``_figure_html``.
+    """
+    caption = f"<figcaption>{esc(chart['title'])}</figcaption>"
+    info = _lbinfo_inner(chart.get("note"), chart.get("methodology"), esc)
+    if not info:
+        return caption
     return f"{caption}<div class='lbinfo' hidden>{info}</div>"
 
 
@@ -143,7 +157,8 @@ def _figure_html(chart: Mapping, esc) -> str:
     if not chart.get("variants"):
         img = f'<img src="{chart["src"]}" alt="{esc(chart["title"])}" loading="lazy" onclick="openLightbox(this)">'
         return f'<figure class="{fig_cls}">{open_scroll}{img}{close_scroll}{caption}</figure>'
-    tabs, imgs = "", ""
+    tabs, imgs, var_notes = "", "", ""
+    shared_note, shared_meth = chart.get("note"), chart.get("methodology")
     for i, variant in enumerate(chart["variants"]):
         active = " active" if i == 0 else ""
         hidden = "" if i == 0 else ' style="display:none"'
@@ -152,9 +167,16 @@ def _figure_html(chart: Mapping, esc) -> str:
             f'<img class="cimg" data-i="{i}" src="{variant["src"]}" alt="{esc(chart["title"])}" '
             f'loading="lazy" onclick="openLightbox(this)"{hidden}>'
         )
+        # Emit an override note (tagged with the variant index) only when this variant's
+        # note differs from the shared one; otherwise the lightbox falls back to shared.
+        note = variant.get("note") or shared_note
+        meth = variant.get("methodology") or shared_meth
+        differs = note != shared_note or meth != shared_meth
+        if differs and (info := _lbinfo_inner(note, meth, esc)):
+            var_notes += f"<div class='lbinfo' data-i='{i}' hidden>{info}</div>"
     return (
         f'<figure class="{fig_cls}"><div class="charttabs">{tabs}</div>'
-        f"{open_scroll}{imgs}{close_scroll}{caption}</figure>"
+        f"{open_scroll}{imgs}{close_scroll}{caption}{var_notes}</figure>"
     )
 
 

@@ -84,6 +84,21 @@ def test_activity_to_role_dataframe_matches_actor_case_insensitively():
     assert df.iloc[0]["stage"] == "maintainer"
 
 
+def test_activity_to_role_dataframe_excludes_bots():
+    """Automation accounts aren't people and must be dropped from the pipeline."""
+    records = [
+        _record("authored_pull_request", "alice", "org/repo-a", 2024),
+        _record("authored_pull_request", "dependabot[bot]", "org/repo-a", 2024),
+        _record("merged_pull_request", "dependabot", "org/repo-a", 2024),
+        _record("reviewed_pull_request", "some-bot", "org/repo-a", 2024),
+        _record("authored_issue", "github-actions", "org/repo-a", 2024, target_type="issue"),
+    ]
+
+    df = activity_to_role_dataframe(records, {})
+
+    assert list(df["actor"]) == ["alice"]
+
+
 def test_build_maintainer_yearly_pipeline_counts_unique_actors_per_stage():
     """Yearly rollups should count unique actors once per stage."""
     role_lookup = {"repo-a": {"alice": "general_user", "bob": "triage", "carol": "committer", "dana": "maintainer"}}

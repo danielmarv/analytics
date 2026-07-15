@@ -15,6 +15,7 @@ import pandas as pd
 
 from hiero_analytics.analysis.dataframe_utils import records_to_dataframe
 from hiero_analytics.data_sources.models import ContributorActivityRecord
+from hiero_analytics.domain.bots import is_bot_login
 from hiero_analytics.domain.repos import bare_repo
 
 STAGE_COLUMNS = ["general_user", "triage", "committer", "maintainer"]
@@ -61,6 +62,10 @@ def activity_to_role_dataframe(
 
     def to_row(record: ContributorActivityRecord) -> dict[str, object] | None:
         if record.activity_type not in _MAINTAINER_ACTIVITY_TYPES:
+            return None
+
+        # Automation accounts (bots) aren't people in the maintainer pipeline.
+        if not record.actor or is_bot_login(record.actor):
             return None
 
         repo_name = bare_repo(record.repo)
