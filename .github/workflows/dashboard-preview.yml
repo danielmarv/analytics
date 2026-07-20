@@ -82,4 +82,22 @@ jobs:
           name: dashboard-preview-${{ github.event.pull_request.number }}
           path: outputs/dashboard.html
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 7
+
+      # The follow-up "Dashboard Preview Comment" workflow posts a PR comment
+      # linking to the artifact above. It runs on workflow_run (base-repo context)
+      # so this build job can stay contents: read with no PR-write token — the only
+      # way to comment on fork PRs without granting write to contributor code.
+      # workflow_run cannot read the PR number reliably for forks, so pass it along.
+      - name: Record PR number for the comment workflow
+        if: ${{ !cancelled() }}
+        run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
+
+      - name: Upload preview metadata
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dashboard-preview-meta
+          path: pr-number.txt
+          if-no-files-found: error
+          retention-days: 7
