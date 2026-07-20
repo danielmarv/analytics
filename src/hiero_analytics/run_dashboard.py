@@ -6,6 +6,8 @@ tables) and charts under ``outputs/charts/org/<org>/`` (embedded as base64 image
 and renders only the sections that have a CSV or PNG — so an org with no governance
 config simply shows the contributor tables, and a chart macro/tab appears only when
 its images exist. Run after the data pipelines (last step in ``run_all``).
+
+(Docs-only touch to exercise the dashboard-preview workflow end-to-end.)
 """
 
 from __future__ import annotations
