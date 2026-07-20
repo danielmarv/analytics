@@ -256,6 +256,40 @@ def test_fresh_watermark_uses_incremental_not_full_refresh(tmp_path):
     assert {r.key for r in result} == {"a", "b"}
 
 
+def test_offline_incremental_reuses_dataset_without_fetching(monkeypatch, tmp_path):
+    """Offline mode returns the snapshot without invoking full or delta fetches."""
+    path = tmp_path / "issues.json"
+    records = [_rec("a", 1, 1)]
+    save_dataset(path, records, datetime(2024, 1, 1, tzinfo=UTC))
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "1")
+
+    result = fetch_incremental(
+        path=path,
+        model_class=_Record,
+        key_of=_key,
+        updated_at_of=_updated,
+        full_fetch=lambda: pytest.fail("full fetch called in offline mode"),
+        since_fetch=lambda _since: pytest.fail("delta fetch called in offline mode"),
+    )
+
+    assert result == records
+
+
+def test_offline_incremental_requires_valid_dataset(monkeypatch, tmp_path):
+    """Offline mode fails clearly instead of fetching when no snapshot exists."""
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "true")
+
+    with pytest.raises(RuntimeError, match="Offline mode requires a valid cached dataset"):
+        fetch_incremental(
+            path=tmp_path / "missing.json",
+            model_class=_Record,
+            key_of=_key,
+            updated_at_of=_updated,
+            full_fetch=lambda: pytest.fail("full fetch called in offline mode"),
+            since_fetch=lambda _since: pytest.fail("delta fetch called in offline mode"),
+        )
+
+
 # -- partial fetch: hold the watermark ----------------------------------------
 
 
@@ -378,3 +412,17 @@ def test_load_or_fetch_falls_back_to_fetch_when_absent(monkeypatch):
     result = load_or_fetch("issue_label_events", "an-org", object, lambda: ["fresh"])
 
     assert result == ["fresh"]
+
+
+def test_load_or_fetch_offline_requires_dataset(monkeypatch):
+    """A reuse-only caller cannot fall back to its fetch callback offline."""
+    monkeypatch.setattr(dataset_store, "load_dataset", lambda _path, _model: None)
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "yes")
+
+    with pytest.raises(RuntimeError, match="cached issue_label_events/an-org dataset"):
+        load_or_fetch(
+            "issue_label_events",
+            "an-org",
+            object,
+            lambda: pytest.fail("fetch callback called in offline mode"),
+        )

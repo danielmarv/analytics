@@ -2,20 +2,25 @@
 
 from __future__ import annotations
 
+import json
 import os
 from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 import requests
 import yaml
 
 from hiero_analytics.config.github import HTTP_TIMEOUT_SECONDS
+from hiero_analytics.config.paths import DATASETS_DIR
+from hiero_analytics.data_sources.dataset_store import offline_mode_enabled
 from hiero_analytics.domain.bots import is_bot_login
 
 GOVERNANCE_CONFIG_URL = os.getenv(
     "GOVERNANCE_CONFIG_URL",
     "https://raw.githubusercontent.com/hiero-ledger/governance/main/config.yaml",
 )
+GOVERNANCE_CONFIG_SNAPSHOT = DATASETS_DIR / "governance_config.json"
 
 ROLE_PRIORITY = {
     "general_user": 0,
@@ -69,15 +74,34 @@ def _resolve_roles(
     return roles
 
 
-def fetch_governance_config(url: str = GOVERNANCE_CONFIG_URL) -> dict[str, Any]:
-    """Fetch and parse the Hiero governance config file."""
-    response = requests.get(url, timeout=HTTP_TIMEOUT_SECONDS)
-    response.raise_for_status()
-    data = yaml.safe_load(response.text)
-
+def _validate_governance_config(data: Any) -> dict[str, Any]:
+    """Return a parsed governance mapping or reject an invalid payload."""
     if not isinstance(data, dict):
         raise ValueError("Governance config did not parse into a mapping")
+    return data
 
+
+def fetch_governance_config(
+    url: str = GOVERNANCE_CONFIG_URL,
+    *,
+    snapshot_path: Path | None = None,
+) -> dict[str, Any]:
+    """Fetch governance config live, or load its validated snapshot offline."""
+    path = snapshot_path or GOVERNANCE_CONFIG_SNAPSHOT
+    if offline_mode_enabled():
+        if not path.exists():
+            raise RuntimeError(f"Offline mode requires a governance config snapshot at {path}")
+        try:
+            return _validate_governance_config(json.loads(path.read_text(encoding="utf-8")))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RuntimeError(f"Offline governance config snapshot is invalid: {path}") from exc
+
+    response = requests.get(url, timeout=HTTP_TIMEOUT_SECONDS)
+    response.raise_for_status()
+    data = _validate_governance_config(yaml.safe_load(response.text))
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
     return data
 
 

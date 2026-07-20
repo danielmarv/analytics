@@ -26,6 +26,7 @@ import os
 from collections.abc import Callable
 
 from hiero_analytics.config.logging_config import setup_logging
+from hiero_analytics.data_sources.dataset_store import offline_mode_enabled
 from hiero_analytics.run_affiliation_org import main as run_affiliation
 from hiero_analytics.run_codeowner_and_runner import main as run_codeowner
 from hiero_analytics.run_contributor_activity_org import main as run_contributor_activity
@@ -60,6 +61,21 @@ PIPELINES: list[tuple[str, Callable[[], None]]] = [
     ("hiero_hackers", run_hiero_hackers),
 ]
 
+# These pipelines can rebuild org-level dashboard sections from durable datasets.
+# The remaining pipelines use repo-scoped or third-party APIs and are deliberately
+# omitted from offline PR previews rather than silently making network requests.
+OFFLINE_PIPELINE_NAMES = frozenset(
+    {
+        "difficulty",
+        "difficulty_over_time",
+        "maintainer_pipeline",
+        "contributor_activity",
+        "contributor_heatmap",
+        "role_coverage",
+        "affiliation",
+    }
+)
+
 # Extra orgs (comma-separated) get contributor-activity only — the governance
 # pipelines above are tied to the primary org's config.yaml, so running them for
 # an org without one would produce misleading role/team data. The dashboard
@@ -78,6 +94,20 @@ def run_pipelines(pipelines: list[tuple[str, Callable[[], None]]]) -> list[str]:
             logger.exception("Pipeline %s failed; continuing with the rest", name)
             failures.append(name)
     return failures
+
+
+def pipelines_for_current_mode(
+    pipelines: list[tuple[str, Callable[[], None]]] | None = None,
+) -> list[tuple[str, Callable[[], None]]]:
+    """Return the full pipeline list, or only durable-data pipelines offline."""
+    available = PIPELINES if pipelines is None else pipelines
+    if not offline_mode_enabled():
+        return available
+
+    selected = [(name, pipeline) for name, pipeline in available if name in OFFLINE_PIPELINE_NAMES]
+    skipped = [name for name, _ in available if name not in OFFLINE_PIPELINE_NAMES]
+    logger.info("Offline mode: skipping network-only pipelines: %s", ", ".join(skipped))
+    return selected
 
 
 def _run_extra_org(org: str) -> bool:
@@ -102,7 +132,7 @@ def main() -> None:
     """
     setup_logging()
 
-    failures = run_pipelines(PIPELINES)
+    failures = run_pipelines(pipelines_for_current_mode())
     failures += [f"contributor_activity[{org}]" for org in EXTRA_ORGS if not _run_extra_org(org)]
 
     # Dashboard last, once — it renders a tab per org that has data.

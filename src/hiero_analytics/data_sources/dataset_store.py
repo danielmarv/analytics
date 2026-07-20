@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from collections.abc import Callable, Hashable, Iterable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -42,6 +43,11 @@ DEFAULT_OVERLAP = timedelta(minutes=10)
 # How old a persisted dataset's watermark may be before load_or_fetch refreshes it
 # instead of reusing it. Matches the update-analytics CI cadence.
 DEFAULT_REUSE_MAX_AGE = timedelta(days=5)
+
+
+def offline_mode_enabled() -> bool:
+    """Return whether analytics must avoid all network-backed fetch callbacks."""
+    return os.getenv("HIERO_ANALYTICS_OFFLINE", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 class PartialOrgFetchError(Exception):
@@ -150,6 +156,9 @@ def load_or_fetch(  # noqa: UP047
     state = load_dataset(dataset_path(resource, org, "all"), model_class)
     if state is not None:
         records, fetched_through = state
+        if offline_mode_enabled():
+            logger.info("Reusing offline %s/%s dataset (%d records)", org, resource, len(records))
+            return records
         if fetched_through.tzinfo is None:
             fetched_through = fetched_through.replace(tzinfo=UTC)
         if max_age is None or fetched_through >= datetime.now(UTC) - max_age:
@@ -162,6 +171,8 @@ def load_or_fetch(  # noqa: UP047
             fetched_through.isoformat(),
         )
         return fetch_fn()
+    if offline_mode_enabled():
+        raise RuntimeError(f"Offline mode requires a cached {resource}/{org} dataset")
     logger.info("No persisted %s/%s dataset; fetching from GitHub", org, resource)
     return fetch_fn()
 
@@ -200,6 +211,12 @@ def fetch_incremental(  # noqa: UP047
     """
     current = now or datetime.now(UTC)
     state = load_dataset(path, model_class)
+    if offline_mode_enabled():
+        if state is None:
+            raise RuntimeError(f"Offline mode requires a valid cached dataset at {path}")
+        records, _ = state
+        logger.info("Reusing offline dataset %s (%d records)", path, len(records))
+        return records
     is_stale = full_refresh_after is not None and state is not None and state[1] < current - full_refresh_after
     held_watermark: datetime | None = None
     if state is None or force_full or is_stale:

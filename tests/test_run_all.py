@@ -51,6 +51,29 @@ def test_run_pipelines_empty_when_all_succeed():
     assert failures == []
 
 
+def test_pipeline_selection_uses_all_pipelines_online(monkeypatch):
+    """Normal refresh runs retain every configured pipeline."""
+    monkeypatch.delenv("HIERO_ANALYTICS_OFFLINE", raising=False)
+    pipelines = [("difficulty", lambda: None), ("scorecard", lambda: None)]
+
+    assert run_all.pipelines_for_current_mode(pipelines) == pipelines
+
+
+def test_pipeline_selection_skips_network_only_pipelines_offline(monkeypatch):
+    """Offline previews run durable dashboard producers and skip live-only work."""
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "1")
+
+    def difficulty():
+        return None
+
+    def scorecard():
+        return None
+
+    assert run_all.pipelines_for_current_mode([("difficulty", difficulty), ("scorecard", scorecard)]) == [
+        ("difficulty", difficulty)
+    ]
+
+
 def test_main_exits_nonzero_when_a_pipeline_fails(monkeypatch):
     """main() exits non-zero so CI surfaces any pipeline failure."""
 
