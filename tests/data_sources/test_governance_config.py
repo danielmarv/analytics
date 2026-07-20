@@ -1,10 +1,57 @@
 """Tests for governance-config role mapping helpers."""
 
+import pytest
+
+from hiero_analytics.data_sources import governance_config
 from hiero_analytics.data_sources.governance_config import (
     build_repo_role_lookup,
     count_distinct_role_holders_by_role,
+    fetch_governance_config,
     permission_to_role,
 )
+
+
+def test_fetch_governance_config_snapshots_valid_live_response(monkeypatch, tmp_path):
+    """A validated live config is persisted for later offline previews."""
+    snapshot = tmp_path / "governance.json"
+
+    class Response:
+        text = "teams: []\nrepositories: []\n"
+
+        def raise_for_status(self):
+            return None
+
+    def get_response(_url, **_kwargs):
+        return Response()
+
+    monkeypatch.setattr(governance_config.requests, "get", get_response)
+
+    result = fetch_governance_config("https://example.test/config.yaml", snapshot_path=snapshot)
+
+    assert result == {"teams": [], "repositories": []}
+    assert snapshot.exists()
+
+
+def test_fetch_governance_config_uses_snapshot_offline(monkeypatch, tmp_path):
+    """Offline governance loading never performs an HTTP request."""
+    snapshot = tmp_path / "governance.json"
+    snapshot.write_text('{"teams": [], "repositories": []}', encoding="utf-8")
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "1")
+    monkeypatch.setattr(
+        governance_config.requests,
+        "get",
+        lambda *_args, **_kwargs: pytest.fail("HTTP request made in offline mode"),
+    )
+
+    assert fetch_governance_config(snapshot_path=snapshot) == {"teams": [], "repositories": []}
+
+
+def test_fetch_governance_config_requires_snapshot_offline(monkeypatch, tmp_path):
+    """A missing governance snapshot produces a clear offline error."""
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "true")
+
+    with pytest.raises(RuntimeError, match="requires a governance config snapshot"):
+        fetch_governance_config(snapshot_path=tmp_path / "missing.json")
 
 
 def test_permission_to_role_maps_repo_permissions():

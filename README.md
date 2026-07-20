@@ -6,6 +6,8 @@ Stay up to date with hiero organisation activity and contributor diversity
 
 This repository provides analytics for the [Hiero repositories](https://github.com/hiero-ledger).
 
+**Latest dashboard:** [hiero-hackers.github.io/analytics](https://hiero-hackers.github.io/analytics/)
+
 ## Setting Up Analytics Development
 
 ## Repository Setup
@@ -143,6 +145,8 @@ uv run hiero-analytics
 - Writes charts to `outputs/charts/` and data tables to `outputs/data/`
 - Isolates failures — if one pipeline errors it is logged and the rest still run; the command exits non-zero if any failed
 
+Everything under `outputs/` is generated and gitignored. The scheduled workflow publishes the dashboard to GitHub Pages instead of committing generated charts and reports.
+
 This is the same command the scheduled **Refresh Analytics Data** workflow runs.
 
 > ⏱️ **The first run is slow.** It fetches org-wide activity from the GitHub API (subject to rate limits), so the initial run can take **several minutes**. Later runs are incremental and much faster (see [Incremental data fetching](#incremental-data-fetching)).
@@ -161,6 +165,14 @@ To build it yourself, the single-file dashboard at `outputs/dashboard.html` is *
   ```
 
 - Open `outputs/dashboard.html` in any browser — it's fully self-contained (no server required) and shows one tab per organization that has data.
+
+### Pull request dashboard previews
+
+Pull requests that change analytics code build `outputs/dashboard.html` and upload it as a **dashboard-preview** workflow artifact. Download that single HTML file to review the PR's charts and tables without committing generated PNGs or reports.
+
+Most previews restore the latest base-branch datasets and set `HIERO_ANALYTICS_OFFLINE=1`. This keeps the input data fixed so the artifact isolates code changes. Offline mode never falls back to a network fetch: it fails clearly when a required dataset or governance snapshot is missing. Pipelines backed only by live repo or third-party APIs are skipped, so Scorecard, CODEOWNERS/runner, repo-only, and Hiero Hackers sections may be absent from an offline preview.
+
+Changes under `src/hiero_analytics/data_sources/` automatically use a live fetch because a cached dataset cannot contain newly introduced fields. Those fields are populated only for records fetched during the preview; the scheduled refresh remains responsible for a complete backfill. Preview workflows restore caches but never save them.
 
 ### Running a single pipeline
 

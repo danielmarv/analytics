@@ -1,0 +1,85 @@
+name: Dashboard Preview
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "src/hiero_analytics/**"
+      - "pyproject.toml"
+      - ".github/workflows/dashboard-preview.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dashboard-preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-preview:
+    name: Build dashboard preview
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pull request
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync
+
+      # PRs can restore caches created on the base branch, but this workflow never
+      # saves one. Contributor code therefore cannot replace the refresh baseline.
+      - name: Restore analytics datasets
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: outputs/data/datasets
+          key: analytics-datasets-preview-${{ github.event.pull_request.base.sha }}
+          restore-keys: |
+            analytics-datasets-
+
+      # Ingestion changes need a live fetch because the base-branch datasets may
+      # not contain new fields. Only recent records will carry newly-added fields;
+      # historical backfill remains the scheduled refresh workflow's responsibility.
+      # A three-dot diff compares the PR head against the merge-base, so movement
+      # on main after the branch point never forces an unnecessary live fetch.
+      - name: Select data mode
+        id: data-mode
+        run: |
+          if git diff --quiet \
+            "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" \
+            -- src/hiero_analytics/data_sources; then
+            echo "offline=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "offline=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build dashboard
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          HIERO_ANALYTICS_OFFLINE: ${{ steps.data-mode.outputs.offline }}
+        run: uv run python -m hiero_analytics.run_all
+
+      # The dashboard embeds its charts and data. Treat HTML from unfamiliar
+      # contributors with the same care as any other contributor-authored code.
+      # run_all writes dashboard.html before it exits non-zero on any pipeline
+      # failure, so upload even on failure (job still goes red) — reviewers get
+      # the partial dashboard instead of nothing.
+      - name: Upload dashboard preview
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dashboard-preview-${{ github.event.pull_request.number }}
+          path: outputs/dashboard.html
+          if-no-files-found: error
+          retention-days: 14

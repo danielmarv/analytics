@@ -37,10 +37,10 @@ src/hiero_sdk_python/hapi
 uv.lock
 pdm.lock
 pubkey.asc
-outputs/cache/
-# Incremental-fetch datasets persist across CI runs via actions/cache,
-# not committed to git (see .github/workflows/update-analytics.yml).
-outputs/data/datasets/
+
+# Generated analytics artifacts and incremental datasets. CI persists datasets
+# via actions/cache and publishes the dashboard through GitHub Pages.
+outputs/
 
 # Local-only input data (Discord exports, etc.)
 inputs/
@@ -54,9 +54,6 @@ inputs/
 
 # Locally generated report output
 /reports/
-
-# Generated local dashboard (bundles data; regenerable)
-outputs/dashboard.html
 
 # Assembled GitHub Pages site (built in CI from the dashboard; never committed)
 _site/
