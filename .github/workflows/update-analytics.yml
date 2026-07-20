@@ -73,8 +73,8 @@ jobs:
 
   # Publish the freshly-built dashboard to GitHub Pages. Runs after the data refresh
   # regardless of whether the data changed, so the public page always reflects the
-  # most recent run. Skipped on dry runs. Requires Pages "Source: GitHub Actions"
-  # to be enabled once in the repository settings.
+  # most recent run. Requires Pages "Source: GitHub Actions" to be enabled once in
+  # the repository settings.
   deploy-pages:
     name: Deploy dashboard to GitHub Pages
     needs: refresh-data
