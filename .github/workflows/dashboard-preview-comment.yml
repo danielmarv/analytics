@@ -11,6 +11,7 @@ name: Dashboard Preview Comment
 # NOTE: workflow_run workflows only trigger when this file exists on the default
 # branch. The comment therefore starts appearing on PRs after this is merged to
 # main — it will not comment on the PR that introduces it.
+
 on:
   workflow_run:
     workflows: ["Dashboard Preview"]
