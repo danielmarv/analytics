@@ -54,6 +54,16 @@ def test_fetch_governance_config_requires_snapshot_offline(monkeypatch, tmp_path
         fetch_governance_config(snapshot_path=tmp_path / "missing.json")
 
 
+def test_fetch_governance_config_rejects_invalid_snapshot_offline(monkeypatch, tmp_path):
+    """A snapshot that decodes but isn't a mapping still fails as a RuntimeError."""
+    snapshot = tmp_path / "governance.json"
+    snapshot.write_text("[]", encoding="utf-8")  # valid JSON, wrong shape
+    monkeypatch.setenv("HIERO_ANALYTICS_OFFLINE", "1")
+
+    with pytest.raises(RuntimeError, match="snapshot is invalid"):
+        fetch_governance_config(snapshot_path=snapshot)
+
+
 def test_permission_to_role_maps_repo_permissions():
     """Repository permissions should normalize into maintainer-pipeline roles."""
     assert permission_to_role("triage") == "triage"

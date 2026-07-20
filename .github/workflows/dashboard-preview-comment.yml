@@ -22,8 +22,13 @@ permissions:
   actions: read # read/download artifacts from the triggering run
   pull-requests: write # post the preview comment
 
+# Key by the PR's source (repo + branch), not the run id: a run-id group would be
+# unique per run, making cancel-in-progress a no-op. Serializing per source PR lets
+# a newer comment job cancel an older in-flight one, so two preview runs completing
+# close together can't race into duplicate comments.
 concurrency:
-  group: dashboard-preview-comment-${{ github.event.workflow_run.id }}
+  group: >-
+    dashboard-preview-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
   cancel-in-progress: true
 
 jobs:
@@ -85,7 +90,9 @@ jobs:
               '> The artifact is contributor-authored HTML — glance at the diff before opening it. It expires after 7 days and is replaced on each new push.',
             ].join('\n');
 
-            const { data: comments } = await github.rest.issues.listComments({
+            // Paginate: on a busy PR the marker comment may sit past the first
+            // page, and missing it would create a duplicate instead of updating.
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: prNumber,

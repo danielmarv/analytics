@@ -93,7 +93,10 @@ def fetch_governance_config(
             raise RuntimeError(f"Offline mode requires a governance config snapshot at {path}")
         try:
             return _validate_governance_config(json.loads(path.read_text(encoding="utf-8")))
-        except (OSError, json.JSONDecodeError) as exc:
+        # ValueError covers both a JSON parse failure and a decoded-but-invalid
+        # payload (_validate_governance_config), so the offline branch always fails
+        # with a clear RuntimeError rather than leaking a raw ValueError.
+        except (OSError, ValueError) as exc:
             raise RuntimeError(f"Offline governance config snapshot is invalid: {path}") from exc
 
     response = requests.get(url, timeout=HTTP_TIMEOUT_SECONDS)
