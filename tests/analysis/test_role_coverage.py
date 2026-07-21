@@ -65,6 +65,22 @@ def test_quiet_when_last_active_beyond_window():
     assert cov[cov["user"] == "m"].iloc[0]["status"] == "quiet"  # ~150 days
 
 
+def test_all_time_period_marks_any_seen_holder_active():
+    """An old contribution remains active when no rolling cutoff is applied."""
+    profiles = build_contributor_profiles([_ev("m", "authored_pull_request", 1, month=1)])
+    cov = build_repo_role_coverage(
+        {"m": "maintainer"},
+        profiles,
+        _seen(profiles),
+        now=datetime(2025, 1, 1, tzinfo=UTC),
+        active_within_days=None,
+        recent_profiles=profiles,
+    )
+
+    assert cov.iloc[0]["status"] == "active"
+    assert cov.iloc[0]["prs_recent"] == 1
+
+
 def test_coverage_surfaces_raw_contribution_counts():
     """Coverage carries raw contribution counts (PRs/reviews/merges/issues/labels), no %."""
     records = [

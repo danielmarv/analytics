@@ -73,7 +73,7 @@ def build_repo_role_coverage(
     repo_last_seen: dict[str, object],
     *,
     now: datetime,
-    active_within_days: int = 90,
+    active_within_days: int | None = 90,
     recent_profiles: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """One row per permission-holder: role, recency, and their contribution counts.
@@ -92,7 +92,7 @@ def build_repo_role_coverage(
         Reference time for recency (injected for testability).
     active_within_days
         A holder with no activity in the repo within this many days — or none ever
-        — is marked ``quiet``.
+        — is marked ``quiet``. ``None`` includes all recorded activity.
     recent_profiles
         Optional profile table scoped to the last ``active_within_days`` days. When
         given, its counts populate the ``*_recent`` columns alongside the all-time
@@ -118,7 +118,9 @@ def build_repo_role_coverage(
         login = user.lower()
         last_active = repo_last_seen.get(login)
         days = None if last_active is None else (now - last_active).days
-        status = "active" if (days is not None and days <= active_within_days) else "quiet"
+        status = (
+            "active" if days is not None and (active_within_days is None or days <= active_within_days) else "quiet"
+        )
 
         prs, reviews, merges, issues, labels = _counts(by_login.get(login))
         r_prs, r_reviews, r_merges, r_issues, r_labels = _counts(by_login_recent.get(login))

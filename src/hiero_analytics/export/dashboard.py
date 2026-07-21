@@ -42,8 +42,8 @@ _GLOSSARY = (
     "<dt>mergers</dt><dd>how many people (committers + maintainers) reviewed or merged in the repo.</dd>"
     "<dt>top carrier / top % / top role</dt><dd>the person doing the most review+merge in a repo, their "
     "share of it (top-2 % = the top two combined), and whether they are a committer or maintainer.</dd>"
-    "<dt>&hellip; 90d</dt><dd>the same count limited to the last 90 days; columns without "
-    "&ldquo;90d&rdquo; (incl. &ldquo;all-time&rdquo;) are cumulative.</dd>"
+    "<dt>period tabs</dt><dd>activity counts and active / quiet status use the selected rolling period; "
+    "All time includes every tracked event.</dd>"
     "<dt>repos</dt><dd>number of distinct repositories they were active in.</dd>"
     "<dt>last active</dt><dd>date of their most recent tracked activity (all-time).</dd>"
     "<dt>status</dt><dd>active = recent activity within the window; quiet = none in it.</dd>"
@@ -68,11 +68,10 @@ _GLOSSARY = (
     "(e.g. .github, governance) that have no domain maintainer team of their own. So members of those "
     "teams appear on just those few repos.</dd>"
     "</dl>"
-    "<p class='gnote'>Contribution counts are all-time, except columns labelled &ldquo;90d&rdquo;, which "
-    "cover the last 90 days. Recency thresholds: a repo role-holder shows as &ldquo;quiet&rdquo; after 90 "
-    "days with no activity in that repo, and a role-holder or team shows as &ldquo;quiet&rdquo; after 180 "
-    "days with no activity anywhere. Tracked activities are opening PRs/issues, reviewing, merging, and "
-    "labeling &mdash; comments and reactions are not counted.</p>"
+    "<p class='gnote'>Tabbed activity tables use the selected period; reference tables labelled "
+    "&ldquo;all-time&rdquo; are cumulative. The permission-holder cleanup list uses a fixed 180-day quiet "
+    "threshold. Tracked activities are opening PRs/issues, reviewing, merging, and labeling &mdash; "
+    "comments and reactions are not counted.</p>"
     "</details>"
 )
 
@@ -192,13 +191,7 @@ def _charts_section_html(section: Mapping, esc) -> str:
     )
 
 
-def _section_html(section: Mapping, esc) -> str:
-    if "charts" in section:
-        return _charts_section_html(section, esc)
-    section_id = section["id"]
-    columns: Sequence[tuple[str, str]] = section["columns"]
-    rows: Sequence[Mapping] = section["rows"]
-
+def _table_view_html(section_id: str, columns: Sequence[tuple[str, str]], rows: Sequence[Mapping], esc) -> str:
     head = "".join(
         f"<th onclick=\"sortTable('{section_id}',{i},this)\">{esc(label)}</th>"
         for i, (_key, label) in enumerate(columns)
@@ -206,26 +199,52 @@ def _section_html(section: Mapping, esc) -> str:
     body = "".join(
         "<tr>" + "".join(f"<td>{esc(_fmt(row.get(key)))}</td>" for key, _label in columns) + "</tr>" for row in rows
     )
+    return (
+        f"<button class='dl' onclick=\"exportCSV('{section_id}','{section_id}.csv')\">Download CSV</button>"
+        f"<input class='search' placeholder='Filter…' "
+        f"oninput=\"filterTable('{section_id}',this.value)\">"
+        f"<div class='tablewrap'><table id='{section_id}'><thead><tr>{head}</tr></thead>"
+        f"<tbody>{body}</tbody></table></div>"
+        f"<p class='count' id='{section_id}-count'>{len(rows)} rows</p>"
+    )
+
+
+def _section_html(section: Mapping, esc) -> str:
+    if "charts" in section:
+        return _charts_section_html(section, esc)
+    section_id = section["id"]
+    variants = section.get("variants")
+    row_count = max((len(variant["rows"]) for variant in variants), default=0) if variants else len(section["rows"])
     action = (
         f"<a class='dl' href=\"{esc(section['action_url'])}\" target='_blank' rel='noopener'>"
         f"{esc(section.get('action_label', 'Suggest a correction'))}</a>"
         if section.get("action_url")
         else ""
     )
+    if variants:
+        active_idx = section.get("active_variant", 0)
+        tabs = "".join(
+            f"<button class='periodtab{' active' if i == active_idx else ''}' onclick='periodTab(this,{i})'>"
+            f"{esc(variant['label'])}</button>"
+            for i, variant in enumerate(variants)
+        )
+        tables = "".join(
+            ("<div class='periodview'>" if i == active_idx else "<div class='periodview' style='display:none'>")
+            + f"{_table_view_html(f'{section_id}-period-{i}', variant['columns'], variant['rows'], esc)}</div>"
+            for i, variant in enumerate(variants)
+        )
+        content = f"<div class='periodtabs'>{tabs}</div>{tables}"
+    else:
+        content = _table_view_html(section_id, section["columns"], section["rows"], esc)
     return (
         f"<details class='card tsec' open>"
         f"<summary class='tsum'><h2>{esc(section['title'])}</h2>"
-        f"<span class='sbadge'>{len(rows)} rows</span></summary>"
+        f"<span class='sbadge'>{row_count} rows</span></summary>"
         f"<div class='sbody'>"
         f"<div class='shead'><p class='desc'>{esc(section['description'])}</p>"
-        f"<button class='dl' onclick=\"exportCSV('{section_id}','{section_id}.csv')\">Download CSV</button>"
         f"{action}"
         f"</div>"
-        f"<input class='search' placeholder='Filter…' "
-        f"oninput=\"filterTable('{section_id}',this.value)\">"
-        f"<div class='tablewrap'><table id='{section_id}'><thead><tr>{head}</tr></thead>"
-        f"<tbody>{body}</tbody></table></div>"
-        f"<p class='count' id='{section_id}-count'>{len(rows)} rows</p>"
+        f"{content}"
         f"</div></details>"
     )
 

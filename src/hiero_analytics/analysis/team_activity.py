@@ -33,7 +33,7 @@ _BY_REPO_COLUMNS = [
 ]
 
 
-def _aggregate(members, by_login, last_seen, *, now, active_within_days):
+def _aggregate(members, by_login, last_seen, *, now, active_within_days: int | None):
     """Window counts from ``by_login`` + all-time recency from ``last_seen`` per member."""
     totals = dict.fromkeys(_CONTRIB_COLS, 0)
     last_active = None
@@ -49,7 +49,7 @@ def _aggregate(members, by_login, last_seen, *, now, active_within_days):
         when = entry[0]
         if last_active is None or when > last_active:
             last_active = when
-        if (now - when).days <= active_within_days:
+        if active_within_days is None or (now - when).days <= active_within_days:
             active_members += 1
     return totals, last_active, active_members
 
@@ -60,12 +60,12 @@ def build_team_activity_summary(
     last_seen: dict[str, tuple],
     *,
     now: datetime,
-    dark_after_days: int = 90,
+    dark_after_days: int | None = 90,
 ) -> pd.DataFrame:
     """One row per team: size, recent activity, and active/quiet status.
 
     A team is ``quiet`` when none of its members has recent activity anywhere within
-    ``dark_after_days``. Contribution counts come from ``org_profiles`` (all-time);
+    ``dark_after_days``; ``None`` includes all recorded activity. Contribution counts come from ``org_profiles`` (all-time);
     recency comes from ``last_seen`` (``{account_lower: (last_active, login)}``,
     all-time). Teams with no recent activity sort first.
     """

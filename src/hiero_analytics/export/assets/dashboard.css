@@ -83,6 +83,13 @@ details[open] .tsum::before{transform:rotate(90deg)}
 .ctab:hover{background:#f3f3f3}
 .ctab.active{background:#333;color:#fff;border-color:#333;font-weight:500}
 @media (prefers-color-scheme:dark){.ctab{background:#1a1a1a;color:#999;border-color:#333}.ctab:hover{background:#262626}.ctab.active{background:#e6e6e6;color:#0f0f0f;border-color:#e6e6e6}}
+.periodtabs{display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid #e0e0e0}
+.periodtab{font:inherit;font-size:13px;padding:6px 12px;border:0;border-bottom:2px solid transparent;background:none;color:#666;cursor:pointer;margin-bottom:-1px}
+.periodtab:hover{color:#1b1b1b}
+.periodtab.active{color:#1b1b1b;border-bottom-color:#555;font-weight:600}
+.periodview>.dl,.sbody>.dl{float:right;margin-bottom:8px}
+.periodview>.search,.sbody>.search{clear:both}
+@media (prefers-color-scheme:dark){.periodtabs{border-color:#2a2a2a}.periodtab{color:#999}.periodtab:hover,.periodtab.active{color:#e6e6e6}.periodtab.active{border-bottom-color:#888}}
 .chart.wide{grid-column:1/-1}
 .chartscroll{overflow-x:auto;overflow-y:hidden;border:1px solid #eee;border-radius:8px;background:#fff}
 .chartscroll img{width:auto;max-width:none;height:460px;border:0;border-radius:0;display:block;cursor:zoom-in}

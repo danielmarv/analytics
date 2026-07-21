@@ -142,6 +142,66 @@ def test_tabbed_chart_renders_a_switcher_with_one_figcaption():
     assert doc.count("<figcaption>Pipeline</figcaption>") == 1  # one caption for the whole switcher
 
 
+def test_tabbed_table_renders_independent_period_variants():
+    """Each table period has its own controls and only the first starts visible."""
+    sections = [
+        {
+            "id": "people",
+            "title": "People",
+            "description": "Activity by period.",
+            "variants": [
+                {
+                    "label": "90 days",
+                    "columns": [("name", "name"), ("prs", "PRs")],
+                    "rows": [{"name": "alice", "prs": 2}],
+                },
+                {
+                    "label": "All time",
+                    "columns": [("name", "name"), ("prs", "PRs")],
+                    "rows": [{"name": "alice", "prs": 8}, {"name": "bob", "prs": 1}],
+                },
+            ],
+        }
+    ]
+
+    doc = build_dashboard_html([_macro([_tab("hiero-ledger", sections)])])
+
+    assert "class='periodtabs'" in doc
+    assert "periodTab(this,0)" in doc and "periodTab(this,1)" in doc
+    assert ">90 days<" in doc and ">All time<" in doc
+    assert "id='contributors-governance-hiero-ledger-people-period-0'" in doc
+    assert "id='contributors-governance-hiero-ledger-people-period-1'" in doc
+    assert "class='periodview' style='display:none'" in doc
+    assert "exportCSV('contributors-governance-hiero-ledger-people-period-1'" in doc
+    assert "<span class='sbadge'>2 rows</span>" in doc
+
+
+def test_tabbed_table_opens_on_the_configured_default_variant():
+    """active_variant, not tab order, decides which period starts visible."""
+    sections = [
+        {
+            "id": "people",
+            "title": "People",
+            "description": "Activity by period.",
+            "active_variant": 1,
+            "variants": [
+                {"label": "30 days", "columns": [("name", "name")], "rows": [{"name": "a"}]},
+                {"label": "90 days", "columns": [("name", "name")], "rows": [{"name": "a"}, {"name": "b"}]},
+            ],
+        }
+    ]
+
+    doc = build_dashboard_html([_macro([_tab("hiero-ledger", sections)])])
+    prefix = "contributors-governance-hiero-ledger-people-period-"
+
+    # The 90-day tab (index 1) is active; the 30-day tab is not.
+    assert "class='periodtab active' onclick='periodTab(this,1)'" in doc
+    assert "class='periodtab' onclick='periodTab(this,0)'" in doc
+    # The 90-day view is shown; the 30-day view carries display:none.
+    assert f"<div class='periodview'><button class='dl' onclick=\"exportCSV('{prefix}1'" in doc
+    assert f"<div class='periodview' style='display:none'><button class='dl' onclick=\"exportCSV('{prefix}0'" in doc
+
+
 def test_tabbed_chart_carries_per_variant_override_notes():
     """A variant whose note differs from the shared one gets its own data-i lightbox note."""
     sections = [

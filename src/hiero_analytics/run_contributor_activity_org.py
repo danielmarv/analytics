@@ -34,6 +34,7 @@ from hiero_analytics.data_sources.models import (
     ContributorActivityRecord,
     IssueTimelineEventRecord,
 )
+from hiero_analytics.domain.periods import ACTIVITY_PERIODS
 from hiero_analytics.export.save import save_dataframe
 from hiero_analytics.plotting.network import render_comembership_network
 
@@ -94,8 +95,22 @@ def main(org: str | None = None) -> None:
     )
     logger.info("Using %d activity records and %d label events (all-time)", len(records), len(label_events))
 
-    # Org-wide: one row per contributor across all repos (cumulative, all-time).
-    profiles = build_contributor_profiles(records, label_events)
+    # Org-wide: one row per contributor, emitted once for each shared activity period.
+    now = datetime.now(UTC)
+    period_profiles = {}
+    for period in ACTIVITY_PERIODS:
+        cutoff = period.cutoff(now)
+        period_records = (
+            records if cutoff is None else [r for r in records if r.occurred_at and r.occurred_at >= cutoff]
+        )
+        period_labels = (
+            label_events if cutoff is None else [e for e in label_events if e.occurred_at and e.occurred_at >= cutoff]
+        )
+        profiles = build_contributor_profiles(period_records, period_labels)
+        period_profiles[period.key] = profiles
+        save_dataframe(profiles, org_data_dir / period.filename("contributor_activity_profiles"))
+
+    profiles = period_profiles["all"]
     save_dataframe(profiles, org_data_dir / "contributor_activity_profiles.csv")
     logger.info("Built org-wide profiles for %d contributors", len(profiles))
 

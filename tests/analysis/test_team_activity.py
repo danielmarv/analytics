@@ -57,6 +57,24 @@ def test_team_summary_flags_dark_teams_and_aggregates():
     assert summary.index[0] == "dark-team"
 
 
+def test_team_summary_all_time_counts_any_seen_member_as_active():
+    """The all-time period includes old activity instead of applying a cutoff."""
+    records = [_ev("stale", "authored_pull_request", 1, month=1)]
+    org_profiles = build_contributor_profiles(records)
+    last_seen = latest_activity_by_account(records)
+
+    summary = build_team_activity_summary(
+        {"old-team": {"stale"}},
+        org_profiles,
+        last_seen,
+        now=datetime(2025, 1, 1, tzinfo=UTC),
+        dark_after_days=None,
+    ).iloc[0]
+
+    assert summary["status"] == "active"
+    assert summary["active_members"] == 1
+
+
 def test_team_by_repo_shows_where_a_team_is_active():
     """A team only appears for repos where its members have activity."""
     records = [

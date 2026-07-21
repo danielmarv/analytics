@@ -66,6 +66,7 @@ from hiero_analytics.data_sources.governance_config import (
     fetch_governance_config,
 )
 from hiero_analytics.data_sources.models import ContributorActivityRecord, IssueTimelineEventRecord
+from hiero_analytics.domain.periods import ACTIVITY_PERIODS, Period
 from hiero_analytics.domain.repos import bare_repo
 from hiero_analytics.export.save import save_dataframe
 from hiero_analytics.plotting.network import render_comembership_network
@@ -93,10 +94,19 @@ def _build_profile_sets(records, label_events, now):
     return all_time_by_repo, all_time_org_profiles, recent_by_repo, repo_last_seen, global_last_seen
 
 
-def _write_role_coverage(roles_by_repo, all_time_by_repo, recent_by_repo, repo_last_seen, *, now):
-    """Write each repo's role-coverage + promotion-candidate files; return the combined table.
+def _build_role_coverage(
+    roles_by_repo,
+    all_time_by_repo,
+    recent_by_repo,
+    repo_last_seen,
+    *,
+    now,
+    active_within_days: int | None = ROLE_ACTIVE_DAYS,
+    write_repo_files: bool = True,
+):
+    """Build combined coverage, optionally writing legacy per-repo tables.
 
-    Counts are all-time with windowed ``*_recent`` columns; status/recency is all-time.
+    Counts are all-time with period-scoped ``*_recent`` columns; status/recency is all-time.
     Every repo with role-holders is covered, even quiet ones.
     """
     # Cover every governance repo that has role-holders — including quiet ones with
@@ -114,13 +124,13 @@ def _write_role_coverage(roles_by_repo, all_time_by_repo, recent_by_repo, repo_l
         seen = {acct: when for (rp, acct), when in repo_last_seen.items() if rp == repo_full}
 
         coverage = build_repo_role_coverage(
-            holders, profiles, seen, now=now, active_within_days=ROLE_ACTIVE_DAYS, recent_profiles=recent
+            holders, profiles, seen, now=now, active_within_days=active_within_days, recent_profiles=recent
         )
-        candidates = find_unbadged_role_work(profiles, holders, now=now, active_within_days=ROLE_ACTIVE_DAYS)
-
-        repo_data_dir, _ = ensure_repo_dirs(repo_full)
-        save_dataframe(coverage, repo_data_dir / "role_coverage.csv")
-        save_dataframe(candidates, repo_data_dir / "role_promotion_candidates.csv")
+        if write_repo_files:
+            candidates = find_unbadged_role_work(profiles, holders, now=now, active_within_days=ROLE_ACTIVE_DAYS)
+            repo_data_dir, _ = ensure_repo_dirs(repo_full)
+            save_dataframe(coverage, repo_data_dir / "role_coverage.csv")
+            save_dataframe(candidates, repo_data_dir / "role_promotion_candidates.csv")
 
         if not coverage.empty:
             labelled = coverage.copy()
@@ -130,14 +140,19 @@ def _write_role_coverage(roles_by_repo, all_time_by_repo, recent_by_repo, repo_l
     return pd.concat(coverage_all, ignore_index=True) if coverage_all else pd.DataFrame()
 
 
-def _write_repo_summaries(combined, org_data_dir):
+def _write_repo_summaries(combined, org_data_dir, period: Period | None = None):
     """Per-repo activity overview, maintainer-coverage, and review-load-share tables."""
+
+    def output_path(stem):
+        filename = f"{stem}.csv" if period is None else period.filename(stem)
+        return org_data_dir / filename
+
     overview = build_repo_activity_overview(combined)
-    save_dataframe(overview, org_data_dir / "repo_activity_overview.csv")
+    save_dataframe(overview, output_path("repo_activity_overview"))
     logger.info("Repo activity overview: %d repositories with role-holders", len(overview))
 
     understaffed = find_understaffed_repos(combined, max_active_maintainers=UNDERSTAFFED_MAX_ACTIVE_MAINTAINERS)
-    save_dataframe(understaffed, org_data_dir / "maintainer_coverage_risk.csv")
+    save_dataframe(understaffed, output_path("maintainer_coverage_risk"))
     logger.info("Repos with <=1 active maintainer: %d", len(understaffed))
 
     load_share = build_review_load_share(combined, min_actions=LOAD_SHARE_MIN_ACTIONS)
@@ -149,7 +164,7 @@ def _write_repo_summaries(combined, org_data_dir):
             top_pct=(load_share["top_share"] * 100).round().astype(int),
             top2_pct=(load_share["top2_share"] * 100).round().astype(int),
         )[load_cols]
-    save_dataframe(load_table, org_data_dir / "review_load_share.csv")
+    save_dataframe(load_table, output_path("review_load_share"))
     logger.info("Review load share: %d repos (>=%d review+merge in window)", len(load_share), LOAD_SHARE_MIN_ACTIONS)
 
 
@@ -192,10 +207,21 @@ def _write_team_tables(
     logger.info("%d role-holders with no activity in any repo (>%d days)", len(globally_quiet), GONE_DARK_DAYS)
 
     team_members = build_team_membership(config)
-    team_summary = build_team_activity_summary(
-        team_members, all_time_org_profiles, global_last_seen, now=now, dark_after_days=GONE_DARK_DAYS
-    )
+    period_summaries = {}
+    for period in ACTIVITY_PERIODS:
+        summary = build_team_activity_summary(
+            team_members, all_time_org_profiles, global_last_seen, now=now, dark_after_days=period.days
+        )
+        period_summaries[period.days] = summary
+        save_dataframe(summary, org_data_dir / period.filename("team_activity_summary"))
+
+    team_summary = period_summaries.get(GONE_DARK_DAYS)
+    if team_summary is None:
+        team_summary = build_team_activity_summary(
+            team_members, all_time_org_profiles, global_last_seen, now=now, dark_after_days=GONE_DARK_DAYS
+        )
     team_by_repo = build_team_activity_by_repo(team_members, all_time_by_repo)
+    # Keep the configured-window filename for downstream consumers that predate period variants.
     save_dataframe(team_summary, org_data_dir / "team_activity_summary.csv")
     save_dataframe(team_by_repo, org_data_dir / "team_activity_by_repo.csv")
     quiet_teams = int((team_summary["status"] == "quiet").sum()) if not team_summary.empty else 0
@@ -242,11 +268,31 @@ def main() -> None:
         ROLE_ACTIVE_DAYS,
     )
 
-    combined = _write_role_coverage(roles_by_repo, all_time_by_repo, recent_by_repo, repo_last_seen, now=now)
+    combined = _build_role_coverage(roles_by_repo, all_time_by_repo, recent_by_repo, repo_last_seen, now=now)
     if not combined.empty:
         save_dataframe(combined, org_data_dir / "role_coverage_all.csv")
         _write_repo_summaries(combined, org_data_dir)
         _write_role_networks(combined, org_charts_dir)
+
+    for period in ACTIVITY_PERIODS:
+        cutoff = period.cutoff(now)
+        if cutoff is None:
+            period_by_repo = all_time_by_repo
+        else:
+            period_records = [record for record in records if record.occurred_at and record.occurred_at >= cutoff]
+            period_labels = [event for event in label_events if event.occurred_at and event.occurred_at >= cutoff]
+            period_by_repo = build_contributor_profiles_by_repo(period_records, period_labels)
+        period_coverage = _build_role_coverage(
+            roles_by_repo,
+            all_time_by_repo,
+            period_by_repo,
+            repo_last_seen,
+            now=now,
+            active_within_days=period.days,
+            write_repo_files=False,
+        )
+        save_dataframe(period_coverage, org_data_dir / period.filename("role_coverage_all"))
+        _write_repo_summaries(period_coverage, org_data_dir, period)
 
     _write_team_tables(
         config, role_lookup, all_time_by_repo, all_time_org_profiles, global_last_seen, org_data_dir, now=now

@@ -7,6 +7,8 @@ org without touching the rendering code.
 
 from __future__ import annotations
 
+from hiero_analytics.domain.periods import ACTIVITY_PERIODS
+
 # "Suggest a correction" target for the affiliations reference table — the analytics
 # repo's issues page. The affiliations map is the source of truth, so a correction is
 # either a one-line edit to data/affiliations.yaml (append '# manual') or a new issue here.
@@ -244,8 +246,9 @@ SECTION_SPECS = [
     {
         "id": "profiles",
         "file": "contributor_activity_profiles.csv",
+        "periods": [(period.label, period.filename("contributor_activity_profiles")) for period in ACTIVITY_PERIODS],
         "title": "All contributors",
-        "description": "Every contributor's org-wide activity (all-time), most recently active first.",
+        "description": "Every contributor's org-wide activity in the selected period, most recently active first.",
         "columns": [
             ("contributor", "contributor"),
             ("prs_opened", "PRs"),
@@ -260,33 +263,33 @@ SECTION_SPECS = [
     {
         "id": "repoactivity",
         "file": "repo_activity_overview.csv",
+        "periods": [(period.label, period.filename("repo_activity_overview")) for period in ACTIVITY_PERIODS],
         "title": "Repository activity — permission-holders by role",
         "description": (
             "One row per repo: how many maintainers, committers and triage hold it, how many "
-            "are active in the last 90 days, and recent activity split by role. Sorted by recent "
-            "activity (most active first). 'actions' = PRs + reviews + merges + issues + labels, "
-            "summed; '90d' columns are the last 90 days, 'all-time' is cumulative."
+            "are active in the selected period, and activity split by role. Sorted by activity "
+            "within that period. 'actions' = PRs + reviews + merges + issues + labels, summed."
         ),
         "columns": [
             ("repo", "repo"),
             ("maintainers", "maintainers"),
             ("committers", "committers"),
             ("triage", "triage"),
-            ("active_recent", "active 90d"),
-            ("maintainer_actions_recent", "maint. actions 90d"),
-            ("committer_actions_recent", "comm. actions 90d"),
-            ("triage_actions_recent", "triage actions 90d"),
-            ("actions_recent", "actions 90d"),
-            ("actions_all_time", "actions all-time"),
+            ("active_recent", "active"),
+            ("maintainer_actions_recent", "maint. actions"),
+            ("committer_actions_recent", "comm. actions"),
+            ("triage_actions_recent", "triage actions"),
+            ("actions_recent", "actions"),
             ("last_active", "last active"),
         ],
     },
     {
         "id": "understaffed",
         "file": "maintainer_coverage_risk.csv",
+        "periods": [(period.label, period.filename("maintainer_coverage_risk")) for period in ACTIVITY_PERIODS],
         "title": "Repos with one or fewer active maintainers",
         "description": (
-            "Repos where at most one maintainer has been active in the last 90 days. 'maintainers' is "
+            "Repos where at most one maintainer has been active in the selected period. 'maintainers' is "
             "the total on paper; 'committers' and 'triage' show others with access to the repo. Fewest "
             "active maintainers first."
         ),
@@ -301,9 +304,10 @@ SECTION_SPECS = [
     {
         "id": "loadshare",
         "file": "review_load_share.csv",
+        "periods": [(period.label, period.filename("review_load_share")) for period in ACTIVITY_PERIODS],
         "title": "Who carries the review load",
         "description": (
-            "For each repo, the share of review+merge work (last 90 days) done by the single busiest "
+            "For each repo, the share of review+merge work in the selected period done by the single busiest "
             "person who can merge — committer or maintainer. 'mergers' is how many reviewed/merged; "
             "'top role' is whether the busiest is a committer or maintainer; 'top %' is their share, "
             "'top-2 %' the top two combined. Highest concentration first; repos with under 20 recent "
@@ -312,7 +316,7 @@ SECTION_SPECS = [
         "columns": [
             ("repo", "repo"),
             ("mergers", "mergers"),
-            ("load_recent", "review+merge 90d"),
+            ("load_recent", "review+merge"),
             ("top_carrier", "top carrier"),
             ("top_role", "top role"),
             ("top_pct", "top %"),
@@ -322,12 +326,12 @@ SECTION_SPECS = [
     {
         "id": "repo",
         "file": "role_coverage_all.csv",
+        "periods": [(period.label, period.filename("role_coverage_all")) for period in ACTIVITY_PERIODS],
         "title": "Roles and recent activity by repo",
         "description": (
             "Type a repo to see its permission-holders and their contributions in this repo "
-            "— both all-time and over the last 90 days (the '90d' columns) — plus whether "
-            "each has recent activity here. Status counts a holder 'active' with any activity "
-            "in the last 90 days."
+            "during the selected period, plus whether each has activity here in that period. "
+            "Days since active always refers to the latest recorded activity."
         ),
         "columns": [
             ("repo", "repo"),
@@ -335,16 +339,11 @@ SECTION_SPECS = [
             ("granted_role", "role"),
             ("status", "status"),
             ("days_since_active", "days since active"),
-            ("prs_opened", "PRs"),
-            ("reviews_given", "reviews"),
-            ("merges_done", "merges"),
-            ("issues_opened", "issues"),
-            ("labels_applied", "labels"),
-            ("prs_recent", "PRs 90d"),
-            ("reviews_recent", "reviews 90d"),
-            ("merges_recent", "merges 90d"),
-            ("issues_recent", "issues 90d"),
-            ("labels_recent", "labels 90d"),
+            ("prs_recent", "PRs"),
+            ("reviews_recent", "reviews"),
+            ("merges_recent", "merges"),
+            ("issues_recent", "issues"),
+            ("labels_recent", "labels"),
         ],
     },
     {
@@ -453,11 +452,11 @@ SECTION_SPECS = [
     {
         "id": "teams",
         "file": "team_activity_summary.csv",
+        "periods": [(period.label, period.filename("team_activity_summary")) for period in ACTIVITY_PERIODS],
         "title": "Team activity overview",
         "description": (
-            "Each governance team's size, how many members have recent activity, and the "
-            "team's recent-activity status (180-day window). Teams with no recent activity "
-            "are listed first."
+            "Each governance team's size, how many members have activity in the selected period, "
+            "and its active or quiet status. Teams with no activity in that period are listed first."
         ),
         "columns": [
             ("team", "team"),

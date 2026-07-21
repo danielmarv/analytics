@@ -29,6 +29,7 @@ from hiero_analytics.dashboard_spec import (
     SECTION_SPECS,
     WIDE_CHARTS,
 )
+from hiero_analytics.domain.periods import DEFAULT_ACTIVITY_PERIOD
 from hiero_analytics.export.dashboard import build_dashboard_html
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,16 @@ logger = logging.getLogger(__name__)
 def _load(path: Path) -> pd.DataFrame:
     """Read a CSV, or an empty frame if it doesn't exist."""
     return pd.read_csv(path) if path.exists() else pd.DataFrame()
+
+
+def _load_period_variants(spec: dict, org_data_dir: Path) -> list[dict]:
+    """Load generated period CSVs, preserving existing variants with zero rows."""
+    variants = []
+    for label, filename in spec.get("periods", []):
+        path = org_data_dir / filename
+        if path.exists():
+            variants.append({"label": label, "data": pd.read_csv(path)})
+    return variants
 
 
 # Counted at each person's highest role across all repos, so the three buckets
@@ -148,26 +159,48 @@ def _chart_sections(org: str, chart_specs: list[dict]) -> list[dict]:
 def _org_tab(org_name: str, org_data_dir: Path) -> dict | None:
     """Build one org's tab from whatever CSVs it has, or None if it has no data."""
     loaded = {spec["id"]: _load(org_data_dir / spec["file"]) for spec in SECTION_SPECS}
+    period_variants = {
+        spec["id"]: _load_period_variants(spec, org_data_dir) for spec in SECTION_SPECS if spec.get("periods")
+    }
     if loaded["profiles"].empty:
         return None  # no core contributor data for this org
 
     # High-level → individual order (see SECTION_ORDER), non-empty tables only.
     specs_by_id = {spec["id"]: spec for spec in SECTION_SPECS}
-    sections = [
-        {
+    sections = []
+    for section_id in SECTION_ORDER:
+        spec = specs_by_id[section_id]
+        variants = period_variants.get(section_id, [])
+        if loaded[section_id].empty and not variants:
+            continue
+        section = {
             "id": spec["id"],
             "title": spec["title"],
             "description": spec["description"],
             "group": SECTION_GROUP_OF[section_id],
-            "columns": spec["columns"],
-            "rows": loaded[spec["id"]].to_dict("records"),
             # Optional "Suggest a correction" action link (e.g. the affiliations table).
             **({"action_url": spec["action_url"]} if spec.get("action_url") else {}),
             **({"action_label": spec["action_label"]} if spec.get("action_label") else {}),
         }
-        for section_id in SECTION_ORDER
-        if (spec := specs_by_id[section_id]) and not loaded[section_id].empty
-    ]
+        if variants:
+            section["variants"] = [
+                {
+                    "label": variant["label"],
+                    "columns": spec["columns"],
+                    "rows": variant["data"].to_dict("records"),
+                }
+                for variant in variants
+            ]
+            # Open on the shared default period, falling back to the first tab if that
+            # period produced no file for this org.
+            section["active_variant"] = next(
+                (i for i, v in enumerate(section["variants"]) if v["label"] == DEFAULT_ACTIVITY_PERIOD.label),
+                0,
+            )
+        else:
+            section["columns"] = spec["columns"]
+            section["rows"] = loaded[section_id].to_dict("records")
+        sections.append(section)
 
     metrics = [("contributors", len(loaded["profiles"]))]
     role_counts = _holders_by_highest_role(loaded["repo"])
