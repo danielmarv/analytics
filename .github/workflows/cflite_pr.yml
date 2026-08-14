@@ -1,9 +1,11 @@
 name: ClusterFuzzLite PR fuzzing
 
+permissions:
+  contents: read
+
 on:
     pull_request:
         branches: ["main"]
-
 
 jobs:
     fuzz:
