@@ -539,6 +539,29 @@ def test_top_n_with_other_noop_when_small():
     assert "Other" not in " ".join(folded["organisation"])
 
 
+def test_top_n_with_other_never_folds_a_pinned_band():
+    """A tiny Unknown band survives the fold: the donut promises to show it."""
+    dist = pd.DataFrame(
+        {"organisation": ["A", "B", "C", UNKNOWN_LABEL], "maintainers": [10, 8, 6, 1]},
+    )
+
+    folded = top_n_with_other(dist, "organisation", "maintainers", top_n=2, always_keep=(UNKNOWN_LABEL,))
+
+    assert list(folded["organisation"]) == ["A", "B", UNKNOWN_LABEL, "Other (1)"]
+    # Pinning does not spend the top_n budget, so C alone is what folded away.
+    assert folded[folded["organisation"] == "Other (1)"]["maintainers"].iloc[0] == 6
+    assert folded["maintainers"].sum() == dist["maintainers"].sum()
+
+
+def test_top_n_with_other_pinning_is_a_noop_when_the_band_is_absent():
+    """Nothing to pin means the plain top-N fold, unchanged."""
+    dist = pd.DataFrame({"organisation": ["A", "B", "C"], "maintainers": [10, 8, 6]})
+
+    folded = top_n_with_other(dist, "organisation", "maintainers", top_n=2, always_keep=(UNKNOWN_LABEL,))
+
+    assert list(folded["organisation"]) == ["A", "B", "Other (1)"]
+
+
 def test_load_affiliations_resolves_misiek_blocky_and_seanbohan(tmp_path):
     """The two contributors from issue #389 resolve to their correct orgs."""
     path = tmp_path / "affiliations.yaml"

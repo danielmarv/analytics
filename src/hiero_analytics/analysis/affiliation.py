@@ -18,6 +18,7 @@ from __future__ import annotations
 import logging
 import re
 from collections import Counter
+from collections.abc import Collection
 from dataclasses import dataclass
 
 import pandas as pd
@@ -238,21 +239,35 @@ def summarize_affiliation(classified: pd.DataFrame) -> AffiliationSummary:
     )
 
 
-def top_n_with_other(distribution: pd.DataFrame, label_col: str, value_col: str, *, top_n: int = 6) -> pd.DataFrame:
+def top_n_with_other(
+    distribution: pd.DataFrame,
+    label_col: str,
+    value_col: str,
+    *,
+    top_n: int = 6,
+    always_keep: Collection[str] = (),
+) -> pd.DataFrame:
     """Fold a distribution to its top-N rows plus a single ``Other (k)`` row.
 
     Keeps a donut readable: the largest ``top_n`` slices stay, the rest collapse
-    into one. Returns the frame unchanged when it already has ``top_n`` rows or fewer.
+    into one. Labels in ``always_keep`` survive the fold however small they are,
+    so a band the chart promises to show (``Unknown``) cannot silently disappear
+    into ``Other``; they do not consume the ``top_n`` budget. Returns the frame
+    unchanged when it already has ``top_n`` rows or fewer.
     """
     if distribution.empty:
         return distribution
     ordered = distribution.sort_values(value_col, ascending=False).reset_index(drop=True)
     if len(ordered) <= top_n:
         return ordered
-    head = ordered.head(top_n)
-    tail = ordered.iloc[top_n:]
+    pinned = ordered[label_col].isin(always_keep)
+    rest = ordered[~pinned]
+    kept = pd.concat([rest.head(top_n), ordered[pinned]]).sort_values(value_col, ascending=False)
+    tail = rest.iloc[top_n:]
+    if tail.empty:
+        return kept.reset_index(drop=True)
     other = pd.DataFrame([{label_col: f"Other ({len(tail)})", value_col: int(tail[value_col].sum())}])
-    return pd.concat([head, other], ignore_index=True)
+    return pd.concat([kept, other], ignore_index=True)
 
 
 def build_org_activity_heatmap(contributor_heatmap, affiliations, *, include_unknown=False):

@@ -20,6 +20,7 @@ from __future__ import annotations
 import logging
 
 from hiero_analytics.analysis.affiliation import (
+    AFFILIATIONS_PATH,
     INDEPENDENT,
     OTHER_LABEL,
     UNKNOWN_LABEL,
@@ -45,6 +46,7 @@ from hiero_analytics.analysis.contributor_heatmap import (
     build_team_activity_heatmap,
     grouped_heatmap_chart_data,
 )
+from hiero_analytics.config.analysis import AFFILIATION_MIN_KNOWN_SHARE_PCT
 from hiero_analytics.config.paths import ORG, ensure_org_dirs
 from hiero_analytics.data_sources.governance_config import (
     build_repo_role_lookup,
@@ -64,11 +66,6 @@ logger = logging.getLogger(__name__)
 # the bare filenames it has always had; every other role is suffixed, so adding a
 # tab never renames an existing artifact.
 ROLE_VARIANTS = [("maintainer", ""), ("committer", "_committers")]
-
-# Below this share of curated affiliations a role's diversity charts describe a
-# minority of their own population, so the run says so loudly rather than letting
-# curation decay pass as a quietly shrinking employer count.
-MIN_KNOWN_SHARE_PCT = 60
 
 # Neutral greys for the non-employer segments of the per-repo composition; named
 # employers cycle through the categorical palette.
@@ -119,9 +116,11 @@ def _plot_grouped_heatmap(df, label_col, ylabel, filename, title, data_dir, char
     return len(row_labels)
 
 
-def _pie_chart(distribution, label_col, value_col, center_label, title, output_path, *, top_n=6, donut=True):
+def _pie_chart(
+    distribution, label_col, value_col, center_label, title, output_path, *, top_n=6, donut=True, always_keep=()
+):
     """Render a distribution as a pie/donut (top-N slices + 'Other'); skips empty frames."""
-    folded = top_n_with_other(distribution, label_col, value_col, top_n=top_n)
+    folded = top_n_with_other(distribution, label_col, value_col, top_n=top_n, always_keep=always_keep)
     if folded.empty:
         return
     plot_pie(
@@ -140,6 +139,8 @@ def _distribution_chart(classified, data_dir, charts_dir, *, suffix, title, valu
     distribution = build_affiliation_distribution(classified, value_col=value_col, include_unknown=True)
     save_dataframe(distribution, data_dir / f"affiliation_distribution{suffix}.csv")
     # A filled pie of the two largest employers + 'Other' — the concentration at a glance.
+    # Unknown is pinned: it is usually too small to survive the fold, and the chart's
+    # whole claim is that the unmapped are visible rather than quietly dropped.
     _pie_chart(
         distribution,
         "organisation",
@@ -149,6 +150,7 @@ def _distribution_chart(classified, data_dir, charts_dir, *, suffix, title, valu
         charts_dir / f"affiliation_donut{suffix}.png",
         top_n=2,
         donut=False,
+        always_keep=(UNKNOWN_LABEL,),
     )
 
 
@@ -321,14 +323,15 @@ def _write_role_views(role, suffix, role_lookup, affiliations, manual_logins, da
         summary.total,
         known_share,
     )
-    if holders and known_share < MIN_KNOWN_SHARE_PCT:
+    if holders and known_share < AFFILIATION_MIN_KNOWN_SHARE_PCT:
         logger.warning(
             "Affiliation curation for %s has decayed to %d%% known (floor %d%%): the %s diversity charts "
-            "now describe a minority of the population — resolve unknowns in data/affiliations.yaml",
+            "now describe a minority of the population — resolve unknowns in %s",
             role,
             known_share,
-            MIN_KNOWN_SHARE_PCT,
+            AFFILIATION_MIN_KNOWN_SHARE_PCT,
             role,
+            AFFILIATIONS_PATH,
         )
     logger.info(
         "Concentration (%s): HHI %d across %d employers; largest is %s at %d%%",

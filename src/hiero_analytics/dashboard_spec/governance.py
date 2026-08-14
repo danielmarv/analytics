@@ -553,7 +553,8 @@ CHART_NOTES = {
     "affiliation_donut_committers.png": "The committer view of the same chart: people whose highest role anywhere is committer (write "
     "access, no maintainer seat), so this population never overlaps the maintainer tab. Curation is "
     "thinner here, which is why the 'Unknown' slice is larger and the known share in the title matters "
-    "more — read the employer shares as shares of the resolved committers.",
+    "more — every percentage is a share of all committers, unknowns included, so weigh the employer "
+    "slices against how big the 'Unknown' one is.",
     "repo_affiliation_composition.png": "Each bar is a repository, normalised to 100% so the segments show each employer's share of that "
     "repo's role-holders. The dashed line marks 50%: a segment reaching past it means one employer holds "
     "the majority (an organisational bus-factor). Largest employers get their own colour, smaller ones "

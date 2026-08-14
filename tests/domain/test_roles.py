@@ -39,15 +39,23 @@ def test_role_priority_orders_maintainer_above_committer_above_triage():
 
 
 def test_highest_role_holders_partitions_people_by_seniority():
-    """Someone who maintains anywhere is a maintainer, never also a committer."""
+    """Each person lands in exactly one role bucket: the most senior seat they hold anywhere."""
     role_lookup = {
-        "org/a": {"alice": "maintainer", "bob": "committer"},
-        "org/b": {"alice": "committer", "bob": "committer", "carol": "triage"},
+        "org/a": {"alice": "maintainer", "bob": "committer", "dave": "triage"},
+        "org/b": {"alice": "committer", "bob": "committer", "carol": "triage", "dave": "committer"},
+        "org/c": {"dave": "maintainer", "erin": "general_user"},
     }
 
-    assert highest_role_holders(role_lookup, "maintainer") == {"alice"}
-    assert highest_role_holders(role_lookup, "committer") == {"bob"}
-    assert highest_role_holders(role_lookup, "triage") == {"carol"}
+    maintainers = highest_role_holders(role_lookup, "maintainer")
+    committers = highest_role_holders(role_lookup, "committer")
+    triagers = highest_role_holders(role_lookup, "triage")
+
+    assert maintainers == {"alice", "dave"}  # dave holds all three; maintainer wins
+    assert committers == {"bob"}
+    assert triagers == {"carol"}
+    assert not (maintainers & committers) and not (committers & triagers) and not (maintainers & triagers)
+    # Everyone with a governance seat is counted exactly once across the buckets.
+    assert len(maintainers | committers | triagers) == 4  # alice, dave, bob, carol (erin is general_user)
 
 
 def test_highest_role_holders_matches_a_plain_union_for_maintainer():

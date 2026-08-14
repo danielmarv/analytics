@@ -173,6 +173,30 @@ def committer_governance_config() -> dict:
     }
 
 
+def test_role_variants_drive_the_outputs_so_a_new_tab_is_one_entry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Adding a role to ROLE_VARIANTS is all a new tab needs — nothing is hard-coded per role."""
+    config = {
+        "teams": [
+            {"name": "maintainers", "maintainers": ["alice"], "members": []},
+            {"name": "triagers", "maintainers": [], "members": ["frank", "grace"]},
+        ],
+        "repositories": [{"name": "sdk-python", "teams": {"maintainers": "maintain", "triagers": "triage"}}],
+    }
+    affiliations = {"alice": "Acme Corp", "frank": "Beta LLC", "grace": "Beta LLC"}
+    _patch_pipeline(monkeypatch, tmp_path, config, affiliations, set(), [])
+    monkeypatch.setattr(runner, "ROLE_VARIANTS", [("maintainer", ""), ("triage", "_triage")])
+
+    runner.main(TEST_ORG)
+
+    data_dir = tmp_path / "data"
+    assert (data_dir / "triage_affiliations.csv").exists()
+    assert (tmp_path / "charts" / "affiliation_donut_triage.png").exists()
+    assert "frank" in (data_dir / "triage_affiliations.csv").read_text(encoding="utf-8")
+
+
 def test_main_writes_the_committer_variant_alongside_the_maintainer_one(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
