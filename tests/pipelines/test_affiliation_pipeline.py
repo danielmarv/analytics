@@ -8,12 +8,15 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 import matplotlib
+import pandas as pd
 import pytest
+from PIL import Image
 
 matplotlib.use("Agg")
 
 import hiero_analytics.pipelines.affiliation as runner
 from hiero_analytics.data_sources.models import ContributorActivityRecord
+from hiero_analytics.export.data_api import _WIDE_ASPECT_ABOVE
 
 TEST_ORG = "test-org"
 
@@ -142,6 +145,82 @@ def test_main_creates_output_files(
     distribution = (data_dir / "affiliation_distribution.csv").read_text(encoding="utf-8")
     assert "Acme Corp" in distribution
     assert "Independent" in distribution
+
+
+def test_distribution_chart_excludes_unknown_and_keeps_coverage_out_of_title(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """The downloadable distribution and pie both describe resolved holders only."""
+    data_dir, charts_dir = tmp_path / "data", tmp_path / "charts"
+    data_dir.mkdir()
+    charts_dir.mkdir()
+    classified = pd.DataFrame(
+        [
+            {"login": "alice", "organisation": "Acme Corp", "status": "affiliated"},
+            {"login": "bob", "organisation": None, "status": "unknown"},
+        ]
+    )
+    captured: dict = {}
+
+    def _capture_pie(_distribution, **kwargs):
+        captured.update(kwargs)
+
+    monkeypatch.setattr(runner, "plot_pie", _capture_pie)
+
+    runner._distribution_chart(
+        classified,
+        data_dir,
+        charts_dir,
+        suffix="",
+        title="test-org — maintainer organisation diversity",
+        value_col="maintainers",
+    )
+
+    distribution = pd.read_csv(data_dir / "affiliation_distribution.csv")
+    assert "Unknown" not in distribution["organisation"].tolist()
+    assert "%" not in captured["title"]
+
+
+def test_distribution_chart_stays_below_dashboard_wide_aspect_threshold(tmp_path: Path):
+    """The standard donut title must keep the chart in its half-width gallery cell."""
+    data_dir, charts_dir = tmp_path / "data", tmp_path / "charts"
+    data_dir.mkdir()
+    charts_dir.mkdir()
+    classified = pd.DataFrame(
+        [
+            {"login": "alice", "organisation": "Hashgraph", "status": "affiliated"},
+            {"login": "bob", "organisation": "Hashgraph", "status": "affiliated"},
+            {"login": "carol", "organisation": "LimeChain", "status": "affiliated"},
+            {"login": "dave", "organisation": None, "status": "unknown"},
+        ]
+    )
+
+    runner._distribution_chart(
+        classified,
+        data_dir,
+        charts_dir,
+        suffix="",
+        title="hiero-ledger — maintainer organisation diversity (distinct maintainers by employer)",
+        value_col="maintainers",
+    )
+
+    with Image.open(charts_dir / "affiliation_donut.png") as image:
+        assert image.width / image.height < _WIDE_ASPECT_ABOVE
+
+
+def test_organisation_colors_are_stable_across_role_populations():
+    """Role-specific order and generated neutral bands must not alter organisation colours."""
+    shared = runner._composition_colors(
+        ["LimeChain", "Hashgraph", "BlockyDevs", "Independent", "Other orgs", "Unknown"]
+    )
+    maintainers = runner._chart_colors(["LimeChain", "Hashgraph", "Independent"], shared)
+    committers = runner._chart_colors(["Other (18)", "BlockyDevs", "Hashgraph", "Other orgs"], shared)
+
+    assert maintainers["Hashgraph"] == committers["Hashgraph"]
+    assert maintainers["Independent"] == runner._SEGMENT_FIXED["Independent"]
+    assert committers["Other orgs"] == runner._SEGMENT_FIXED["Other orgs"]
+    assert committers["Other (18)"] == runner._SEGMENT_FIXED["Other orgs"]
 
 
 def test_main_handles_empty_inputs(

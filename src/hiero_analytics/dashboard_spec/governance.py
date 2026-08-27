@@ -107,7 +107,8 @@ CHART_MACRO = {
                     "seat anywhere), so the two benches can be compared: a committer bench spread across "
                     "more employers is the leading indicator that maintainer diversity will follow. The "
                     "first chart is the ecosystem-wide split by employer (solo contributors pooled as "
-                    "'Independent', unmapped people shown as their own 'Unknown' band rather than dropped); "
+                    "'Independent' and unmapped people excluded; use the affiliations tables to assess "
+                    "curation coverage); "
                     "the next two count the governance teams and the repositories that a single employer "
                     "solely controls (an organisational bus-factor); the last two break down each "
                     "repository's and each team's mix. The team charts are membership-based and so have no "
@@ -544,17 +545,16 @@ CHART_NOTES = {
     "triage_network.png": "Each bubble is a repository, sized by how many triage-role holders are active in it; two repos "
     "are linked when they share a triage holder (thicker line = more shared). Bubble colour is the "
     "repo's category.",
-    "affiliation_donut.png": "The share of role-holders employed by the two largest organisations, with everyone else (smaller "
+    "affiliation_donut.png": "The share of resolved role-holders employed by the two largest organisations, with everyone else (smaller "
     "orgs and solo 'Independent' contributors) pooled into 'Other' — the concentration at a glance. "
-    "People with no curated affiliation are shown as their own 'Unknown' slice rather than dropped, and "
-    "the title states what share of the population is known, so a small slice can be read against how "
-    "much of the roster is resolved. The role tabs switch between maintainers and committers; the full "
-    "breakdown is in the affiliations tables.",
+    "People with no curated affiliation are excluded from the pie and its percentages. The known share "
+    "is the affiliated plus independent rows as a proportion of the full affiliations table; check it "
+    "before interpreting the slices. The role tabs switch between maintainers and committers.",
     "affiliation_donut_committers.png": "The committer view of the same chart: people whose highest role anywhere is committer (write "
     "access, no maintainer seat), so this population never overlaps the maintainer tab. Curation is "
-    "thinner here, which is why the 'Unknown' slice is larger and the known share in the title matters "
-    "more — every percentage is a share of all committers, unknowns included, so weigh the employer "
-    "slices against how big the 'Unknown' one is.",
+    "thinner here, so every percentage is a share of resolved committers only. Calculate the known share "
+    "from the affiliated plus independent rows in the full committer affiliations table and weigh the "
+    "employer slices against that coverage.",
     "repo_affiliation_composition.png": "Each bar is a repository, normalised to 100% so the segments show each employer's share of that "
     "repo's role-holders. The dashed line marks 50%: a segment reaching past it means one employer holds "
     "the majority (an organisational bus-factor). Largest employers get their own colour, smaller ones "
@@ -647,12 +647,12 @@ CHART_METHODOLOGY = {
         ),
         (
             "Count distinct people per organisation; people with an identity but no employer are pooled as "
-            "'Independent', and people with no public signal form their own 'Unknown' slice — the chart's "
-            "total is the whole population, never a silently trimmed one."
+            "'Independent'. Exclude people with no public signal from the pie; they remain visible as unknown "
+            "rows in the companion affiliations table so its known share can be assessed."
         ),
         (
-            "Keep the two largest slices, fold everyone else into 'Other', draw a filled pie of their shares, "
-            "and state the share of the population with a known affiliation in the title."
+            "Keep the two largest resolved slices, fold everyone else into 'Other', and draw a filled pie of "
+            "their shares."
         ),
     ],
     "affiliation_donut_committers.png": [
@@ -662,9 +662,9 @@ CHART_METHODOLOGY = {
         ),
         "Look up each committer's organisation in the same curated affiliations file, by the same priority order.",
         (
-            "Count distinct committers per organisation, pooling employer-less people as 'Independent' and "
-            "unmapped people as 'Unknown'; the title states what share is known, which is materially lower "
-            "than for maintainers."
+            "Count distinct resolved committers per organisation, pooling employer-less people as "
+            "'Independent'. Exclude unmapped people from the pie and use the unknown rows in the companion "
+            "table to assess the known share, which is materially lower than for maintainers."
         ),
     ],
     "single_employer_teams_by_org.png": [

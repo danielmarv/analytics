@@ -97,8 +97,8 @@ TERMS: dict[str, str] = {
     "unknown": (
         "people no public signal could place. Not the same as independent — it means *we could not tell*, "
         "so they are excluded from the share and concentration calculations rather than counted as solo. "
-        "The organisation-diversity charts still show them as their own band, and state what share of the "
-        "population is known, so nothing is silently dropped."
+        "They remain visible as unknown rows in the affiliations and diversity tables, while the affiliation "
+        "coverage log and warning track how much of each role population is known."
     ),
     "committer": (
         "in the committer affiliations table, a person whose *highest* role anywhere is committer — write "
@@ -110,7 +110,7 @@ TERMS: dict[str, str] = {
         "two populations are disjoint (each person counts at their highest role), so the committer tab is "
         "the bench beneath the maintainers — if it spans more employers than the maintainer tab, diversity "
         "is more likely to improve as people are promoted. Curation is thinner for committers, so read its "
-        "unknown band and stated known-share before drawing conclusions. The team charts have no role tabs: "
+        "unknown rows and known share before drawing conclusions. The team charts have no role tabs: "
         "team membership is not a permission."
     ),
     "organisation mix": "the employers present in the group, largest first.",
