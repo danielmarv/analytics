@@ -223,6 +223,56 @@ def test_organisation_colors_are_stable_across_role_populations():
     assert committers["Other (18)"] == runner._SEGMENT_FIXED["Other orgs"]
 
 
+def test_prominent_organisation_colors_are_distinct_and_stable():
+    """The chart-visible employer head must not collide or churn for a rare new org."""
+    employers = [employer for rank in range(10, 0, -1) for employer in [f"Employer {11 - rank:02d}"] * rank]
+
+    colors = runner._composition_colors(employers)
+    with_unrelated = runner._composition_colors([*employers, "Unrelated newcomer"])
+    top_ten = [f"Employer {index:02d}" for index in range(1, 11)]
+
+    assert len({colors[employer] for employer in top_ten}) == 10
+    assert with_unrelated["Employer 01"] == colors["Employer 01"]
+
+
+def test_repo_diversity_role_variants_are_wired_horizontal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Both role variants must pass the same explicit orientation to their chart."""
+    calls: list[dict] = []
+
+    def _capture_bar(_df, **kwargs):
+        calls.append(kwargs)
+
+    monkeypatch.setattr(runner, "plot_bar", _capture_bar)
+    role_lookup = {
+        "test-org/core": {"alice": "maintainer", "amy": "maintainer"},
+        "test-org/tools": {"bob": "committer", "ben": "committer"},
+    }
+    affiliations = {
+        "alice": "Hashgraph",
+        "amy": "Hashgraph",
+        "bob": "BlockyDevs",
+        "ben": "BlockyDevs",
+    }
+
+    for role, suffix in runner.ROLE_VARIANTS:
+        runner._repo_diversity_views(
+            role_lookup,
+            affiliations,
+            tmp_path / "data",
+            tmp_path / "charts",
+            role=role,
+            suffix=suffix,
+            title=f"{role} diversity",
+            organisation_colors=runner._composition_colors(list(affiliations.values())),
+        )
+
+    assert [call["output_path"].name for call in calls] == [
+        "single_employer_repos_by_org.png",
+        "single_employer_repos_by_org_committers.png",
+    ]
+    assert all(call["horizontal"] is True for call in calls)
+
+
 def test_main_handles_empty_inputs(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

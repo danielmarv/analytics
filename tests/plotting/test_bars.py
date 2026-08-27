@@ -50,6 +50,7 @@ def test_round_bar_patches_replaces_default_rectangles():
 
 def test_compute_annotation_padding_uses_ratio_with_floor():
     """Bar annotations should keep a minimum offset on small charts."""
+    assert _compute_annotation_padding(2) == pytest.approx(0.2)
     assert _compute_annotation_padding(10) == pytest.approx(0.75)
     assert _compute_annotation_padding(100) == pytest.approx(1.5)
 

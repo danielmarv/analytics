@@ -18,6 +18,7 @@ fetch, so this stays cheap and deterministic.
 from __future__ import annotations
 
 import logging
+from collections import Counter
 
 from hiero_analytics.analysis.affiliation import (
     AFFILIATIONS_PATH,
@@ -70,33 +71,61 @@ ROLE_VARIANTS = [("maintainer", ""), ("committer", "_committers")]
 # Neutral greys for non-employer segments; named employers use the categorical
 # palette shared by every organisation-keyed chart in this pipeline.
 _SEGMENT_FIXED = {INDEPENDENT: "#94A3B8", OTHER_LABEL: "#CBD5E1", UNKNOWN_LABEL: "#E5E7EB"}
-_SEGMENT_PALETTE = ["#F97316", "#0EA5E9", "#14B8A6", "#8B5CF6", "#EF4444", "#F59E0B", "#EC4899"]
+# Twenty qualitative swatches derived from matplotlib's tab20 palette. The
+# neutral greys were replaced, and the darker hues come first so adjacent,
+# prominent employers stay easy to distinguish in dense stacked bars.
+_SEGMENT_PALETTE = [
+    "#1F77B4",
+    "#FF7F0E",
+    "#2CA02C",
+    "#D62728",
+    "#9467BD",
+    "#8C564B",
+    "#E377C2",
+    "#BCBD22",
+    "#17BECF",
+    "#393B79",
+    "#AEC7E8",
+    "#FFBB78",
+    "#98DF8A",
+    "#FF9896",
+    "#C5B0D5",
+    "#C49C94",
+    "#F7B6D2",
+    "#DBDB8D",
+    "#9EDAE5",
+    "#8C6D31",
+]
+
+
+def _fixed_segment_color(segment: str) -> str | None:
+    """The fixed grey for a non-employer segment, including folded Other labels."""
+    if segment in _SEGMENT_FIXED:
+        return _SEGMENT_FIXED[segment]
+    if segment.startswith("Other (") and segment.endswith(")") and segment[7:-1].isdigit():
+        return _SEGMENT_FIXED[OTHER_LABEL]
+    return None
 
 
 def _composition_colors(segments: list[str]) -> dict[str, str]:
-    """Return deterministic employer colours plus fixed non-employer greys."""
-
-    def fixed_color(segment: str) -> str | None:
-        if segment in _SEGMENT_FIXED:
-            return _SEGMENT_FIXED[segment]
-        if segment.startswith("Other (") and segment.endswith(")") and segment[7:-1].isdigit():
-            return _SEGMENT_FIXED[OTHER_LABEL]
-        return None
-
-    unique_segments = set(segments)
-    employers = sorted(segment for segment in unique_segments if fixed_color(segment) is None)
-    # The pipeline builds this map once from the full affiliation map, so a
-    # role's slice/seat order cannot change an employer's colour.
+    """Return prominence-ranked employer colours plus fixed non-employer greys."""
+    seat_counts = Counter(segments)
+    employers = sorted(
+        (segment for segment in seat_counts if _fixed_segment_color(segment) is None),
+        key=lambda segment: (-seat_counts[segment], segment.casefold(), segment),
+    )
+    # The full affiliation map is ranked once for the pipeline. Modulo remains
+    # an overflow fallback: collisions are possible beyond 20 employers, but
+    # the chart-visible employer head fits; dense compositions pool the tail.
     colors = {employer: _SEGMENT_PALETTE[index % len(_SEGMENT_PALETTE)] for index, employer in enumerate(employers)}
-    colors.update({segment: color for segment in unique_segments if (color := fixed_color(segment)) is not None})
+    colors.update({segment: color for segment in seat_counts if (color := _fixed_segment_color(segment)) is not None})
     return colors
 
 
 def _chart_colors(segments: list[str], organisation_colors: dict[str, str] | None) -> dict[str, str]:
-    """Select shared colours for a chart, filling generated neutral labels."""
-    colors = _composition_colors(segments)
-    if organisation_colors:
-        colors.update({segment: organisation_colors[segment] for segment in segments if segment in organisation_colors})
+    """Select shared colours for a chart, adding only generated neutral labels."""
+    colors = dict(organisation_colors or {})
+    colors.update({segment: color for segment in segments if (color := _fixed_segment_color(segment)) is not None})
     return colors
 
 
@@ -424,7 +453,7 @@ def main(org: str = ORG) -> None:
     team_membership = build_team_membership(config)
     affiliations = load_affiliations()
     manual_logins = load_manual_logins()
-    organisation_colors = _composition_colors([*affiliations.values(), *_SEGMENT_FIXED])
+    organisation_colors = _composition_colors(list(affiliations.values()))
 
     # One set of org-scoped views per role tab. Roles are resolved at each
     # person's *highest* role anywhere, so the populations are disjoint and agree

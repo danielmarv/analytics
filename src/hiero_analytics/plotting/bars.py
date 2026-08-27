@@ -66,12 +66,13 @@ def _should_use_horizontal(df: pd.DataFrame, x_col: str, rotate_x: int | None) -
 
 
 def _compute_annotation_padding(max_value: float) -> float:
-    """Return label padding with a small fixed floor for low-count charts."""
-    return max(max_value * ANNOTATION_PADDING_RATIO, ANNOTATION_MIN_PADDING)
+    """Return label padding, scaling down the floor for very small counts."""
+    scaled_floor = min(ANNOTATION_MIN_PADDING, max_value * 0.1)
+    return max(max_value * ANNOTATION_PADDING_RATIO, scaled_floor)
 
 
-def _compute_horizontal_axis_limit(max_value: float, annotation_padding: float) -> float:
-    """Leave enough room for labels while keeping the horizontal axis compact."""
+def _compute_value_axis_limit(max_value: float, annotation_padding: float) -> float:
+    """Leave enough room for labels while keeping either value axis compact."""
     if max_value <= 0:
         return 1.0
 
@@ -92,10 +93,10 @@ def _apply_bar_axis_layout(ax: Axes, values: pd.Series, *, horizontal: bool) -> 
     if horizontal:
         ax.invert_yaxis()
         ax.margins(y=HORIZONTAL_Y_MARGIN, x=HORIZONTAL_X_MARGIN)
-        ax.set_xlim(0, _compute_horizontal_axis_limit(max_value, padding))
+        ax.set_xlim(0, _compute_value_axis_limit(max_value, padding))
     else:
         ax.margins(x=VERTICAL_X_MARGIN, y=VERTICAL_Y_MARGIN)
-        ax.set_ylim(0, _compute_horizontal_axis_limit(max_value, padding))
+        ax.set_ylim(0, _compute_value_axis_limit(max_value, padding))
 
     if not values.empty and all(float(value).is_integer() for value in values):
         value_axis = ax.xaxis if horizontal else ax.yaxis

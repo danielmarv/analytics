@@ -47,6 +47,15 @@ def _holders_by_highest_role(coverage: pd.DataFrame) -> dict[str, int]:
     return {role: int(counts.get(role, 0)) for role in _GRANTED_ROLES}
 
 
+def _known_affiliation_share(affiliations: pd.DataFrame) -> str | None:
+    """Known-affiliation share from a role's full reference table."""
+    if affiliations.empty or "status" not in affiliations:
+        return None
+    statuses = affiliations["status"].astype(str).str.lower()
+    known = int(statuses.isin({"affiliated", "independent"}).sum())
+    return _pct(known, len(statuses))
+
+
 def contributors_metrics(loaded: dict[str, pd.DataFrame], org_data_dir: Path) -> list:
     """Headline tiles for the Contributors macro: who shows up, and how.
 
@@ -86,6 +95,12 @@ def governance_metrics(loaded: dict[str, pd.DataFrame], org_data_dir: Path) -> l
     for role, label in (("maintainer", "maintainers"), ("committer", "committers"), ("triage", "triage")):
         if role in role_counts:
             metrics.append((label, role_counts[role]))
+    for section_id, label in (
+        ("affiliations", "maintainer affiliations known"),
+        ("committeraffiliations", "committer affiliations known"),
+    ):
+        if share := _known_affiliation_share(loaded.get(section_id, pd.DataFrame())):
+            metrics.append((label, share))
     # The gonedark table follows the shared period tabs, but this tile keeps its
     # fixed 180-day access-hygiene threshold. Quiet-for-a-month is a superset of
     # quiet-for-180-days, so the 30d variant filters down to it exactly; a blank
