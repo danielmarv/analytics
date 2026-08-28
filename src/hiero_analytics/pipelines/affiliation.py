@@ -171,9 +171,12 @@ def _pie_chart(
     top_n=6,
     donut=True,
     always_keep=(),
+    always_pool=(),
 ):
     """Render a distribution as a pie/donut (top-N slices + 'Other'); skips empty frames."""
-    folded = top_n_with_other(distribution, label_col, value_col, top_n=top_n, always_keep=always_keep)
+    folded = top_n_with_other(
+        distribution, label_col, value_col, top_n=top_n, always_keep=always_keep, always_pool=always_pool
+    )
     if folded.empty:
         return
     plot_pie(
@@ -193,6 +196,10 @@ def _distribution_chart(classified, data_dir, charts_dir, *, suffix, title, valu
     distribution = build_affiliation_distribution(classified, value_col=value_col, include_unknown=False)
     save_dataframe(distribution, data_dir / f"affiliation_distribution{suffix}.csv")
     # A filled pie of the two largest employers + 'Other' — the concentration at a glance.
+    # 'Independent' is pooled rather than ranked: it is the absence of an employer,
+    # so letting it take a slot would push a real employer out of the ranking (on the
+    # committer tab it outranks LimeChain). The full breakdown, Independent included,
+    # stays in the companion CSV and the affiliations table.
     _pie_chart(
         distribution,
         "organisation",
@@ -203,6 +210,7 @@ def _distribution_chart(classified, data_dir, charts_dir, *, suffix, title, valu
         colors=colors,
         top_n=2,
         donut=False,
+        always_pool=(INDEPENDENT,),
     )
 
 

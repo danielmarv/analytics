@@ -561,15 +561,20 @@ CHART_NOTES = {
     "triage_network.png": "Each bubble is a repository, sized by how many triage-role holders are active in it; two repos "
     "are linked when they share a triage holder (thicker line = more shared). Bubble colour is the "
     "repo's category.",
-    "affiliation_donut.png": "The share of resolved role-holders employed by the two largest organisations, with everyone else (smaller "
-    "orgs and solo 'Independent' contributors) pooled into 'Other' — the concentration at a glance. "
-    "People with no curated affiliation are excluded from the pie and its percentages. The known share "
-    "for each role is shown in the Governance metric tiles; check it before interpreting the slices. "
-    "The role tabs switch between maintainers and committers.",
+    "affiliation_donut.png": "The share of resolved role-holders employed by the two largest organisations, with everyone else "
+    "pooled into 'Other' — the concentration at a glance. Only employers are ranked: solo 'Independent' "
+    "contributors always pool into 'Other' rather than competing for a slice, so the named slices are "
+    "always the two largest employers. People with no curated affiliation are excluded from the pie and "
+    "its percentages. The known share for each role is shown in the Governance metric tiles; check it "
+    "before interpreting the slices. The per-repo mix chart below breaks 'Independent' out separately, "
+    "and the companion CSV keeps every organisation's own row. The role tabs switch between maintainers "
+    "and committers.",
     "affiliation_donut_committers.png": "The committer view of the same chart: people whose highest role anywhere is committer (write "
     "access, no maintainer seat), so this population never overlaps the maintainer tab. Curation is "
     "thinner here, so every percentage is a share of resolved committers only. The committer-affiliations "
-    "known tile states the current coverage; weigh the employer slices against that number.",
+    "known tile states the current coverage; weigh the employer slices against that number. Independents "
+    "are a larger share of this bench than of the maintainers, and they sit inside 'Other' — read the "
+    "affiliations table for the split.",
     "repo_affiliation_composition.png": "Each bar is a repository, normalised to 100% so the segments show each employer's share of that "
     "repo's role-holders. The dashed line marks 50%: a segment reaching past it means one employer holds "
     "the majority (an organisational bus-factor). Largest employers get their own colour, smaller ones "
@@ -666,8 +671,8 @@ CHART_METHODOLOGY = {
             "rows in the companion affiliations table so its known share can be assessed."
         ),
         (
-            "Keep the two largest resolved slices, fold everyone else into 'Other', and draw a filled pie of "
-            "their shares."
+            "Rank employers only, keep the two largest, and fold everyone else — the smaller employers and the "
+            "whole 'Independent' band — into a single 'Other' slice, then draw a filled pie of their shares."
         ),
     ],
     "affiliation_donut_committers.png": [
@@ -678,8 +683,9 @@ CHART_METHODOLOGY = {
         "Look up each committer's organisation in the same curated affiliations file, by the same priority order.",
         (
             "Count distinct resolved committers per organisation, pooling employer-less people as "
-            "'Independent'. Exclude unmapped people from the pie and use the unknown rows in the companion "
-            "table to assess the known share, which is materially lower than for maintainers."
+            "'Independent' and then, as on the maintainer tab, into 'Other' — only employers are ranked. "
+            "Exclude unmapped people from the pie and use the unknown rows in the companion table to assess "
+            "the known share, which is materially lower than for maintainers."
         ),
     ],
     "single_employer_teams_by_org.png": [

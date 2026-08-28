@@ -93,7 +93,12 @@ TERMS: dict[str, str] = {
         "holds every resolved seat. Higher is more concentrated."
     ),
     "single employer": "flagged when one employer holds every resolved seat — a capture / bus-factor risk.",
-    "independent": "people with no named employer: solo contributors, or personal-email-only signals.",
+    "independent": (
+        "people with no named employer: solo contributors, or personal-email-only signals. They count towards "
+        "the resolved population, but they are not an employer, so the diversity pie pools them into 'Other' "
+        "instead of ranking them against real organisations; the per-repo mix chart and the diversity "
+        "tables still break them out on their own."
+    ),
     "unknown": (
         "people no public signal could place. Not the same as independent — it means *we could not tell*, "
         "so they are excluded from the share and concentration calculations rather than counted as solo. "

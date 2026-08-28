@@ -387,3 +387,44 @@ def test_main_stays_quiet_when_curation_is_healthy(
         runner.main(TEST_ORG)
 
     assert not [record for record in caplog.records if "decayed" in record.getMessage()]
+
+
+def test_distribution_chart_pools_independents_into_other(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Only employers are ranked, but the companion CSV keeps Independent's own row."""
+    data_dir, charts_dir = tmp_path / "data", tmp_path / "charts"
+    data_dir.mkdir()
+    charts_dir.mkdir()
+    classified = pd.DataFrame(
+        [
+            {"login": "alice", "organisation": "Hashgraph", "status": "affiliated"},
+            {"login": "bob", "organisation": "Hashgraph", "status": "affiliated"},
+            {"login": "carol", "organisation": "Independent", "status": "independent"},
+            {"login": "dave", "organisation": "Independent", "status": "independent"},
+            {"login": "erin", "organisation": "LimeChain", "status": "affiliated"},
+            {"login": "frank", "organisation": "LimeChain", "status": "affiliated"},
+            {"login": "grace", "organisation": "BlockyDevs", "status": "affiliated"},
+        ]
+    )
+    captured: dict = {}
+
+    def _capture_frame(distribution, **_kwargs):
+        captured["frame"] = distribution
+
+    monkeypatch.setattr(runner, "plot_pie", _capture_frame)
+
+    runner._distribution_chart(
+        classified,
+        data_dir,
+        charts_dir,
+        suffix="",
+        title="test-org — maintainer organisation diversity",
+        value_col="maintainers",
+    )
+
+    slices = captured["frame"]["organisation"].tolist()
+    assert slices == ["Hashgraph", "LimeChain", "Other (2)"]
+    distribution = pd.read_csv(data_dir / "affiliation_distribution.csv")
+    assert "Independent" in distribution["organisation"].tolist()
