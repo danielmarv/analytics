@@ -13,6 +13,7 @@ from pathlib import Path
 import pandas as pd
 
 from hiero_analytics.config.analysis import GONE_DARK_DAYS
+from hiero_analytics.dashboard_spec import table_variants
 from hiero_analytics.domain.periods import ACTIVITY_PERIODS
 from hiero_analytics.domain.roles import ROLE_PRIORITY
 
@@ -124,9 +125,18 @@ METRICS_BY_MACRO = {"Contributors": contributors_metrics, "Governance": governan
 
 
 def macro_metrics(macro_name: str, family, org_data_dir: Path) -> list:
-    """The macro's tiles computed from its section tables, or [] when none apply."""
+    """The macro's tiles computed from its section tables, or [] when none apply.
+
+    Keyed by section id, and by variant id for a role-tabbed section — a
+    variant that a card now renders as a tab is still its own table, and a tile
+    reading it must not go blank because the card it lives under was merged.
+    """
     builder = METRICS_BY_MACRO.get(macro_name)
     if builder is None:
         return []
-    loaded = {spec["id"]: _load(org_data_dir / spec["file"]) for spec in family.SECTION_SPECS}
+    loaded = {
+        variant["id"]: _load(org_data_dir / variant["file"])
+        for spec in family.SECTION_SPECS
+        for variant in table_variants(spec)
+    }
     return builder(loaded, org_data_dir)

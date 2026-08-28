@@ -322,7 +322,7 @@ SECTION_SPECS = [
     {
         "id": "affiliations",
         "file": "maintainer_affiliations.csv",
-        "title": "Maintainer affiliations — reference",
+        "title": "Organisation affiliations — reference",
         "description": (
             "Reference: each maintainer, the organisation they were mapped to, and how it was decided — "
             "'automated' (the resolver placed them from public signals) or 'manual' (a hand-correction). "
@@ -339,26 +339,33 @@ SECTION_SPECS = [
             ("status", "status"),
             ("method", "method"),
         ],
-    },
-    {
-        "id": "committeraffiliations",
-        "file": "committer_affiliations.csv",
-        "title": "Committer affiliations — reference",
-        "description": (
-            "The same reference as the maintainer table, for people whose highest role anywhere is "
-            "committer — write access, but no maintainer seat in any repository. The two populations are "
-            "disjoint, so nobody appears in both. Curation coverage is thinner here than for maintainers, "
-            "so expect more 'unknown' rows; each one resolved makes the committer diversity chart sharper. "
-            "To fix a mapping or resolve an unknown, edit its row in data/affiliations.yaml and append "
-            "'# manual: reason', or use 'Suggest a correction' to open an issue on the analytics repo."
-        ),
-        "action_url": AFFILIATION_ISSUE_URL,
-        "action_label": "Suggest a correction",
-        "columns": [
-            ("login", "committer"),
-            ("organisation", "organisation"),
-            ("status", "status"),
-            ("method", "method"),
+        # Role tabs, not two stacked cards: the populations are disjoint views
+        # of one reference table and are read against each other. Both variants
+        # declare the same column *keys*; only the first column's label differs,
+        # so the committer variant restates the list purely to relabel it.
+        "variants": [
+            {"id": "affiliations", "label": "Maintainers", "title": "Maintainer affiliations — reference"},
+            {
+                "id": "committeraffiliations",
+                "label": "Committers",
+                "title": "Committer affiliations — reference",
+                "file": "committer_affiliations.csv",
+                "description": (
+                    "The same reference as the Maintainers tab, for people whose highest role anywhere is "
+                    "committer — write access, but no maintainer seat in any repository. The two populations "
+                    "are disjoint, so nobody appears in both. Curation coverage is thinner here than for "
+                    "maintainers, so expect more 'unknown' rows; each one resolved makes the committer "
+                    "diversity chart sharper. To fix a mapping or resolve an unknown, edit its row in "
+                    "data/affiliations.yaml and append '# manual: reason', or use 'Suggest a correction' to "
+                    "open an issue on the analytics repo."
+                ),
+                "columns": [
+                    ("login", "committer"),
+                    ("organisation", "organisation"),
+                    ("status", "status"),
+                    ("method", "method"),
+                ],
+            },
         ],
     },
     {
@@ -366,7 +373,7 @@ SECTION_SPECS = [
         "file": "repo_affiliation_diversity.csv",
         # Deliberately not time-filterable (like the diversity charts):
         # diversity is a property of the roster, not of a window's activity.
-        "title": "Maintainer organisation diversity by repo",
+        "title": "Organisation diversity by repo",
         "description": (
             "Per repo: how many maintainers it has, how many distinct employers they span, the largest "
             "employer and its share of resolved (mapped) maintainers — the same definition as the team "
@@ -383,28 +390,37 @@ SECTION_SPECS = [
             ("unknown", "unknown"),
             ("organisations", "organisations"),
         ],
-    },
-    {
-        "id": "committerrepodiversity",
-        "file": "repo_affiliation_diversity_committers.csv",
-        # Deliberately not time-filterable — see repodiversity above.
-        "title": "Committer organisation diversity by repo",
-        "description": (
-            "The repo table above, over committers instead of maintainers: per repo, how many committers "
-            "it has, how many distinct employers they span, the largest employer and its share of resolved "
-            "committers, and the independent / unknown counts. Read it against the maintainer table — a "
-            "repo whose maintainers are single-employer but whose committers are not has a bench it could "
-            "promote from. The 'unknown' count is higher here, so weigh a single-employer reading against it."
-        ),
-        "columns": [
-            ("repo", "repo"),
-            ("committers", "committers", "number"),
-            ("distinct_orgs", "distinct orgs", "number"),
-            ("top_org", "largest org"),
-            ("top_org_pct", "largest org %", "number"),
-            ("independent", "independent"),
-            ("unknown", "unknown"),
-            ("organisations", "organisations"),
+        # Same role tabs as the affiliations table above. Here the two variants
+        # genuinely differ in shape: the count column is named for the role it
+        # counts ('maintainers' / 'committers') in each produced CSV. The
+        # variant declares its own column list rather than the API inventing a
+        # shared key, so each tab publishes its table exactly as produced.
+        "variants": [
+            {"id": "repodiversity", "label": "Maintainers", "title": "Maintainer organisation diversity by repo"},
+            {
+                "id": "committerrepodiversity",
+                "label": "Committers",
+                "title": "Committer organisation diversity by repo",
+                "file": "repo_affiliation_diversity_committers.csv",
+                "description": (
+                    "The Maintainers tab's table over committers instead of maintainers: per repo, how many "
+                    "committers it has, how many distinct employers they span, the largest employer and its "
+                    "share of resolved committers, and the independent / unknown counts. Read it against the "
+                    "Maintainers tab — a repo whose maintainers are single-employer but whose committers are "
+                    "not has a bench it could promote from. The 'unknown' count is higher here, so weigh a "
+                    "single-employer reading against it."
+                ),
+                "columns": [
+                    ("repo", "repo"),
+                    ("committers", "committers", "number"),
+                    ("distinct_orgs", "distinct orgs", "number"),
+                    ("top_org", "largest org"),
+                    ("top_org_pct", "largest org %", "number"),
+                    ("independent", "independent"),
+                    ("unknown", "unknown"),
+                    ("organisations", "organisations"),
+                ],
+            },
         ],
     },
     {
@@ -497,7 +513,7 @@ SECTION_GROUPS = [
     # reference table sits beside its repo-diversity breakdown.
     (
         "Organisation diversity",
-        ["affiliations", "repodiversity", "committeraffiliations", "committerrepodiversity", "teamdiversity"],
+        ["affiliations", "repodiversity", "teamdiversity"],
     ),
 ]
 SECTION_ORDER = [sid for _name, ids in SECTION_GROUPS for sid in ids]
