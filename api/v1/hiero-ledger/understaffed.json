@@ -159,7 +159,7 @@
   }
  ],
  "row_count": 18,
- "generated_at": "2026-08-26T09:42:33.941878+00:00",
+ "generated_at": "2026-08-31T16:47:37.082690+00:00",
  "stale": false,
  "periods": {
   "7d": [
@@ -204,6 +204,13 @@
     "active_maintainers": 0,
     "committers": 1,
     "triage": 15
+   },
+   {
+    "repo": "hiero-docs",
+    "maintainers": 3,
+    "active_maintainers": 0,
+    "committers": 0,
+    "triage": 0
    },
    {
     "repo": "tsc-eligibility-check",
@@ -297,6 +304,13 @@
     "triage": 2
    },
    {
+    "repo": ".github",
+    "maintainers": 16,
+    "active_maintainers": 0,
+    "committers": 0,
+    "triage": 0
+   },
+   {
     "repo": "hiero",
     "maintainers": 16,
     "active_maintainers": 0,
@@ -344,13 +358,6 @@
     "active_maintainers": 1,
     "committers": 1,
     "triage": 11
-   },
-   {
-    "repo": ".github",
-    "maintainers": 16,
-    "active_maintainers": 1,
-    "committers": 0,
-    "triage": 0
    }
   ],
   "30d": [

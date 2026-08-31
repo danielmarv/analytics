@@ -328,6 +328,20 @@
   {
    "hip": 1340,
    "hip_title": "EOA Code Delegation",
+   "repo": "hiero-ledger/hiero-consensus-node",
+   "pr_number": 26975,
+   "pr_title": "fix: ignore staking records in code delegation child count",
+   "pr_state": "MERGED",
+   "pr_merged_at": "2026-08-26 17:55:14+00:00",
+   "match_sources": "body",
+   "qualifier": null,
+   "counted": true,
+   "snippet": "edera.services.bdd.suites.contract.hips.hip1340.CodeDelegationType4TransactionTest\"` ->",
+   "url": "https://github.com/hiero-ledger/hiero-consensus-node/pull/26975"
+  },
+  {
+   "hip": 1340,
+   "hip_title": "EOA Code Delegation",
    "repo": "hiero-ledger/hiero-json-rpc-relay",
    "pr_number": 5172,
    "pr_title": "feat: return EIP-7702 delegation designator for eth_getCode (#5033)",
@@ -11722,8 +11736,8 @@
    "url": "https://github.com/hiero-ledger/hiero-sdk-python/pull/380"
   }
  ],
- "row_count": 833,
- "generated_at": "2026-08-26T09:43:48.193877+00:00",
+ "row_count": 834,
+ "generated_at": "2026-08-31T16:48:53.654778+00:00",
  "stale": false,
  "macro": "HIPs"
 }

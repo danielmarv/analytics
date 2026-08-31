@@ -1080,6 +1080,18 @@
    "organisations": "DSR Corporation 5, Hashgraph 2, The Hashgraph Association 1, Hedera 1"
   },
   {
+   "team": "hiero-mirror-node-committers",
+   "members": 9,
+   "resolved": 9,
+   "distinct_orgs": 2,
+   "top_org": "Hashgraph",
+   "top_org_pct": 56,
+   "hhi": 3827,
+   "unknown": 0,
+   "single_employer": false,
+   "organisations": "Hashgraph 5, LimeChain 2, Independent 2"
+  },
+  {
    "team": "governance-write",
    "members": 68,
    "resolved": 68,
@@ -1126,18 +1138,6 @@
    "unknown": 0,
    "single_employer": false,
    "organisations": "DSR Corporation 2, The Hashgraph Association 1, Hashgraph 1"
-  },
-  {
-   "team": "hiero-mirror-node-committers",
-   "members": 12,
-   "resolved": 12,
-   "distinct_orgs": 2,
-   "top_org": "Hashgraph",
-   "top_org_pct": 42,
-   "hhi": 3611,
-   "unknown": 0,
-   "single_employer": false,
-   "organisations": "Hashgraph 5, LimeChain 5, Independent 2"
   },
   {
    "team": "solo-build-actions-committers",
@@ -1345,7 +1345,7 @@
   }
  ],
  "row_count": 108,
- "generated_at": "2026-08-26T09:42:44.644311+00:00",
+ "generated_at": "2026-08-31T16:47:48.693733+00:00",
  "stale": false,
  "macro": "Governance"
 }
