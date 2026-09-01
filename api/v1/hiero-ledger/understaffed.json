@@ -159,7 +159,7 @@
   }
  ],
  "row_count": 18,
- "generated_at": "2026-08-31T16:47:37.082690+00:00",
+ "generated_at": "2026-09-01T13:57:52.975790+00:00",
  "stale": false,
  "periods": {
   "7d": [
@@ -346,6 +346,13 @@
     "triage": 0
    },
    {
+    "repo": "hiero-sdk-java",
+    "maintainers": 5,
+    "active_maintainers": 1,
+    "committers": 5,
+    "triage": 12
+   },
+   {
     "repo": "hiero-consensus-specifications",
     "maintainers": 5,
     "active_maintainers": 1,
@@ -358,6 +365,13 @@
     "active_maintainers": 1,
     "committers": 1,
     "triage": 11
+   },
+   {
+    "repo": "hiero-contracts",
+    "maintainers": 12,
+    "active_maintainers": 1,
+    "committers": 28,
+    "triage": 3
    }
   ],
   "30d": [
