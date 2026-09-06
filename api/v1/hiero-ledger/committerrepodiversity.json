@@ -193,16 +193,6 @@
    "organisations": "Hashgraph"
   },
   {
-   "repo": "hiero-gradle-conventions",
-   "committers": 1,
-   "distinct_orgs": 1,
-   "top_org": "LimeChain",
-   "top_org_pct": 100,
-   "independent": 0,
-   "unknown": 0,
-   "organisations": "LimeChain"
-  },
-  {
    "repo": "hiero-sdk-java",
    "committers": 1,
    "distinct_orgs": 1,
@@ -243,16 +233,6 @@
    "organisations": "Hashgraph, LimeChain"
   },
   {
-   "repo": "hiero-block-node",
-   "committers": 7,
-   "distinct_orgs": 2,
-   "top_org": "Hashgraph",
-   "top_org_pct": 50,
-   "independent": 1,
-   "unknown": 1,
-   "organisations": "Hashgraph, LimeChain"
-  },
-  {
    "repo": "hiero-mirror-node",
    "committers": 7,
    "distinct_orgs": 2,
@@ -260,6 +240,16 @@
    "top_org_pct": 43,
    "independent": 2,
    "unknown": 0,
+   "organisations": "Hashgraph, LimeChain"
+  },
+  {
+   "repo": "hiero-block-node",
+   "committers": 5,
+   "distinct_orgs": 2,
+   "top_org": "Hashgraph",
+   "top_org_pct": 50,
+   "independent": 1,
+   "unknown": 1,
    "organisations": "Hashgraph, LimeChain"
   },
   {
@@ -343,8 +333,8 @@
    "organisations": "Hashgraph, Launchbadge, Hedera, BugBytes, Inc., Envision Blockchain, FundRequest, VSP, dovuofficial, suku.world, LimeChain, contributor, RECDeFi, luthersystems, ScalemaiL, Robinhood"
   }
  ],
- "row_count": 30,
- "generated_at": "2026-09-01T13:58:04.605973+00:00",
+ "row_count": 29,
+ "generated_at": "2026-09-06T12:41:54.592259+00:00",
  "stale": false,
  "macro": "Governance"
 }
