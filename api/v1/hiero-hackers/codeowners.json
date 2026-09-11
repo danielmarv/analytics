@@ -89,6 +89,10 @@
    "status": false
   },
   {
+   "repo": "hiero-tck-action",
+   "status": false
+  },
+  {
    "repo": "hiero-verify-fn",
    "status": false
   },
@@ -137,8 +141,8 @@
    "status": true
   }
  ],
- "row_count": 30,
- "generated_at": "2026-09-06T12:43:18.106351+00:00",
+ "row_count": 31,
+ "generated_at": "2026-09-11T13:19:54.395947+00:00",
  "stale": false,
  "macro": "Security & scorecards"
 }
