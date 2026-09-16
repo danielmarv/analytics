@@ -21,19 +21,7 @@
    "status": false
   },
   {
-   "repo": "CLPR-spec",
-   "status": false
-  },
-  {
    "repo": "agentic-support-hiero",
-   "status": false
-  },
-  {
-   "repo": "clpr-evm-endpoint",
-   "status": false
-  },
-  {
-   "repo": "clpr-smart-contracts",
    "status": false
   },
   {
@@ -141,8 +129,8 @@
    "status": true
   }
  ],
- "row_count": 31,
- "generated_at": "2026-09-11T13:19:54.395947+00:00",
+ "row_count": 28,
+ "generated_at": "2026-09-16T14:08:28.797887+00:00",
  "stale": false,
  "macro": "Security & scorecards"
 }
