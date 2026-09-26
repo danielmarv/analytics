@@ -186,12 +186,6 @@
    "method": "automated"
   },
   {
-   "login": "emiliyank",
-   "organisation": "Independent",
-   "status": "independent",
-   "method": "automated"
-  },
-  {
    "login": "ericleponner",
    "organisation": "Hashgraph",
    "status": "affiliated",
@@ -648,12 +642,12 @@
    "method": "automated"
   }
  ],
- "row_count": 104,
+ "row_count": 103,
  "action": {
   "url": "https://github.com/hiero-hackers/analytics/issues",
   "label": "Suggest a correction"
  },
- "generated_at": "2026-09-21T15:43:08.803802+00:00",
+ "generated_at": "2026-09-26T13:39:59.644227+00:00",
  "stale": false,
  "macro": "Governance"
 }

@@ -63,6 +63,26 @@
    "organisations": null
   },
   {
+   "repo": "solo-charts",
+   "committers": 2,
+   "distinct_orgs": 0,
+   "top_org": null,
+   "top_org_pct": 0,
+   "independent": 0,
+   "unknown": 2,
+   "organisations": null
+  },
+  {
+   "repo": "solo-containers",
+   "committers": 2,
+   "distinct_orgs": 0,
+   "top_org": null,
+   "top_org_pct": 0,
+   "independent": 0,
+   "unknown": 2,
+   "organisations": null
+  },
+  {
    "repo": "solo-docs",
    "committers": 2,
    "distinct_orgs": 0,
@@ -191,16 +211,6 @@
    "independent": 0,
    "unknown": 0,
    "organisations": "Hashgraph"
-  },
-  {
-   "repo": "hiero-sdk-java",
-   "committers": 1,
-   "distinct_orgs": 1,
-   "top_org": "LimeChain",
-   "top_org_pct": 100,
-   "independent": 0,
-   "unknown": 0,
-   "organisations": "LimeChain"
   },
   {
    "repo": "hiero-website",
@@ -333,8 +343,8 @@
    "organisations": "Hashgraph, Launchbadge, Hedera, BugBytes, Inc., Envision Blockchain, FundRequest, VSP, dovuofficial, suku.world, LimeChain, contributor, RECDeFi, luthersystems, ScalemaiL, Robinhood"
   }
  ],
- "row_count": 29,
- "generated_at": "2026-09-21T15:43:10.846948+00:00",
+ "row_count": 30,
+ "generated_at": "2026-09-26T13:40:01.831888+00:00",
  "stale": false,
  "macro": "Governance"
 }
