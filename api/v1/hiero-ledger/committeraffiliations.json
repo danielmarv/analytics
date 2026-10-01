@@ -300,12 +300,6 @@
    "method": "automated"
   },
   {
-   "login": "fantomasa",
-   "organisation": null,
-   "status": "unknown",
-   "method": "automated"
-  },
-  {
    "login": "fessmm",
    "organisation": "Independent",
    "status": "independent",
@@ -810,12 +804,12 @@
    "method": "automated"
   }
  ],
- "row_count": 131,
+ "row_count": 130,
  "action": {
   "url": "https://github.com/hiero-hackers/analytics/issues",
   "label": "Suggest a correction"
  },
- "generated_at": "2026-09-26T13:40:00.918166+00:00",
+ "generated_at": "2026-10-01T16:04:23.701330+00:00",
  "stale": false,
  "macro": "Governance"
 }

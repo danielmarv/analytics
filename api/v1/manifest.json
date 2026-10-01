@@ -341,10 +341,10 @@
  "issues_url": "https://github.com/hiero-hackers/analytics/issues",
  "wip": true,
  "version": "v1",
- "generated_at": "2026-09-26T13:41:48.212441+00:00",
+ "generated_at": "2026-10-01T16:06:58.377002+00:00",
  "provenance": {
   "git_sha": "bfd0207",
-  "data_as_of": "2026-09-21T15:41:02.985589+00:00"
+  "data_as_of": "2026-10-01T15:59:48.237898+00:00"
  },
  "orgs": {
   "hiero-ledger": {
@@ -353,7 +353,7 @@
      "id": "profiles",
      "macro": "Contributors",
      "title": "All contributors",
-     "row_count": 1470,
+     "row_count": 1478,
      "path": "hiero-ledger/profiles.json"
     },
     {
@@ -367,14 +367,14 @@
      "id": "understaffed",
      "macro": "Governance",
      "title": "Repos with one or fewer active maintainers",
-     "row_count": 19,
+     "row_count": 16,
      "path": "hiero-ledger/understaffed.json"
     },
     {
      "id": "loadshare",
      "macro": "Governance",
      "title": "Who carries the review load",
-     "row_count": 23,
+     "row_count": 22,
      "path": "hiero-ledger/loadshare.json"
     },
     {
@@ -402,7 +402,7 @@
      "id": "teamrepo",
      "macro": "Governance",
      "title": "Team activity by repo",
-     "row_count": 2817,
+     "row_count": 2858,
      "path": "hiero-ledger/teamrepo.json"
     },
     {
@@ -416,7 +416,7 @@
      "id": "affiliations",
      "macro": "Governance",
      "title": "Maintainer affiliations \u2014 reference",
-     "row_count": 103,
+     "row_count": 104,
      "path": "hiero-ledger/affiliations.json"
     },
     {
@@ -430,7 +430,7 @@
      "id": "committeraffiliations",
      "macro": "Governance",
      "title": "Committer affiliations \u2014 reference",
-     "row_count": 131,
+     "row_count": 130,
      "path": "hiero-ledger/committeraffiliations.json"
     },
     {
@@ -458,7 +458,7 @@
      "id": "hip-evidence",
      "macro": "HIPs",
      "title": "Evidence (per PR)",
-     "row_count": 842,
+     "row_count": 846,
      "path": "hiero-ledger/hip-evidence.json"
     },
     {
@@ -516,7 +516,7 @@
         {
          "label": "By contributor",
          "file": "charts/org/hiero-ledger/contributor_activity_heatmap.png",
-         "width": 1630,
+         "width": 1629,
          "height": 1856
         }
        ],
@@ -707,7 +707,7 @@
         {
          "label": "Week",
          "file": "charts/org/hiero-ledger/maintainer_pipeline_by_repo_7d.png",
-         "width": 2176,
+         "width": 2284,
          "height": 1051
         }
        ],
@@ -798,7 +798,7 @@
         {
          "label": "Maintainers",
          "file": "charts/org/hiero-ledger/affiliation_donut.png",
-         "width": 2209,
+         "width": 2186,
          "height": 1051
         },
         {
@@ -942,7 +942,7 @@
      "download": {
       "name": "hip_adoption_funnel.csv",
       "path": "hiero-ledger/hip_adoption_funnel.csv",
-      "generated_at": "2026-09-26T13:41:09.336475+00:00"
+      "generated_at": "2026-10-01T16:05:51.838328+00:00"
      }
     },
     {
@@ -1002,7 +1002,7 @@
      "download": {
       "name": "hip_repo_engagement.csv",
       "path": "hiero-ledger/hip_repo_engagement.csv",
-      "generated_at": "2026-09-26T13:41:09.331620+00:00"
+      "generated_at": "2026-10-01T16:05:51.833662+00:00"
      }
     },
     {
@@ -1116,14 +1116,14 @@
         {
          "label": "1 month",
          "file": "charts/org/hiero-ledger/difficulty_by_repo_30d.png",
-         "width": 2092,
+         "width": 2091,
          "height": 1906
         },
         {
          "label": "Week",
          "file": "charts/org/hiero-ledger/difficulty_by_repo_7d.png",
-         "width": 2093,
-         "height": 1405
+         "width": 2091,
+         "height": 1718
         }
        ],
        "note": "Open issues per repository, stacked by difficulty level. Each tab limits to issues labelled with a difficulty (or newly created) within its span; 'All time' is the whole open backlog and 'Unknown' = open issues not yet triaged. Wider spans are the closest view of a repo's accumulated triage debt.",
@@ -1181,7 +1181,7 @@
     "Contributors": [
      {
       "label": "contributors",
-      "value": 1470,
+      "value": 1478,
       "note": "Distinct people with any tracked activity in the organisation, all-time. The denominator for every percentage tile on this tab.",
       "methodology": [
        "Collect every tracked activity event: PRs opened, reviews, merges, issues opened, labels applied.",
@@ -1191,7 +1191,7 @@
      },
      {
       "label": "active last month %",
-      "value": "10%",
+      "value": "11%",
       "note": "The share of all-time contributors who did something in the last 30 days \u2014 a staleness check on the contributor base, not a measure of output.",
       "methodology": [
        "Take the 30-day activity table, which lists exactly the contributors active in that window.",
@@ -1248,7 +1248,7 @@
     "Governance": [
      {
       "label": "maintainers",
-      "value": 103,
+      "value": 104,
       "note": "People whose *highest* role anywhere in the organisation is maintainer. Counted at the highest role so the role tiles partition the permission-holders without double-counting.",
       "methodology": [
        "Resolve every person's role per repository from the governance config's team\u2192permission grants (maintain/admin \u2192 maintainer, write \u2192 committer, triage \u2192 triage).",
@@ -1258,7 +1258,7 @@
      },
      {
       "label": "committers",
-      "value": 131,
+      "value": 130,
       "note": "People whose highest role anywhere is committer (write access, but not maintainer).",
       "methodology": [
        "Resolve every person's role per repository from the governance config's team\u2192permission grants.",
@@ -1548,7 +1548,7 @@
         {
          "label": "Week",
          "file": "charts/org/hiero-hackers/difficulty_by_repo_7d.png",
-         "width": 2094,
+         "width": 2095,
          "height": 901
         }
        ],
@@ -1603,7 +1603,7 @@
      },
      {
       "label": "active last month %",
-      "value": "38%",
+      "value": "35%",
       "note": "The share of all-time contributors who did something in the last 30 days \u2014 a staleness check on the contributor base, not a measure of output.",
       "methodology": [
        "Take the 30-day activity table, which lists exactly the contributors active in that window.",
