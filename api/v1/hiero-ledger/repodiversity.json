@@ -373,16 +373,6 @@
    "organisations": "Linux Foundation, Hashgraph"
   },
   {
-   "repo": "hiero-solo-action",
-   "maintainers": 2,
-   "distinct_orgs": 2,
-   "top_org": "LimeChain",
-   "top_org_pct": 50,
-   "independent": 0,
-   "unknown": 0,
-   "organisations": "LimeChain, Hashgraph"
-  },
-  {
    "repo": "hiero-local-node",
    "maintainers": 4,
    "distinct_orgs": 3,
@@ -401,6 +391,16 @@
    "independent": 0,
    "unknown": 0,
    "organisations": "Launchbadge, LimeChain, Hashgraph"
+  },
+  {
+   "repo": "hiero-solo-action",
+   "maintainers": 3,
+   "distinct_orgs": 3,
+   "top_org": "LimeChain",
+   "top_org_pct": 33,
+   "independent": 0,
+   "unknown": 0,
+   "organisations": "LimeChain, Hashgraph, OpenElements"
   },
   {
    "repo": "hiero-did-sdk-js",
@@ -484,7 +484,7 @@
   }
  ],
  "row_count": 44,
- "generated_at": "2026-10-06T15:48:46.162599+00:00",
+ "generated_at": "2026-10-11T15:25:12.686995+00:00",
  "stale": false,
  "macro": "Governance"
 }
