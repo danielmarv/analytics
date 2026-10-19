@@ -2,7 +2,6 @@
  "id": "hip-evidence",
  "title": "Evidence (per PR)",
  "description": "The audit trail: every (HIP, PR) reference with where it matched and the matched text. Filter to a HIP and repository to independently verify a coverage cell. References whose only mention is a body phrase behind a distancing cue (\u201cwaiting on\u201d, \u201cprepares for\u201d, \u201cblocked by\u201d\u2026) are kept here but excluded from every count \u2014 the cue and the counted flag make each exclusion auditable.",
- "group": "Evidence",
  "source": "hip_pr_evidence.csv",
  "columns": [
   {
@@ -12087,7 +12086,8 @@
   }
  ],
  "row_count": 859,
- "generated_at": "2026-10-16T13:51:26.706574+00:00",
+ "generated_at": "2026-10-19T05:51:06.642343+00:00",
  "stale": false,
+ "group": "Evidence",
  "macro": "HIPs"
 }

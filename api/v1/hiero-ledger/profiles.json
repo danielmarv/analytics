@@ -2,7 +2,6 @@
  "id": "profiles",
  "title": "All contributors",
  "description": "Every contributor's org-wide activity in the selected period, most recently active first.",
- "group": "All contributors",
  "source": "contributor_activity_profiles.csv",
  "columns": [
   {
@@ -47,14 +46,644 @@
  ],
  "rows": [
   {
+   "contributor": "Jexsie",
+   "prs_opened": 35,
+   "reviews_given": 49,
+   "merges_done": 5,
+   "issues_opened": 3,
+   "labels_applied": 3,
+   "repos_touched": 5,
+   "last_active": "2026-10-19 05:27:15+00:00"
+  },
+  {
+   "contributor": "netopyr",
+   "prs_opened": 613,
+   "reviews_given": 1871,
+   "merges_done": 564,
+   "issues_opened": 810,
+   "labels_applied": 627,
+   "repos_touched": 3,
+   "last_active": "2026-10-19 04:53:23+00:00"
+  },
+  {
+   "contributor": "tinker-michaelj",
+   "prs_opened": 1552,
+   "reviews_given": 5158,
+   "merges_done": 1475,
+   "issues_opened": 1293,
+   "labels_applied": 1131,
+   "repos_touched": 8,
+   "last_active": "2026-10-19 02:42:19+00:00"
+  },
+  {
+   "contributor": "aceppaluni",
+   "prs_opened": 120,
+   "reviews_given": 718,
+   "merges_done": 146,
+   "issues_opened": 156,
+   "labels_applied": 222,
+   "repos_touched": 13,
+   "last_active": "2026-10-18 22:46:25+00:00"
+  },
+  {
+   "contributor": "BikramBiswas786",
+   "prs_opened": 4,
+   "reviews_given": 1,
+   "merges_done": 0,
+   "issues_opened": 36,
+   "labels_applied": 34,
+   "repos_touched": 3,
+   "last_active": "2026-10-18 20:03:23+00:00"
+  },
+  {
+   "contributor": "steven-sheehy",
+   "prs_opened": 1516,
+   "reviews_given": 11713,
+   "merges_done": 5290,
+   "issues_opened": 1364,
+   "labels_applied": 4677,
+   "repos_touched": 17,
+   "last_active": "2026-10-18 18:11:10+00:00"
+  },
+  {
+   "contributor": "anchit-goel",
+   "prs_opened": 12,
+   "reviews_given": 7,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-18 17:21:51+00:00"
+  },
+  {
+   "contributor": "achintya2k5",
+   "prs_opened": 15,
+   "reviews_given": 10,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 2,
+   "last_active": "2026-10-18 17:01:18+00:00"
+  },
+  {
+   "contributor": "danielmarv",
+   "prs_opened": 91,
+   "reviews_given": 348,
+   "merges_done": 168,
+   "issues_opened": 34,
+   "labels_applied": 64,
+   "repos_touched": 15,
+   "last_active": "2026-10-18 15:28:26+00:00"
+  },
+  {
+   "contributor": "Jah-yee",
+   "prs_opened": 12,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 3,
+   "last_active": "2026-10-18 11:10:17+00:00"
+  },
+  {
+   "contributor": "mayanksinha17",
+   "prs_opened": 7,
+   "reviews_given": 10,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-18 10:49:49+00:00"
+  },
+  {
+   "contributor": "Ndacyayisenga-droid",
+   "prs_opened": 77,
+   "reviews_given": 193,
+   "merges_done": 113,
+   "issues_opened": 35,
+   "labels_applied": 33,
+   "repos_touched": 13,
+   "last_active": "2026-10-18 08:58:01+00:00"
+  },
+  {
+   "contributor": "Dhie-boop",
+   "prs_opened": 1,
+   "reviews_given": 1,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-18 08:00:01+00:00"
+  },
+  {
+   "contributor": "Nana-EC",
+   "prs_opened": 647,
+   "reviews_given": 9454,
+   "merges_done": 795,
+   "issues_opened": 971,
+   "labels_applied": 2206,
+   "repos_touched": 15,
+   "last_active": "2026-10-17 23:58:41+00:00"
+  },
+  {
+   "contributor": "Dheekshi-07",
+   "prs_opened": 1,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-17 19:53:07+00:00"
+  },
+  {
+   "contributor": "manishdait",
+   "prs_opened": 135,
+   "reviews_given": 1300,
+   "merges_done": 236,
+   "issues_opened": 151,
+   "labels_applied": 273,
+   "repos_touched": 10,
+   "last_active": "2026-10-17 19:03:35+00:00"
+  },
+  {
+   "contributor": "MonaaEid",
+   "prs_opened": 41,
+   "reviews_given": 275,
+   "merges_done": 44,
+   "issues_opened": 29,
+   "labels_applied": 53,
+   "repos_touched": 5,
+   "last_active": "2026-10-17 15:33:16+00:00"
+  },
+  {
+   "contributor": "Lemeri123",
+   "prs_opened": 10,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 2,
+   "last_active": "2026-10-17 13:41:07+00:00"
+  },
+  {
+   "contributor": "wized2",
+   "prs_opened": 2,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-17 13:06:23+00:00"
+  },
+  {
+   "contributor": "ShauryaBisht",
+   "prs_opened": 3,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 2,
+   "last_active": "2026-10-17 12:04:21+00:00"
+  },
+  {
+   "contributor": "hendrikebbers",
+   "prs_opened": 528,
+   "reviews_given": 1402,
+   "merges_done": 503,
+   "issues_opened": 360,
+   "labels_applied": 472,
+   "repos_touched": 32,
+   "last_active": "2026-10-17 08:15:45+00:00"
+  },
+  {
+   "contributor": "Stackforge-07",
+   "prs_opened": 1,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-17 05:05:36+00:00"
+  },
+  {
+   "contributor": "rockysingh",
+   "prs_opened": 119,
+   "reviews_given": 435,
+   "merges_done": 57,
+   "issues_opened": 143,
+   "labels_applied": 174,
+   "repos_touched": 5,
+   "last_active": "2026-10-17 01:26:33+00:00"
+  },
+  {
+   "contributor": "Neurone",
+   "prs_opened": 86,
+   "reviews_given": 130,
+   "merges_done": 2,
+   "issues_opened": 66,
+   "labels_applied": 66,
+   "repos_touched": 12,
+   "last_active": "2026-10-17 01:00:43+00:00"
+  },
+  {
+   "contributor": "joshmarinacci",
+   "prs_opened": 292,
+   "reviews_given": 591,
+   "merges_done": 224,
+   "issues_opened": 68,
+   "labels_applied": 6,
+   "repos_touched": 5,
+   "last_active": "2026-10-17 00:30:17+00:00"
+  },
+  {
+   "contributor": "anthony-swirldslabs",
+   "prs_opened": 212,
+   "reviews_given": 1719,
+   "merges_done": 190,
+   "issues_opened": 265,
+   "labels_applied": 35,
+   "repos_touched": 5,
+   "last_active": "2026-10-17 00:05:18+00:00"
+  },
+  {
+   "contributor": "rsinha",
+   "prs_opened": 70,
+   "reviews_given": 210,
+   "merges_done": 70,
+   "issues_opened": 17,
+   "labels_applied": 0,
+   "repos_touched": 3,
+   "last_active": "2026-10-17 00:02:56+00:00"
+  },
+  {
+   "contributor": "jsync-swirlds",
+   "prs_opened": 178,
+   "reviews_given": 5746,
+   "merges_done": 230,
+   "issues_opened": 288,
+   "labels_applied": 174,
+   "repos_touched": 14,
+   "last_active": "2026-10-16 23:34:39+00:00"
+  },
+  {
+   "contributor": "AlfredoG87",
+   "prs_opened": 575,
+   "reviews_given": 3232,
+   "merges_done": 943,
+   "issues_opened": 566,
+   "labels_applied": 786,
+   "repos_touched": 11,
+   "last_active": "2026-10-16 23:31:55+00:00"
+  },
+  {
+   "contributor": "timfn-hg",
+   "prs_opened": 80,
+   "reviews_given": 731,
+   "merges_done": 56,
+   "issues_opened": 59,
+   "labels_applied": 3,
+   "repos_touched": 4,
+   "last_active": "2026-10-16 23:00:52+00:00"
+  },
+  {
+   "contributor": "imalygin",
+   "prs_opened": 338,
+   "reviews_given": 2394,
+   "merges_done": 257,
+   "issues_opened": 434,
+   "labels_applied": 389,
+   "repos_touched": 2,
+   "last_active": "2026-10-16 22:49:44+00:00"
+  },
+  {
+   "contributor": "mhess-swl",
+   "prs_opened": 339,
+   "reviews_given": 3110,
+   "merges_done": 341,
+   "issues_opened": 348,
+   "labels_applied": 266,
+   "repos_touched": 5,
+   "last_active": "2026-10-16 22:20:29+00:00"
+  },
+  {
+   "contributor": "derektriley",
+   "prs_opened": 285,
+   "reviews_given": 936,
+   "merges_done": 193,
+   "issues_opened": 418,
+   "labels_applied": 120,
+   "repos_touched": 5,
+   "last_active": "2026-10-16 21:58:15+00:00"
+  },
+  {
+   "contributor": "ldintr",
+   "prs_opened": 6,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 2,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-16 21:37:40+00:00"
+  },
+  {
+   "contributor": "ashumahajan",
+   "prs_opened": 64,
+   "reviews_given": 227,
+   "merges_done": 28,
+   "issues_opened": 22,
+   "labels_applied": 30,
+   "repos_touched": 4,
+   "last_active": "2026-10-16 21:28:26+00:00"
+  },
+  {
+   "contributor": "xin-hedera",
+   "prs_opened": 1052,
+   "reviews_given": 8147,
+   "merges_done": 2499,
+   "issues_opened": 647,
+   "labels_applied": 1354,
+   "repos_touched": 11,
+   "last_active": "2026-10-16 21:19:18+00:00"
+  },
+  {
+   "contributor": "akugal",
+   "prs_opened": 81,
+   "reviews_given": 320,
+   "merges_done": 53,
+   "issues_opened": 93,
+   "labels_applied": 130,
+   "repos_touched": 2,
+   "last_active": "2026-10-16 20:17:59+00:00"
+  },
+  {
+   "contributor": "berryware",
+   "prs_opened": 77,
+   "reviews_given": 636,
+   "merges_done": 78,
+   "issues_opened": 94,
+   "labels_applied": 110,
+   "repos_touched": 3,
+   "last_active": "2026-10-16 19:05:55+00:00"
+  },
+  {
+   "contributor": "krishachra",
+   "prs_opened": 1,
+   "reviews_given": 0,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-16 19:03:50+00:00"
+  },
+  {
+   "contributor": "Neeharika-Sompalli",
+   "prs_opened": 824,
+   "reviews_given": 6306,
+   "merges_done": 752,
+   "issues_opened": 618,
+   "labels_applied": 536,
+   "repos_touched": 6,
+   "last_active": "2026-10-16 18:13:57+00:00"
+  },
+  {
+   "contributor": "Reccetech",
+   "prs_opened": 46,
+   "reviews_given": 201,
+   "merges_done": 3,
+   "issues_opened": 215,
+   "labels_applied": 305,
+   "repos_touched": 22,
+   "last_active": "2026-10-16 18:04:33+00:00"
+  },
+  {
+   "contributor": "bilyana-gospodinova",
+   "prs_opened": 244,
+   "reviews_given": 1815,
+   "merges_done": 25,
+   "issues_opened": 133,
+   "labels_applied": 283,
+   "repos_touched": 4,
+   "last_active": "2026-10-16 17:59:17+00:00"
+  },
+  {
+   "contributor": "ericleponner",
+   "prs_opened": 378,
+   "reviews_given": 732,
+   "merges_done": 566,
+   "issues_opened": 118,
+   "labels_applied": 134,
+   "repos_touched": 5,
+   "last_active": "2026-10-16 17:39:23+00:00"
+  },
+  {
+   "contributor": "Cybr0",
+   "prs_opened": 14,
+   "reviews_given": 19,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 1,
+   "last_active": "2026-10-16 17:38:42+00:00"
+  },
+  {
+   "contributor": "svienot",
+   "prs_opened": 540,
+   "reviews_given": 1113,
+   "merges_done": 1115,
+   "issues_opened": 175,
+   "labels_applied": 210,
+   "repos_touched": 6,
+   "last_active": "2026-10-16 16:50:23+00:00"
+  },
+  {
+   "contributor": "AlexanderShenshin",
+   "prs_opened": 87,
+   "reviews_given": 186,
+   "merges_done": 180,
+   "issues_opened": 14,
+   "labels_applied": 19,
+   "repos_touched": 12,
+   "last_active": "2026-10-16 16:35:48+00:00"
+  },
+  {
+   "contributor": "gkozyryatskyy",
+   "prs_opened": 71,
+   "reviews_given": 445,
+   "merges_done": 33,
+   "issues_opened": 71,
+   "labels_applied": 81,
+   "repos_touched": 7,
+   "last_active": "2026-10-16 16:19:21+00:00"
+  },
+  {
+   "contributor": "viniciusjssouza",
+   "prs_opened": 20,
+   "reviews_given": 115,
+   "merges_done": 9,
+   "issues_opened": 2,
+   "labels_applied": 1,
+   "repos_touched": 4,
+   "last_active": "2026-10-16 16:16:24+00:00"
+  },
+  {
+   "contributor": "natanasow",
+   "prs_opened": 368,
+   "reviews_given": 1518,
+   "merges_done": 376,
+   "issues_opened": 177,
+   "labels_applied": 193,
+   "repos_touched": 7,
+   "last_active": "2026-10-16 15:58:28+00:00"
+  },
+  {
+   "contributor": "ivannov",
+   "prs_opened": 73,
+   "reviews_given": 235,
+   "merges_done": 32,
+   "issues_opened": 63,
+   "labels_applied": 167,
+   "repos_touched": 2,
+   "last_active": "2026-10-16 15:40:38+00:00"
+  },
+  {
    "contributor": "JivkoKelchev",
    "prs_opened": 147,
-   "reviews_given": 298,
-   "merges_done": 63,
+   "reviews_given": 299,
+   "merges_done": 64,
    "issues_opened": 65,
    "labels_applied": 55,
    "repos_touched": 3,
-   "last_active": "2026-10-16 13:45:53+00:00"
+   "last_active": "2026-10-16 15:19:41+00:00"
+  },
+  {
+   "contributor": "ValentinVPK",
+   "prs_opened": 33,
+   "reviews_given": 148,
+   "merges_done": 44,
+   "issues_opened": 27,
+   "labels_applied": 30,
+   "repos_touched": 3,
+   "last_active": "2026-10-16 15:11:56+00:00"
+  },
+  {
+   "contributor": "tgntr",
+   "prs_opened": 24,
+   "reviews_given": 69,
+   "merges_done": 10,
+   "issues_opened": 10,
+   "labels_applied": 19,
+   "repos_touched": 1,
+   "last_active": "2026-10-16 15:11:10+00:00"
+  },
+  {
+   "contributor": "copilot-swe-agent",
+   "prs_opened": 123,
+   "reviews_given": 74,
+   "merges_done": 0,
+   "issues_opened": 0,
+   "labels_applied": 0,
+   "repos_touched": 7,
+   "last_active": "2026-10-16 15:10:45+00:00"
+  },
+  {
+   "contributor": "Ferparishuertas",
+   "prs_opened": 33,
+   "reviews_given": 363,
+   "merges_done": 22,
+   "issues_opened": 176,
+   "labels_applied": 162,
+   "repos_touched": 9,
+   "last_active": "2026-10-16 15:06:58+00:00"
+  },
+  {
+   "contributor": "deshmukhpranali",
+   "prs_opened": 211,
+   "reviews_given": 114,
+   "merges_done": 145,
+   "issues_opened": 124,
+   "labels_applied": 182,
+   "repos_touched": 6,
+   "last_active": "2026-10-16 15:05:31+00:00"
+  },
+  {
+   "contributor": "andrewb1269",
+   "prs_opened": 416,
+   "reviews_given": 2719,
+   "merges_done": 901,
+   "issues_opened": 485,
+   "labels_applied": 503,
+   "repos_touched": 40,
+   "last_active": "2026-10-16 15:04:55+00:00"
+  },
+  {
+   "contributor": "martingeorgiev1",
+   "prs_opened": 54,
+   "reviews_given": 100,
+   "merges_done": 0,
+   "issues_opened": 20,
+   "labels_applied": 23,
+   "repos_touched": 2,
+   "last_active": "2026-10-16 15:03:55+00:00"
+  },
+  {
+   "contributor": "petreze",
+   "prs_opened": 362,
+   "reviews_given": 1069,
+   "merges_done": 284,
+   "issues_opened": 145,
+   "labels_applied": 189,
+   "repos_touched": 10,
+   "last_active": "2026-10-16 14:51:55+00:00"
+  },
+  {
+   "contributor": "ata-nas",
+   "prs_opened": 112,
+   "reviews_given": 2211,
+   "merges_done": 105,
+   "issues_opened": 229,
+   "labels_applied": 571,
+   "repos_touched": 1,
+   "last_active": "2026-10-16 14:39:26+00:00"
+  },
+  {
+   "contributor": "Fantomasa",
+   "prs_opened": 153,
+   "reviews_given": 394,
+   "merges_done": 216,
+   "issues_opened": 61,
+   "labels_applied": 102,
+   "repos_touched": 13,
+   "last_active": "2026-10-16 14:04:46+00:00"
+  },
+  {
+   "contributor": "ddeskov-limechain",
+   "prs_opened": 154,
+   "reviews_given": 195,
+   "merges_done": 41,
+   "issues_opened": 99,
+   "labels_applied": 50,
+   "repos_touched": 13,
+   "last_active": "2026-10-16 13:59:36+00:00"
+  },
+  {
+   "contributor": "JeffreyDallas",
+   "prs_opened": 740,
+   "reviews_given": 1963,
+   "merges_done": 293,
+   "issues_opened": 516,
+   "labels_applied": 819,
+   "repos_touched": 14,
+   "last_active": "2026-10-16 13:52:43+00:00"
+  },
+  {
+   "contributor": "mustafauzunn",
+   "prs_opened": 259,
+   "reviews_given": 1140,
+   "merges_done": 318,
+   "issues_opened": 235,
+   "labels_applied": 241,
+   "repos_touched": 15,
+   "last_active": "2026-10-16 13:52:02+00:00"
   },
   {
    "contributor": "ibankov",
@@ -72,49 +701,9 @@
    "reviews_given": 506,
    "merges_done": 135,
    "issues_opened": 210,
-   "labels_applied": 372,
+   "labels_applied": 376,
    "repos_touched": 13,
    "last_active": "2026-10-16 13:33:25+00:00"
-  },
-  {
-   "contributor": "berryware",
-   "prs_opened": 75,
-   "reviews_given": 636,
-   "merges_done": 78,
-   "issues_opened": 94,
-   "labels_applied": 109,
-   "repos_touched": 3,
-   "last_active": "2026-10-16 13:27:33+00:00"
-  },
-  {
-   "contributor": "gkozyryatskyy",
-   "prs_opened": 71,
-   "reviews_given": 444,
-   "merges_done": 32,
-   "issues_opened": 71,
-   "labels_applied": 80,
-   "repos_touched": 7,
-   "last_active": "2026-10-16 13:19:17+00:00"
-  },
-  {
-   "contributor": "ivannov",
-   "prs_opened": 73,
-   "reviews_given": 233,
-   "merges_done": 32,
-   "issues_opened": 63,
-   "labels_applied": 167,
-   "repos_touched": 2,
-   "last_active": "2026-10-16 13:18:03+00:00"
-  },
-  {
-   "contributor": "Fantomasa",
-   "prs_opened": 153,
-   "reviews_given": 394,
-   "merges_done": 213,
-   "issues_opened": 61,
-   "labels_applied": 65,
-   "repos_touched": 13,
-   "last_active": "2026-10-16 13:15:26+00:00"
   },
   {
    "contributor": "abies",
@@ -127,22 +716,12 @@
    "last_active": "2026-10-16 13:11:27+00:00"
   },
   {
-   "contributor": "netopyr",
-   "prs_opened": 610,
-   "reviews_given": 1871,
-   "merges_done": 563,
-   "issues_opened": 787,
-   "labels_applied": 619,
-   "repos_touched": 3,
-   "last_active": "2026-10-16 12:41:17+00:00"
-  },
-  {
    "contributor": "jan-milenkov",
    "prs_opened": 234,
    "reviews_given": 1348,
    "merges_done": 293,
    "issues_opened": 124,
-   "labels_applied": 241,
+   "labels_applied": 248,
    "repos_touched": 9,
    "last_active": "2026-10-16 12:35:12+00:00"
   },
@@ -157,16 +736,6 @@
    "last_active": "2026-10-16 12:18:05+00:00"
   },
   {
-   "contributor": "ddeskov-limechain",
-   "prs_opened": 153,
-   "reviews_given": 195,
-   "merges_done": 41,
-   "issues_opened": 98,
-   "labels_applied": 43,
-   "repos_touched": 13,
-   "last_active": "2026-10-16 12:15:39+00:00"
-  },
-  {
    "contributor": "Dosik13",
    "prs_opened": 167,
    "reviews_given": 346,
@@ -175,56 +744,6 @@
    "labels_applied": 68,
    "repos_touched": 8,
    "last_active": "2026-10-16 12:09:08+00:00"
-  },
-  {
-   "contributor": "ata-nas",
-   "prs_opened": 112,
-   "reviews_given": 2209,
-   "merges_done": 105,
-   "issues_opened": 229,
-   "labels_applied": 571,
-   "repos_touched": 1,
-   "last_active": "2026-10-16 11:57:44+00:00"
-  },
-  {
-   "contributor": "danielmarv",
-   "prs_opened": 90,
-   "reviews_given": 345,
-   "merges_done": 167,
-   "issues_opened": 34,
-   "labels_applied": 62,
-   "repos_touched": 15,
-   "last_active": "2026-10-16 11:55:46+00:00"
-  },
-  {
-   "contributor": "ValentinVPK",
-   "prs_opened": 33,
-   "reviews_given": 145,
-   "merges_done": 44,
-   "issues_opened": 27,
-   "labels_applied": 29,
-   "repos_touched": 3,
-   "last_active": "2026-10-16 11:49:12+00:00"
-  },
-  {
-   "contributor": "svienot",
-   "prs_opened": 538,
-   "reviews_given": 1113,
-   "merges_done": 1115,
-   "issues_opened": 175,
-   "labels_applied": 210,
-   "repos_touched": 6,
-   "last_active": "2026-10-16 11:41:36+00:00"
-  },
-  {
-   "contributor": "mustafauzunn",
-   "prs_opened": 259,
-   "reviews_given": 1139,
-   "merges_done": 318,
-   "issues_opened": 235,
-   "labels_applied": 241,
-   "repos_touched": 15,
-   "last_active": "2026-10-16 11:23:46+00:00"
   },
   {
    "contributor": "ruslanvelkov-beep",
@@ -237,26 +756,6 @@
    "last_active": "2026-10-16 10:59:09+00:00"
   },
   {
-   "contributor": "martingeorgiev1",
-   "prs_opened": 54,
-   "reviews_given": 82,
-   "merges_done": 0,
-   "issues_opened": 20,
-   "labels_applied": 22,
-   "repos_touched": 2,
-   "last_active": "2026-10-16 10:54:34+00:00"
-  },
-  {
-   "contributor": "natanasow",
-   "prs_opened": 367,
-   "reviews_given": 1516,
-   "merges_done": 374,
-   "issues_opened": 177,
-   "labels_applied": 192,
-   "repos_touched": 7,
-   "last_active": "2026-10-16 10:14:38+00:00"
-  },
-  {
    "contributor": "AlexKehayov",
    "prs_opened": 158,
    "reviews_given": 194,
@@ -265,16 +764,6 @@
    "labels_applied": 42,
    "repos_touched": 2,
    "last_active": "2026-10-16 09:55:41+00:00"
-  },
-  {
-   "contributor": "manishdait",
-   "prs_opened": 134,
-   "reviews_given": 1300,
-   "merges_done": 236,
-   "issues_opened": 150,
-   "labels_applied": 266,
-   "repos_touched": 10,
-   "last_active": "2026-10-16 09:16:26+00:00"
   },
   {
    "contributor": "Aadarshrai1801",
@@ -297,26 +786,6 @@
    "last_active": "2026-10-16 08:17:30+00:00"
   },
   {
-   "contributor": "Jexsie",
-   "prs_opened": 34,
-   "reviews_given": 49,
-   "merges_done": 5,
-   "issues_opened": 3,
-   "labels_applied": 3,
-   "repos_touched": 5,
-   "last_active": "2026-10-16 08:12:11+00:00"
-  },
-  {
-   "contributor": "bilyana-gospodinova",
-   "prs_opened": 241,
-   "reviews_given": 1815,
-   "merges_done": 20,
-   "issues_opened": 133,
-   "labels_applied": 281,
-   "repos_touched": 4,
-   "last_active": "2026-10-16 07:55:41+00:00"
-  },
-  {
    "contributor": "sdimitrov9",
    "prs_opened": 132,
    "reviews_given": 681,
@@ -335,46 +804,6 @@
    "labels_applied": 370,
    "repos_touched": 4,
    "last_active": "2026-10-16 05:58:10+00:00"
-  },
-  {
-   "contributor": "Nana-EC",
-   "prs_opened": 647,
-   "reviews_given": 9447,
-   "merges_done": 795,
-   "issues_opened": 971,
-   "labels_applied": 2197,
-   "repos_touched": 15,
-   "last_active": "2026-10-16 03:28:16+00:00"
-  },
-  {
-   "contributor": "ashumahajan",
-   "prs_opened": 64,
-   "reviews_given": 223,
-   "merges_done": 28,
-   "issues_opened": 22,
-   "labels_applied": 24,
-   "repos_touched": 4,
-   "last_active": "2026-10-16 02:18:33+00:00"
-  },
-  {
-   "contributor": "jsync-swirlds",
-   "prs_opened": 178,
-   "reviews_given": 5741,
-   "merges_done": 230,
-   "issues_opened": 288,
-   "labels_applied": 174,
-   "repos_touched": 14,
-   "last_active": "2026-10-16 02:06:59+00:00"
-  },
-  {
-   "contributor": "Ndacyayisenga-droid",
-   "prs_opened": 77,
-   "reviews_given": 192,
-   "merges_done": 113,
-   "issues_opened": 35,
-   "labels_applied": 32,
-   "repos_touched": 13,
-   "last_active": "2026-10-16 02:06:02+00:00"
   },
   {
    "contributor": "Jeffrey-morgan34",
@@ -397,66 +826,6 @@
    "last_active": "2026-10-16 00:45:22+00:00"
   },
   {
-   "contributor": "anthony-swirldslabs",
-   "prs_opened": 211,
-   "reviews_given": 1712,
-   "merges_done": 188,
-   "issues_opened": 264,
-   "labels_applied": 35,
-   "repos_touched": 5,
-   "last_active": "2026-10-16 00:30:07+00:00"
-  },
-  {
-   "contributor": "viniciusjssouza",
-   "prs_opened": 20,
-   "reviews_given": 113,
-   "merges_done": 7,
-   "issues_opened": 2,
-   "labels_applied": 1,
-   "repos_touched": 4,
-   "last_active": "2026-10-16 00:20:46+00:00"
-  },
-  {
-   "contributor": "joshmarinacci",
-   "prs_opened": 282,
-   "reviews_given": 587,
-   "merges_done": 224,
-   "issues_opened": 68,
-   "labels_applied": 6,
-   "repos_touched": 5,
-   "last_active": "2026-10-16 00:08:09+00:00"
-  },
-  {
-   "contributor": "AlfredoG87",
-   "prs_opened": 575,
-   "reviews_given": 3228,
-   "merges_done": 943,
-   "issues_opened": 561,
-   "labels_applied": 746,
-   "repos_touched": 10,
-   "last_active": "2026-10-15 23:49:21+00:00"
-  },
-  {
-   "contributor": "JeffreyDallas",
-   "prs_opened": 740,
-   "reviews_given": 1963,
-   "merges_done": 293,
-   "issues_opened": 515,
-   "labels_applied": 805,
-   "repos_touched": 14,
-   "last_active": "2026-10-15 23:21:42+00:00"
-  },
-  {
-   "contributor": "xin-hedera",
-   "prs_opened": 1050,
-   "reviews_given": 8141,
-   "merges_done": 2499,
-   "issues_opened": 646,
-   "labels_applied": 1348,
-   "repos_touched": 11,
-   "last_active": "2026-10-15 22:38:58+00:00"
-  },
-  {
    "contributor": "alex-kuzmin-hg",
    "prs_opened": 96,
    "reviews_given": 252,
@@ -477,104 +846,14 @@
    "last_active": "2026-10-15 22:28:59+00:00"
   },
   {
-   "contributor": "mhess-swl",
-   "prs_opened": 338,
-   "reviews_given": 3107,
-   "merges_done": 340,
-   "issues_opened": 348,
-   "labels_applied": 266,
-   "repos_touched": 5,
-   "last_active": "2026-10-15 22:00:12+00:00"
-  },
-  {
-   "contributor": "aceppaluni",
-   "prs_opened": 120,
-   "reviews_given": 712,
-   "merges_done": 146,
-   "issues_opened": 156,
-   "labels_applied": 222,
-   "repos_touched": 13,
-   "last_active": "2026-10-15 21:27:50+00:00"
-  },
-  {
    "contributor": "artemananiev",
    "prs_opened": 261,
    "reviews_given": 2162,
    "merges_done": 180,
    "issues_opened": 419,
-   "labels_applied": 1369,
+   "labels_applied": 1378,
    "repos_touched": 3,
-   "last_active": "2026-10-15 21:21:20+00:00"
-  },
-  {
-   "contributor": "rockysingh",
-   "prs_opened": 118,
-   "reviews_given": 430,
-   "merges_done": 55,
-   "issues_opened": 143,
-   "labels_applied": 172,
-   "repos_touched": 5,
-   "last_active": "2026-10-15 21:06:53+00:00"
-  },
-  {
-   "contributor": "akugal",
-   "prs_opened": 81,
-   "reviews_given": 319,
-   "merges_done": 53,
-   "issues_opened": 91,
-   "labels_applied": 118,
-   "repos_touched": 2,
-   "last_active": "2026-10-15 20:36:28+00:00"
-  },
-  {
-   "contributor": "andrewb1269",
-   "prs_opened": 414,
-   "reviews_given": 2712,
-   "merges_done": 901,
-   "issues_opened": 484,
-   "labels_applied": 496,
-   "repos_touched": 40,
-   "last_active": "2026-10-15 19:34:16+00:00"
-  },
-  {
-   "contributor": "derektriley",
-   "prs_opened": 285,
-   "reviews_given": 935,
-   "merges_done": 193,
-   "issues_opened": 418,
-   "labels_applied": 120,
-   "repos_touched": 5,
-   "last_active": "2026-10-15 19:23:42+00:00"
-  },
-  {
-   "contributor": "imalygin",
-   "prs_opened": 337,
-   "reviews_given": 2393,
-   "merges_done": 257,
-   "issues_opened": 433,
-   "labels_applied": 389,
-   "repos_touched": 2,
-   "last_active": "2026-10-15 18:00:20+00:00"
-  },
-  {
-   "contributor": "rsinha",
-   "prs_opened": 70,
-   "reviews_given": 209,
-   "merges_done": 70,
-   "issues_opened": 17,
-   "labels_applied": 0,
-   "repos_touched": 3,
-   "last_active": "2026-10-15 17:18:54+00:00"
-  },
-  {
-   "contributor": "Ferparishuertas",
-   "prs_opened": 33,
-   "reviews_given": 361,
-   "merges_done": 22,
-   "issues_opened": 176,
-   "labels_applied": 162,
-   "repos_touched": 9,
-   "last_active": "2026-10-15 15:40:31+00:00"
+   "last_active": "2026-10-15 21:21:21+00:00"
   },
   {
    "contributor": "IvanKavaldzhiev",
@@ -582,29 +861,9 @@
    "reviews_given": 3019,
    "merges_done": 67,
    "issues_opened": 336,
-   "labels_applied": 776,
+   "labels_applied": 780,
    "repos_touched": 5,
    "last_active": "2026-10-15 14:55:27+00:00"
-  },
-  {
-   "contributor": "hendrikebbers",
-   "prs_opened": 528,
-   "reviews_given": 1402,
-   "merges_done": 502,
-   "issues_opened": 360,
-   "labels_applied": 472,
-   "repos_touched": 32,
-   "last_active": "2026-10-15 14:08:47+00:00"
-  },
-  {
-   "contributor": "copilot-swe-agent",
-   "prs_opened": 120,
-   "reviews_given": 74,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 7,
-   "last_active": "2026-10-15 14:07:34+00:00"
   },
   {
    "contributor": "thenswan",
@@ -617,16 +876,6 @@
    "last_active": "2026-10-15 13:00:18+00:00"
   },
   {
-   "contributor": "tgntr",
-   "prs_opened": 24,
-   "reviews_given": 65,
-   "merges_done": 10,
-   "issues_opened": 10,
-   "labels_applied": 19,
-   "repos_touched": 1,
-   "last_active": "2026-10-15 12:58:36+00:00"
-  },
-  {
    "contributor": "alex-au",
    "prs_opened": 1,
    "reviews_given": 0,
@@ -635,16 +884,6 @@
    "labels_applied": 0,
    "repos_touched": 1,
    "last_active": "2026-10-15 12:25:34+00:00"
-  },
-  {
-   "contributor": "Lemeri123",
-   "prs_opened": 9,
-   "reviews_given": 0,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 2,
-   "last_active": "2026-10-15 08:30:33+00:00"
   },
   {
    "contributor": "08abhinav",
@@ -682,39 +921,9 @@
    "reviews_given": 11,
    "merges_done": 1,
    "issues_opened": 2,
-   "labels_applied": 0,
+   "labels_applied": 1,
    "repos_touched": 5,
-   "last_active": "2026-10-15 03:36:56+00:00"
-  },
-  {
-   "contributor": "steven-sheehy",
-   "prs_opened": 1516,
-   "reviews_given": 11706,
-   "merges_done": 5283,
-   "issues_opened": 1364,
-   "labels_applied": 4672,
-   "repos_touched": 17,
-   "last_active": "2026-10-15 00:37:39+00:00"
-  },
-  {
-   "contributor": "Neeharika-Sompalli",
-   "prs_opened": 823,
-   "reviews_given": 6303,
-   "merges_done": 751,
-   "issues_opened": 618,
-   "labels_applied": 536,
-   "repos_touched": 6,
-   "last_active": "2026-10-14 22:53:04+00:00"
-  },
-  {
-   "contributor": "tinker-michaelj",
-   "prs_opened": 1552,
-   "reviews_given": 5156,
-   "merges_done": 1475,
-   "issues_opened": 1293,
-   "labels_applied": 1129,
-   "repos_touched": 8,
-   "last_active": "2026-10-14 22:36:00+00:00"
+   "last_active": "2026-10-15 03:36:58+00:00"
   },
   {
    "contributor": "arturre",
@@ -745,16 +954,6 @@
    "labels_applied": 139,
    "repos_touched": 3,
    "last_active": "2026-10-14 18:33:41+00:00"
-  },
-  {
-   "contributor": "petreze",
-   "prs_opened": 362,
-   "reviews_given": 1067,
-   "merges_done": 284,
-   "issues_opened": 145,
-   "labels_applied": 189,
-   "repos_touched": 10,
-   "last_active": "2026-10-14 15:56:17+00:00"
   },
   {
    "contributor": "kantorcodes",
@@ -792,7 +991,7 @@
    "reviews_given": 2094,
    "merges_done": 828,
    "issues_opened": 616,
-   "labels_applied": 725,
+   "labels_applied": 731,
    "repos_touched": 38,
    "last_active": "2026-10-14 13:40:05+00:00"
   },
@@ -822,7 +1021,7 @@
    "reviews_given": 115,
    "merges_done": 27,
    "issues_opened": 27,
-   "labels_applied": 48,
+   "labels_applied": 50,
    "repos_touched": 2,
    "last_active": "2026-10-13 22:32:53+00:00"
   },
@@ -837,16 +1036,6 @@
    "last_active": "2026-10-13 21:35:24+00:00"
   },
   {
-   "contributor": "MonaaEid",
-   "prs_opened": 41,
-   "reviews_given": 268,
-   "merges_done": 41,
-   "issues_opened": 29,
-   "labels_applied": 53,
-   "repos_touched": 5,
-   "last_active": "2026-10-13 21:23:18+00:00"
-  },
-  {
    "contributor": "poulok",
    "prs_opened": 320,
    "reviews_given": 2486,
@@ -855,16 +1044,6 @@
    "labels_applied": 1102,
    "repos_touched": 6,
    "last_active": "2026-10-13 18:16:34+00:00"
-  },
-  {
-   "contributor": "ShauryaBisht",
-   "prs_opened": 2,
-   "reviews_given": 0,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 2,
-   "last_active": "2026-10-13 17:09:06+00:00"
   },
   {
    "contributor": "igor-kirichenko-DSR",
@@ -877,16 +1056,6 @@
    "last_active": "2026-10-13 15:10:20+00:00"
   },
   {
-   "contributor": "AlexanderShenshin",
-   "prs_opened": 87,
-   "reviews_given": 183,
-   "merges_done": 177,
-   "issues_opened": 14,
-   "labels_applied": 19,
-   "repos_touched": 12,
-   "last_active": "2026-10-13 14:56:16+00:00"
-  },
-  {
    "contributor": "Utkarsh-rwt",
    "prs_opened": 2,
    "reviews_given": 0,
@@ -895,16 +1064,6 @@
    "labels_applied": 0,
    "repos_touched": 2,
    "last_active": "2026-10-13 14:37:10+00:00"
-  },
-  {
-   "contributor": "deshmukhpranali",
-   "prs_opened": 210,
-   "reviews_given": 114,
-   "merges_done": 145,
-   "issues_opened": 124,
-   "labels_applied": 180,
-   "repos_touched": 6,
-   "last_active": "2026-10-13 10:57:59+00:00"
   },
   {
    "contributor": "vrushank47",
@@ -922,29 +1081,9 @@
    "reviews_given": 794,
    "merges_done": 135,
    "issues_opened": 174,
-   "labels_applied": 107,
+   "labels_applied": 108,
    "repos_touched": 7,
-   "last_active": "2026-10-13 10:19:52+00:00"
-  },
-  {
-   "contributor": "achintya2k5",
-   "prs_opened": 15,
-   "reviews_given": 7,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 2,
-   "last_active": "2026-10-13 07:57:49+00:00"
-  },
-  {
-   "contributor": "anchit-goel",
-   "prs_opened": 12,
-   "reviews_given": 6,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 1,
-   "last_active": "2026-10-13 07:56:50+00:00"
+   "last_active": "2026-10-13 10:19:53+00:00"
   },
   {
    "contributor": "jjohannes",
@@ -967,6 +1106,16 @@
    "last_active": "2026-10-12 08:55:11+00:00"
   },
   {
+   "contributor": "boris-bonin",
+   "prs_opened": 28,
+   "reviews_given": 43,
+   "merges_done": 0,
+   "issues_opened": 24,
+   "labels_applied": 39,
+   "repos_touched": 2,
+   "last_active": "2026-10-12 07:53:43+00:00"
+  },
+  {
    "contributor": "yashthakur2008",
    "prs_opened": 1,
    "reviews_given": 0,
@@ -985,26 +1134,6 @@
    "labels_applied": 0,
    "repos_touched": 1,
    "last_active": "2026-10-11 19:28:42+00:00"
-  },
-  {
-   "contributor": "Jah-yee",
-   "prs_opened": 11,
-   "reviews_given": 0,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 3,
-   "last_active": "2026-10-11 11:28:11+00:00"
-  },
-  {
-   "contributor": "Dhie-boop",
-   "prs_opened": 1,
-   "reviews_given": 0,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 1,
-   "last_active": "2026-10-11 09:42:29+00:00"
   },
   {
    "contributor": "ch-ushasree",
@@ -1037,16 +1166,6 @@
    "last_active": "2026-10-10 10:35:27+00:00"
   },
   {
-   "contributor": "Cybr0",
-   "prs_opened": 13,
-   "reviews_given": 19,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 1,
-   "last_active": "2026-10-09 17:01:01+00:00"
-  },
-  {
    "contributor": "github-advanced-security",
    "prs_opened": 0,
    "reviews_given": 119,
@@ -1065,36 +1184,6 @@
    "labels_applied": 0,
    "repos_touched": 1,
    "last_active": "2026-10-09 10:46:38+00:00"
-  },
-  {
-   "contributor": "mayanksinha17",
-   "prs_opened": 6,
-   "reviews_given": 10,
-   "merges_done": 0,
-   "issues_opened": 0,
-   "labels_applied": 0,
-   "repos_touched": 1,
-   "last_active": "2026-10-09 07:02:15+00:00"
-  },
-  {
-   "contributor": "ldintr",
-   "prs_opened": 5,
-   "reviews_given": 0,
-   "merges_done": 0,
-   "issues_opened": 2,
-   "labels_applied": 0,
-   "repos_touched": 1,
-   "last_active": "2026-10-08 17:26:35+00:00"
-  },
-  {
-   "contributor": "Neurone",
-   "prs_opened": 86,
-   "reviews_given": 130,
-   "merges_done": 2,
-   "issues_opened": 65,
-   "labels_applied": 66,
-   "repos_touched": 12,
-   "last_active": "2026-10-08 01:47:33+00:00"
   },
   {
    "contributor": "jwagantall",
@@ -1152,7 +1241,7 @@
    "reviews_given": 4212,
    "merges_done": 1868,
    "issues_opened": 833,
-   "labels_applied": 2109,
+   "labels_applied": 2110,
    "repos_touched": 21,
    "last_active": "2026-10-07 13:32:20+00:00"
   },
@@ -1185,16 +1274,6 @@
    "labels_applied": 0,
    "repos_touched": 1,
    "last_active": "2026-10-07 07:58:04+00:00"
-  },
-  {
-   "contributor": "Reccetech",
-   "prs_opened": 46,
-   "reviews_given": 199,
-   "merges_done": 3,
-   "issues_opened": 215,
-   "labels_applied": 305,
-   "repos_touched": 22,
-   "last_active": "2026-10-07 03:09:20+00:00"
   },
   {
    "contributor": "git-vote",
@@ -1247,26 +1326,6 @@
    "last_active": "2026-10-05 11:46:26+00:00"
   },
   {
-   "contributor": "ericleponner",
-   "prs_opened": 378,
-   "reviews_given": 730,
-   "merges_done": 565,
-   "issues_opened": 118,
-   "labels_applied": 134,
-   "repos_touched": 5,
-   "last_active": "2026-10-05 08:27:59+00:00"
-  },
-  {
-   "contributor": "boris-bonin",
-   "prs_opened": 28,
-   "reviews_given": 43,
-   "merges_done": 0,
-   "issues_opened": 24,
-   "labels_applied": 38,
-   "repos_touched": 2,
-   "last_active": "2026-10-05 07:00:33+00:00"
-  },
-  {
    "contributor": "Github-Shashank",
    "prs_opened": 1,
    "reviews_given": 0,
@@ -1295,16 +1354,6 @@
    "labels_applied": 0,
    "repos_touched": 6,
    "last_active": "2026-10-02 17:38:07+00:00"
-  },
-  {
-   "contributor": "timfn-hg",
-   "prs_opened": 79,
-   "reviews_given": 730,
-   "merges_done": 56,
-   "issues_opened": 59,
-   "labels_applied": 3,
-   "repos_touched": 4,
-   "last_active": "2026-10-02 14:04:42+00:00"
   },
   {
    "contributor": "parvninama",
@@ -1342,7 +1391,7 @@
    "reviews_given": 1636,
    "merges_done": 727,
    "issues_opened": 829,
-   "labels_applied": 1715,
+   "labels_applied": 1723,
    "repos_touched": 15,
    "last_active": "2026-10-01 00:08:04+00:00"
   },
@@ -1405,16 +1454,6 @@
    "labels_applied": 0,
    "repos_touched": 1,
    "last_active": "2026-09-29 03:51:58+00:00"
-  },
-  {
-   "contributor": "BikramBiswas786",
-   "prs_opened": 0,
-   "reviews_given": 0,
-   "merges_done": 0,
-   "issues_opened": 35,
-   "labels_applied": 34,
-   "repos_touched": 2,
-   "last_active": "2026-09-28 15:59:04+00:00"
   },
   {
    "contributor": "Ritesh-Gupta-op",
@@ -15037,20 +15076,650 @@
    "last_active": "2018-10-10 21:58:55+00:00"
   }
  ],
- "row_count": 1499,
- "generated_at": "2026-10-16T13:49:10.180843+00:00",
+ "row_count": 1503,
+ "generated_at": "2026-10-19T05:46:15.754118+00:00",
  "stale": false,
  "periods": {
   "7d": [
    {
-    "contributor": "JivkoKelchev",
+    "contributor": "Jexsie",
+    "prs_opened": 4,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-19 05:27:15+00:00"
+   },
+   {
+    "contributor": "netopyr",
+    "prs_opened": 13,
+    "reviews_given": 16,
+    "merges_done": 10,
+    "issues_opened": 35,
+    "labels_applied": 8,
+    "repos_touched": 1,
+    "last_active": "2026-10-19 04:53:23+00:00"
+   },
+   {
+    "contributor": "tinker-michaelj",
+    "prs_opened": 2,
+    "reviews_given": 9,
+    "merges_done": 2,
+    "issues_opened": 1,
+    "labels_applied": 2,
+    "repos_touched": 2,
+    "last_active": "2026-10-19 02:42:19+00:00"
+   },
+   {
+    "contributor": "aceppaluni",
     "prs_opened": 1,
-    "reviews_given": 6,
+    "reviews_given": 7,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-18 22:46:25+00:00"
+   },
+   {
+    "contributor": "BikramBiswas786",
+    "prs_opened": 4,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 1,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-18 20:03:23+00:00"
+   },
+   {
+    "contributor": "steven-sheehy",
+    "prs_opened": 6,
+    "reviews_given": 39,
+    "merges_done": 32,
+    "issues_opened": 1,
+    "labels_applied": 5,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 18:11:10+00:00"
+   },
+   {
+    "contributor": "anchit-goel",
+    "prs_opened": 1,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 17:21:51+00:00"
+   },
+   {
+    "contributor": "achintya2k5",
+    "prs_opened": 0,
+    "reviews_given": 4,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 17:01:18+00:00"
+   },
+   {
+    "contributor": "danielmarv",
+    "prs_opened": 2,
+    "reviews_given": 25,
+    "merges_done": 12,
+    "issues_opened": 1,
+    "labels_applied": 2,
+    "repos_touched": 2,
+    "last_active": "2026-10-18 15:28:26+00:00"
+   },
+   {
+    "contributor": "Jah-yee",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 11:10:17+00:00"
+   },
+   {
+    "contributor": "mayanksinha17",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 10:49:49+00:00"
+   },
+   {
+    "contributor": "Ndacyayisenga-droid",
+    "prs_opened": 1,
+    "reviews_given": 16,
+    "merges_done": 10,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 5,
+    "last_active": "2026-10-18 08:58:01+00:00"
+   },
+   {
+    "contributor": "Dhie-boop",
+    "prs_opened": 0,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 08:00:01+00:00"
+   },
+   {
+    "contributor": "Nana-EC",
+    "prs_opened": 1,
+    "reviews_given": 42,
+    "merges_done": 5,
+    "issues_opened": 6,
+    "labels_applied": 6,
+    "repos_touched": 2,
+    "last_active": "2026-10-17 23:58:41+00:00"
+   },
+   {
+    "contributor": "Dheekshi-07",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 19:53:07+00:00"
+   },
+   {
+    "contributor": "manishdait",
+    "prs_opened": 3,
+    "reviews_given": 27,
+    "merges_done": 7,
+    "issues_opened": 3,
+    "labels_applied": 7,
+    "repos_touched": 3,
+    "last_active": "2026-10-17 19:03:35+00:00"
+   },
+   {
+    "contributor": "MonaaEid",
+    "prs_opened": 0,
+    "reviews_given": 11,
+    "merges_done": 4,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 15:33:16+00:00"
+   },
+   {
+    "contributor": "Lemeri123",
+    "prs_opened": 4,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 13:41:07+00:00"
+   },
+   {
+    "contributor": "wized2",
+    "prs_opened": 2,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 13:06:23+00:00"
+   },
+   {
+    "contributor": "ShauryaBisht",
+    "prs_opened": 2,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 12:04:21+00:00"
+   },
+   {
+    "contributor": "hendrikebbers",
+    "prs_opened": 0,
+    "reviews_given": 4,
+    "merges_done": 5,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-17 08:15:45+00:00"
+   },
+   {
+    "contributor": "Stackforge-07",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 05:05:36+00:00"
+   },
+   {
+    "contributor": "rockysingh",
+    "prs_opened": 2,
+    "reviews_given": 29,
     "merges_done": 2,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-16 13:45:53+00:00"
+    "last_active": "2026-10-17 01:26:33+00:00"
+   },
+   {
+    "contributor": "Neurone",
+    "prs_opened": 0,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 1,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 01:00:43+00:00"
+   },
+   {
+    "contributor": "joshmarinacci",
+    "prs_opened": 12,
+    "reviews_given": 16,
+    "merges_done": 2,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 00:30:17+00:00"
+   },
+   {
+    "contributor": "anthony-swirldslabs",
+    "prs_opened": 9,
+    "reviews_given": 24,
+    "merges_done": 9,
+    "issues_opened": 9,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-17 00:05:18+00:00"
+   },
+   {
+    "contributor": "rsinha",
+    "prs_opened": 3,
+    "reviews_given": 8,
+    "merges_done": 3,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 00:02:56+00:00"
+   },
+   {
+    "contributor": "jsync-swirlds",
+    "prs_opened": 0,
+    "reviews_given": 32,
+    "merges_done": 2,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 23:34:39+00:00"
+   },
+   {
+    "contributor": "AlfredoG87",
+    "prs_opened": 0,
+    "reviews_given": 66,
+    "merges_done": 9,
+    "issues_opened": 23,
+    "labels_applied": 38,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 23:31:55+00:00"
+   },
+   {
+    "contributor": "timfn-hg",
+    "prs_opened": 1,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 23:00:52+00:00"
+   },
+   {
+    "contributor": "imalygin",
+    "prs_opened": 3,
+    "reviews_given": 16,
+    "merges_done": 1,
+    "issues_opened": 1,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 22:49:44+00:00"
+   },
+   {
+    "contributor": "mhess-swl",
+    "prs_opened": 1,
+    "reviews_given": 10,
+    "merges_done": 1,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 22:20:29+00:00"
+   },
+   {
+    "contributor": "derektriley",
+    "prs_opened": 1,
+    "reviews_given": 4,
+    "merges_done": 1,
+    "issues_opened": 2,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 21:58:15+00:00"
+   },
+   {
+    "contributor": "ldintr",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 21:37:40+00:00"
+   },
+   {
+    "contributor": "ashumahajan",
+    "prs_opened": 0,
+    "reviews_given": 13,
+    "merges_done": 0,
+    "issues_opened": 3,
+    "labels_applied": 6,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 21:28:26+00:00"
+   },
+   {
+    "contributor": "xin-hedera",
+    "prs_opened": 8,
+    "reviews_given": 35,
+    "merges_done": 7,
+    "issues_opened": 3,
+    "labels_applied": 6,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 21:19:18+00:00"
+   },
+   {
+    "contributor": "akugal",
+    "prs_opened": 3,
+    "reviews_given": 13,
+    "merges_done": 2,
+    "issues_opened": 13,
+    "labels_applied": 12,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 20:17:59+00:00"
+   },
+   {
+    "contributor": "berryware",
+    "prs_opened": 2,
+    "reviews_given": 28,
+    "merges_done": 3,
+    "issues_opened": 1,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 19:05:55+00:00"
+   },
+   {
+    "contributor": "krishachra",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 19:03:50+00:00"
+   },
+   {
+    "contributor": "Neeharika-Sompalli",
+    "prs_opened": 2,
+    "reviews_given": 12,
+    "merges_done": 2,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 18:13:57+00:00"
+   },
+   {
+    "contributor": "Reccetech",
+    "prs_opened": 0,
+    "reviews_given": 2,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 18:04:33+00:00"
+   },
+   {
+    "contributor": "bilyana-gospodinova",
+    "prs_opened": 15,
+    "reviews_given": 9,
+    "merges_done": 12,
+    "issues_opened": 1,
+    "labels_applied": 2,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:59:17+00:00"
+   },
+   {
+    "contributor": "ericleponner",
+    "prs_opened": 0,
+    "reviews_given": 2,
+    "merges_done": 1,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:39:23+00:00"
+   },
+   {
+    "contributor": "Cybr0",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:38:42+00:00"
+   },
+   {
+    "contributor": "svienot",
+    "prs_opened": 2,
+    "reviews_given": 10,
+    "merges_done": 9,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 16:50:23+00:00"
+   },
+   {
+    "contributor": "AlexanderShenshin",
+    "prs_opened": 0,
+    "reviews_given": 7,
+    "merges_done": 3,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 16:35:48+00:00"
+   },
+   {
+    "contributor": "gkozyryatskyy",
+    "prs_opened": 0,
+    "reviews_given": 13,
+    "merges_done": 1,
+    "issues_opened": 3,
+    "labels_applied": 1,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 16:19:21+00:00"
+   },
+   {
+    "contributor": "viniciusjssouza",
+    "prs_opened": 1,
+    "reviews_given": 11,
+    "merges_done": 4,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 16:16:24+00:00"
+   },
+   {
+    "contributor": "natanasow",
+    "prs_opened": 3,
+    "reviews_given": 19,
+    "merges_done": 6,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:58:28+00:00"
+   },
+   {
+    "contributor": "ivannov",
+    "prs_opened": 3,
+    "reviews_given": 15,
+    "merges_done": 2,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:40:38+00:00"
+   },
+   {
+    "contributor": "JivkoKelchev",
+    "prs_opened": 1,
+    "reviews_given": 7,
+    "merges_done": 3,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:19:41+00:00"
+   },
+   {
+    "contributor": "ValentinVPK",
+    "prs_opened": 1,
+    "reviews_given": 20,
+    "merges_done": 9,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:11:56+00:00"
+   },
+   {
+    "contributor": "tgntr",
+    "prs_opened": 2,
+    "reviews_given": 15,
+    "merges_done": 2,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:11:10+00:00"
+   },
+   {
+    "contributor": "copilot-swe-agent",
+    "prs_opened": 4,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:10:45+00:00"
+   },
+   {
+    "contributor": "Ferparishuertas",
+    "prs_opened": 0,
+    "reviews_given": 4,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 15:06:58+00:00"
+   },
+   {
+    "contributor": "deshmukhpranali",
+    "prs_opened": 3,
+    "reviews_given": 3,
+    "merges_done": 3,
+    "issues_opened": 1,
+    "labels_applied": 2,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 15:05:31+00:00"
+   },
+   {
+    "contributor": "andrewb1269",
+    "prs_opened": 8,
+    "reviews_given": 42,
+    "merges_done": 11,
+    "issues_opened": 7,
+    "labels_applied": 7,
+    "repos_touched": 7,
+    "last_active": "2026-10-16 15:04:55+00:00"
+   },
+   {
+    "contributor": "martingeorgiev1",
+    "prs_opened": 3,
+    "reviews_given": 30,
+    "merges_done": 0,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:03:55+00:00"
+   },
+   {
+    "contributor": "petreze",
+    "prs_opened": 0,
+    "reviews_given": 10,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 14:51:55+00:00"
+   },
+   {
+    "contributor": "ata-nas",
+    "prs_opened": 4,
+    "reviews_given": 34,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 14:39:26+00:00"
+   },
+   {
+    "contributor": "Fantomasa",
+    "prs_opened": 11,
+    "reviews_given": 61,
+    "merges_done": 57,
+    "issues_opened": 22,
+    "labels_applied": 35,
+    "repos_touched": 10,
+    "last_active": "2026-10-16 14:04:46+00:00"
+   },
+   {
+    "contributor": "ddeskov-limechain",
+    "prs_opened": 8,
+    "reviews_given": 25,
+    "merges_done": 1,
+    "issues_opened": 11,
+    "labels_applied": 7,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 13:59:36+00:00"
+   },
+   {
+    "contributor": "JeffreyDallas",
+    "prs_opened": 7,
+    "reviews_given": 8,
+    "merges_done": 0,
+    "issues_opened": 3,
+    "labels_applied": 5,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 13:52:43+00:00"
+   },
+   {
+    "contributor": "mustafauzunn",
+    "prs_opened": 2,
+    "reviews_given": 10,
+    "merges_done": 8,
+    "issues_opened": 1,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 13:52:02+00:00"
    },
    {
     "contributor": "ibankov",
@@ -15065,52 +15734,12 @@
    {
     "contributor": "Ivo-Yankov",
     "prs_opened": 6,
-    "reviews_given": 9,
+    "reviews_given": 3,
     "merges_done": 0,
     "issues_opened": 2,
-    "labels_applied": 0,
+    "labels_applied": 4,
     "repos_touched": 1,
     "last_active": "2026-10-16 13:33:25+00:00"
-   },
-   {
-    "contributor": "berryware",
-    "prs_opened": 0,
-    "reviews_given": 28,
-    "merges_done": 3,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 13:27:33+00:00"
-   },
-   {
-    "contributor": "gkozyryatskyy",
-    "prs_opened": 0,
-    "reviews_given": 12,
-    "merges_done": 0,
-    "issues_opened": 3,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 13:19:17+00:00"
-   },
-   {
-    "contributor": "ivannov",
-    "prs_opened": 3,
-    "reviews_given": 13,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 13:18:03+00:00"
-   },
-   {
-    "contributor": "Fantomasa",
-    "prs_opened": 11,
-    "reviews_given": 65,
-    "merges_done": 58,
-    "issues_opened": 31,
-    "labels_applied": 28,
-    "repos_touched": 10,
-    "last_active": "2026-10-16 13:15:26+00:00"
    },
    {
     "contributor": "abies",
@@ -15123,22 +15752,12 @@
     "last_active": "2026-10-16 13:11:27+00:00"
    },
    {
-    "contributor": "netopyr",
-    "prs_opened": 10,
-    "reviews_given": 16,
-    "merges_done": 10,
-    "issues_opened": 12,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 12:41:17+00:00"
-   },
-   {
     "contributor": "jan-milenkov",
     "prs_opened": 1,
     "reviews_given": 60,
-    "merges_done": 35,
+    "merges_done": 34,
     "issues_opened": 1,
-    "labels_applied": 0,
+    "labels_applied": 4,
     "repos_touched": 3,
     "last_active": "2026-10-16 12:35:12+00:00"
    },
@@ -15153,16 +15772,6 @@
     "last_active": "2026-10-16 12:18:05+00:00"
    },
    {
-    "contributor": "ddeskov-limechain",
-    "prs_opened": 7,
-    "reviews_given": 25,
-    "merges_done": 1,
-    "issues_opened": 10,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 12:15:39+00:00"
-   },
-   {
     "contributor": "Dosik13",
     "prs_opened": 0,
     "reviews_given": 8,
@@ -15173,84 +15782,14 @@
     "last_active": "2026-10-16 12:09:08+00:00"
    },
    {
-    "contributor": "ata-nas",
-    "prs_opened": 4,
-    "reviews_given": 33,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 11:57:44+00:00"
-   },
-   {
-    "contributor": "danielmarv",
-    "prs_opened": 3,
-    "reviews_given": 27,
-    "merges_done": 14,
-    "issues_opened": 6,
-    "labels_applied": 15,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 11:55:46+00:00"
-   },
-   {
-    "contributor": "ValentinVPK",
-    "prs_opened": 1,
-    "reviews_given": 17,
-    "merges_done": 9,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 11:49:12+00:00"
-   },
-   {
-    "contributor": "svienot",
-    "prs_opened": 0,
-    "reviews_given": 10,
-    "merges_done": 9,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 11:41:36+00:00"
-   },
-   {
-    "contributor": "mustafauzunn",
-    "prs_opened": 2,
-    "reviews_given": 9,
-    "merges_done": 8,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 11:23:46+00:00"
-   },
-   {
     "contributor": "ruslanvelkov-beep",
     "prs_opened": 2,
-    "reviews_given": 5,
+    "reviews_given": 2,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-16 10:59:09+00:00"
-   },
-   {
-    "contributor": "martingeorgiev1",
-    "prs_opened": 3,
-    "reviews_given": 12,
-    "merges_done": 0,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 10:54:34+00:00"
-   },
-   {
-    "contributor": "natanasow",
-    "prs_opened": 2,
-    "reviews_given": 17,
-    "merges_done": 4,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 10:14:38+00:00"
    },
    {
     "contributor": "AlexKehayov",
@@ -15261,16 +15800,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-16 09:55:41+00:00"
-   },
-   {
-    "contributor": "manishdait",
-    "prs_opened": 4,
-    "reviews_given": 35,
-    "merges_done": 9,
-    "issues_opened": 3,
-    "labels_applied": 6,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 09:16:26+00:00"
    },
    {
     "contributor": "Aadarshrai1801",
@@ -15293,26 +15822,6 @@
     "last_active": "2026-10-16 08:17:30+00:00"
    },
    {
-    "contributor": "Jexsie",
-    "prs_opened": 3,
-    "reviews_given": 1,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 08:12:11+00:00"
-   },
-   {
-    "contributor": "bilyana-gospodinova",
-    "prs_opened": 12,
-    "reviews_given": 9,
-    "merges_done": 7,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 07:55:41+00:00"
-   },
-   {
     "contributor": "sdimitrov9",
     "prs_opened": 3,
     "reviews_given": 13,
@@ -15331,46 +15840,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-16 05:58:10+00:00"
-   },
-   {
-    "contributor": "Nana-EC",
-    "prs_opened": 1,
-    "reviews_given": 35,
-    "merges_done": 5,
-    "issues_opened": 6,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 03:28:16+00:00"
-   },
-   {
-    "contributor": "ashumahajan",
-    "prs_opened": 0,
-    "reviews_given": 9,
-    "merges_done": 0,
-    "issues_opened": 3,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 02:18:33+00:00"
-   },
-   {
-    "contributor": "jsync-swirlds",
-    "prs_opened": 0,
-    "reviews_given": 27,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 02:06:59+00:00"
-   },
-   {
-    "contributor": "Ndacyayisenga-droid",
-    "prs_opened": 1,
-    "reviews_given": 17,
-    "merges_done": 11,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 02:06:02+00:00"
    },
    {
     "contributor": "Jeffrey-morgan34",
@@ -15393,66 +15862,6 @@
     "last_active": "2026-10-16 00:45:22+00:00"
    },
    {
-    "contributor": "anthony-swirldslabs",
-    "prs_opened": 8,
-    "reviews_given": 17,
-    "merges_done": 7,
-    "issues_opened": 8,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 00:30:07+00:00"
-   },
-   {
-    "contributor": "viniciusjssouza",
-    "prs_opened": 1,
-    "reviews_given": 9,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 00:20:46+00:00"
-   },
-   {
-    "contributor": "joshmarinacci",
-    "prs_opened": 2,
-    "reviews_given": 12,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 00:08:09+00:00"
-   },
-   {
-    "contributor": "AlfredoG87",
-    "prs_opened": 0,
-    "reviews_given": 62,
-    "merges_done": 9,
-    "issues_opened": 18,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-15 23:49:21+00:00"
-   },
-   {
-    "contributor": "JeffreyDallas",
-    "prs_opened": 9,
-    "reviews_given": 17,
-    "merges_done": 0,
-    "issues_opened": 6,
-    "labels_applied": 0,
-    "repos_touched": 4,
-    "last_active": "2026-10-15 23:21:42+00:00"
-   },
-   {
-    "contributor": "xin-hedera",
-    "prs_opened": 6,
-    "reviews_given": 29,
-    "merges_done": 7,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 22:38:58+00:00"
-   },
-   {
     "contributor": "alex-kuzmin-hg",
     "prs_opened": 2,
     "reviews_given": 3,
@@ -15473,104 +15882,14 @@
     "last_active": "2026-10-15 22:28:59+00:00"
    },
    {
-    "contributor": "mhess-swl",
-    "prs_opened": 0,
-    "reviews_given": 7,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 22:00:12+00:00"
-   },
-   {
-    "contributor": "aceppaluni",
-    "prs_opened": 1,
-    "reviews_given": 5,
-    "merges_done": 5,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 21:27:50+00:00"
-   },
-   {
     "contributor": "artemananiev",
     "prs_opened": 0,
     "reviews_given": 21,
     "merges_done": 0,
     "issues_opened": 4,
-    "labels_applied": 0,
+    "labels_applied": 9,
     "repos_touched": 1,
-    "last_active": "2026-10-15 21:21:20+00:00"
-   },
-   {
-    "contributor": "rockysingh",
-    "prs_opened": 1,
-    "reviews_given": 24,
-    "merges_done": 0,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 21:06:53+00:00"
-   },
-   {
-    "contributor": "akugal",
-    "prs_opened": 3,
-    "reviews_given": 12,
-    "merges_done": 2,
-    "issues_opened": 11,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 20:36:28+00:00"
-   },
-   {
-    "contributor": "andrewb1269",
-    "prs_opened": 6,
-    "reviews_given": 35,
-    "merges_done": 11,
-    "issues_opened": 6,
-    "labels_applied": 0,
-    "repos_touched": 7,
-    "last_active": "2026-10-15 19:34:16+00:00"
-   },
-   {
-    "contributor": "derektriley",
-    "prs_opened": 1,
-    "reviews_given": 3,
-    "merges_done": 1,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 19:23:42+00:00"
-   },
-   {
-    "contributor": "imalygin",
-    "prs_opened": 2,
-    "reviews_given": 15,
-    "merges_done": 1,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 18:00:20+00:00"
-   },
-   {
-    "contributor": "rsinha",
-    "prs_opened": 3,
-    "reviews_given": 7,
-    "merges_done": 3,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 17:18:54+00:00"
-   },
-   {
-    "contributor": "Ferparishuertas",
-    "prs_opened": 0,
-    "reviews_given": 2,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 15:40:31+00:00"
+    "last_active": "2026-10-15 21:21:21+00:00"
    },
    {
     "contributor": "IvanKavaldzhiev",
@@ -15578,49 +15897,19 @@
     "reviews_given": 24,
     "merges_done": 0,
     "issues_opened": 2,
-    "labels_applied": 0,
+    "labels_applied": 4,
     "repos_touched": 1,
     "last_active": "2026-10-15 14:55:27+00:00"
    },
    {
-    "contributor": "hendrikebbers",
-    "prs_opened": 0,
-    "reviews_given": 4,
-    "merges_done": 4,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 14:08:47+00:00"
-   },
-   {
-    "contributor": "copilot-swe-agent",
-    "prs_opened": 3,
-    "reviews_given": 2,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 14:07:34+00:00"
-   },
-   {
     "contributor": "thenswan",
     "prs_opened": 2,
-    "reviews_given": 7,
+    "reviews_given": 6,
     "merges_done": 1,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-15 13:00:18+00:00"
-   },
-   {
-    "contributor": "tgntr",
-    "prs_opened": 2,
-    "reviews_given": 11,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 12:58:36+00:00"
    },
    {
     "contributor": "alex-au",
@@ -15631,16 +15920,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-15 12:25:34+00:00"
-   },
-   {
-    "contributor": "Lemeri123",
-    "prs_opened": 3,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 08:30:33+00:00"
    },
    {
     "contributor": "08abhinav",
@@ -15655,11 +15934,11 @@
    {
     "contributor": "exploreriii",
     "prs_opened": 0,
-    "reviews_given": 6,
-    "merges_done": 2,
+    "reviews_given": 3,
+    "merges_done": 1,
     "issues_opened": 0,
-    "labels_applied": 1,
-    "repos_touched": 2,
+    "labels_applied": 0,
+    "repos_touched": 1,
     "last_active": "2026-10-15 07:24:34+00:00"
    },
    {
@@ -15678,39 +15957,9 @@
     "reviews_given": 1,
     "merges_done": 1,
     "issues_opened": 1,
-    "labels_applied": 0,
+    "labels_applied": 1,
     "repos_touched": 1,
-    "last_active": "2026-10-15 03:36:56+00:00"
-   },
-   {
-    "contributor": "steven-sheehy",
-    "prs_opened": 6,
-    "reviews_given": 32,
-    "merges_done": 25,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 00:37:39+00:00"
-   },
-   {
-    "contributor": "Neeharika-Sompalli",
-    "prs_opened": 1,
-    "reviews_given": 9,
-    "merges_done": 1,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-14 22:53:04+00:00"
-   },
-   {
-    "contributor": "tinker-michaelj",
-    "prs_opened": 2,
-    "reviews_given": 7,
-    "merges_done": 2,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-14 22:36:00+00:00"
+    "last_active": "2026-10-15 03:36:58+00:00"
    },
    {
     "contributor": "arturre",
@@ -15741,16 +15990,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-14 18:33:41+00:00"
-   },
-   {
-    "contributor": "petreze",
-    "prs_opened": 0,
-    "reviews_given": 8,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-14 15:56:17+00:00"
    },
    {
     "contributor": "kantorcodes",
@@ -15788,7 +16027,7 @@
     "reviews_given": 14,
     "merges_done": 3,
     "issues_opened": 3,
-    "labels_applied": 0,
+    "labels_applied": 6,
     "repos_touched": 4,
     "last_active": "2026-10-14 13:40:05+00:00"
    },
@@ -15818,7 +16057,7 @@
     "reviews_given": 6,
     "merges_done": 1,
     "issues_opened": 1,
-    "labels_applied": 0,
+    "labels_applied": 2,
     "repos_touched": 1,
     "last_active": "2026-10-13 22:32:53+00:00"
    },
@@ -15833,16 +16072,6 @@
     "last_active": "2026-10-13 21:35:24+00:00"
    },
    {
-    "contributor": "MonaaEid",
-    "prs_opened": 0,
-    "reviews_given": 5,
-    "merges_done": 1,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 21:23:18+00:00"
-   },
-   {
     "contributor": "poulok",
     "prs_opened": 2,
     "reviews_given": 1,
@@ -15851,16 +16080,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-13 18:16:34+00:00"
-   },
-   {
-    "contributor": "ShauryaBisht",
-    "prs_opened": 1,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 17:09:06+00:00"
    },
    {
     "contributor": "igor-kirichenko-DSR",
@@ -15873,16 +16092,6 @@
     "last_active": "2026-10-13 15:10:20+00:00"
    },
    {
-    "contributor": "AlexanderShenshin",
-    "prs_opened": 0,
-    "reviews_given": 5,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 14:56:16+00:00"
-   },
-   {
     "contributor": "Utkarsh-rwt",
     "prs_opened": 2,
     "reviews_given": 0,
@@ -15891,16 +16100,6 @@
     "labels_applied": 0,
     "repos_touched": 2,
     "last_active": "2026-10-13 14:37:10+00:00"
-   },
-   {
-    "contributor": "deshmukhpranali",
-    "prs_opened": 2,
-    "reviews_given": 3,
-    "merges_done": 3,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-13 10:57:59+00:00"
    },
    {
     "contributor": "vrushank47",
@@ -15918,29 +16117,9 @@
     "reviews_given": 0,
     "merges_done": 1,
     "issues_opened": 1,
-    "labels_applied": 0,
+    "labels_applied": 1,
     "repos_touched": 1,
-    "last_active": "2026-10-13 10:19:52+00:00"
-   },
-   {
-    "contributor": "achintya2k5",
-    "prs_opened": 1,
-    "reviews_given": 1,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 07:57:49+00:00"
-   },
-   {
-    "contributor": "anchit-goel",
-    "prs_opened": 2,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 07:56:50+00:00"
+    "last_active": "2026-10-13 10:19:53+00:00"
    },
    {
     "contributor": "jjohannes",
@@ -15963,102 +16142,662 @@
     "last_active": "2026-10-12 08:55:11+00:00"
    },
    {
-    "contributor": "yashthakur2008",
-    "prs_opened": 1,
+    "contributor": "boris-bonin",
+    "prs_opened": 0,
     "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
-    "labels_applied": 0,
+    "labels_applied": 1,
     "repos_touched": 1,
-    "last_active": "2026-10-11 20:50:18+00:00"
+    "last_active": "2026-10-12 07:53:43+00:00"
+   }
+  ],
+  "30d": [
+   {
+    "contributor": "Jexsie",
+    "prs_opened": 6,
+    "reviews_given": 8,
+    "merges_done": 1,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 4,
+    "last_active": "2026-10-19 05:27:15+00:00"
    },
    {
-    "contributor": "kutluhaneth46",
-    "prs_opened": 1,
-    "reviews_given": 0,
+    "contributor": "netopyr",
+    "prs_opened": 31,
+    "reviews_given": 52,
+    "merges_done": 26,
+    "issues_opened": 69,
+    "labels_applied": 11,
+    "repos_touched": 1,
+    "last_active": "2026-10-19 04:53:23+00:00"
+   },
+   {
+    "contributor": "tinker-michaelj",
+    "prs_opened": 4,
+    "reviews_given": 27,
+    "merges_done": 2,
+    "issues_opened": 4,
+    "labels_applied": 2,
+    "repos_touched": 2,
+    "last_active": "2026-10-19 02:42:19+00:00"
+   },
+   {
+    "contributor": "aceppaluni",
+    "prs_opened": 4,
+    "reviews_given": 30,
+    "merges_done": 19,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 3,
+    "last_active": "2026-10-18 22:46:25+00:00"
+   },
+   {
+    "contributor": "BikramBiswas786",
+    "prs_opened": 4,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 6,
+    "labels_applied": 4,
+    "repos_touched": 3,
+    "last_active": "2026-10-18 20:03:23+00:00"
+   },
+   {
+    "contributor": "steven-sheehy",
+    "prs_opened": 19,
+    "reviews_given": 119,
+    "merges_done": 84,
+    "issues_opened": 5,
+    "labels_applied": 14,
+    "repos_touched": 3,
+    "last_active": "2026-10-18 18:11:10+00:00"
+   },
+   {
+    "contributor": "anchit-goel",
+    "prs_opened": 5,
+    "reviews_given": 3,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-11 19:28:42+00:00"
+    "last_active": "2026-10-18 17:21:51+00:00"
+   },
+   {
+    "contributor": "achintya2k5",
+    "prs_opened": 2,
+    "reviews_given": 4,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-18 17:01:18+00:00"
+   },
+   {
+    "contributor": "danielmarv",
+    "prs_opened": 17,
+    "reviews_given": 67,
+    "merges_done": 34,
+    "issues_opened": 13,
+    "labels_applied": 23,
+    "repos_touched": 13,
+    "last_active": "2026-10-18 15:28:26+00:00"
    },
    {
     "contributor": "Jah-yee",
-    "prs_opened": 4,
+    "prs_opened": 5,
     "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-18 11:10:17+00:00"
+   },
+   {
+    "contributor": "mayanksinha17",
+    "prs_opened": 4,
+    "reviews_given": 10,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-11 11:28:11+00:00"
+    "last_active": "2026-10-18 10:49:49+00:00"
+   },
+   {
+    "contributor": "Ndacyayisenga-droid",
+    "prs_opened": 11,
+    "reviews_given": 52,
+    "merges_done": 25,
+    "issues_opened": 6,
+    "labels_applied": 5,
+    "repos_touched": 6,
+    "last_active": "2026-10-18 08:58:01+00:00"
    },
    {
     "contributor": "Dhie-boop",
     "prs_opened": 1,
-    "reviews_given": 0,
+    "reviews_given": 1,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-11 09:42:29+00:00"
+    "last_active": "2026-10-18 08:00:01+00:00"
    },
    {
-    "contributor": "ch-ushasree",
-    "prs_opened": 0,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 1,
-    "labels_applied": 1,
-    "repos_touched": 1,
-    "last_active": "2026-10-10 23:10:23+00:00"
+    "contributor": "Nana-EC",
+    "prs_opened": 5,
+    "reviews_given": 83,
+    "merges_done": 11,
+    "issues_opened": 18,
+    "labels_applied": 12,
+    "repos_touched": 3,
+    "last_active": "2026-10-17 23:58:41+00:00"
    },
    {
-    "contributor": "attilayener",
+    "contributor": "Dheekshi-07",
     "prs_opened": 1,
     "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-10 12:09:59+00:00"
+    "last_active": "2026-10-17 19:53:07+00:00"
    },
    {
-    "contributor": "amoghkashyap1427",
-    "prs_opened": 1,
+    "contributor": "manishdait",
+    "prs_opened": 14,
+    "reviews_given": 115,
+    "merges_done": 31,
+    "issues_opened": 15,
+    "labels_applied": 37,
+    "repos_touched": 6,
+    "last_active": "2026-10-17 19:03:35+00:00"
+   },
+   {
+    "contributor": "MonaaEid",
+    "prs_opened": 2,
+    "reviews_given": 32,
+    "merges_done": 8,
+    "issues_opened": 2,
+    "labels_applied": 2,
+    "repos_touched": 2,
+    "last_active": "2026-10-17 15:33:16+00:00"
+   },
+   {
+    "contributor": "Lemeri123",
+    "prs_opened": 5,
     "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-10 10:35:27+00:00"
+    "last_active": "2026-10-17 13:41:07+00:00"
    },
    {
-    "contributor": "Cybr0",
+    "contributor": "wized2",
+    "prs_opened": 2,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 13:06:23+00:00"
+   },
+   {
+    "contributor": "ShauryaBisht",
     "prs_opened": 3,
     "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-09 17:01:01+00:00"
-   }
-  ],
-  "30d": [
+    "repos_touched": 2,
+    "last_active": "2026-10-17 12:04:21+00:00"
+   },
    {
-    "contributor": "JivkoKelchev",
-    "prs_opened": 7,
-    "reviews_given": 10,
-    "merges_done": 2,
+    "contributor": "hendrikebbers",
+    "prs_opened": 4,
+    "reviews_given": 22,
+    "merges_done": 14,
+    "issues_opened": 2,
+    "labels_applied": 0,
+    "repos_touched": 8,
+    "last_active": "2026-10-17 08:15:45+00:00"
+   },
+   {
+    "contributor": "Stackforge-07",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-16 13:45:53+00:00"
+    "last_active": "2026-10-17 05:05:36+00:00"
+   },
+   {
+    "contributor": "rockysingh",
+    "prs_opened": 8,
+    "reviews_given": 109,
+    "merges_done": 5,
+    "issues_opened": 15,
+    "labels_applied": 36,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 01:26:33+00:00"
+   },
+   {
+    "contributor": "Neurone",
+    "prs_opened": 5,
+    "reviews_given": 12,
+    "merges_done": 0,
+    "issues_opened": 3,
+    "labels_applied": 3,
+    "repos_touched": 4,
+    "last_active": "2026-10-17 01:00:43+00:00"
+   },
+   {
+    "contributor": "joshmarinacci",
+    "prs_opened": 19,
+    "reviews_given": 24,
+    "merges_done": 8,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 00:30:17+00:00"
+   },
+   {
+    "contributor": "anthony-swirldslabs",
+    "prs_opened": 18,
+    "reviews_given": 64,
+    "merges_done": 20,
+    "issues_opened": 17,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-17 00:05:18+00:00"
+   },
+   {
+    "contributor": "rsinha",
+    "prs_opened": 10,
+    "reviews_given": 25,
+    "merges_done": 11,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 00:02:56+00:00"
+   },
+   {
+    "contributor": "jsync-swirlds",
+    "prs_opened": 1,
+    "reviews_given": 126,
+    "merges_done": 5,
+    "issues_opened": 5,
+    "labels_applied": 2,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 23:34:39+00:00"
+   },
+   {
+    "contributor": "AlfredoG87",
+    "prs_opened": 9,
+    "reviews_given": 93,
+    "merges_done": 25,
+    "issues_opened": 29,
+    "labels_applied": 50,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 23:31:55+00:00"
+   },
+   {
+    "contributor": "timfn-hg",
+    "prs_opened": 1,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 4,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 23:00:52+00:00"
+   },
+   {
+    "contributor": "imalygin",
+    "prs_opened": 13,
+    "reviews_given": 73,
+    "merges_done": 8,
+    "issues_opened": 10,
+    "labels_applied": 6,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 22:49:44+00:00"
+   },
+   {
+    "contributor": "mhess-swl",
+    "prs_opened": 6,
+    "reviews_given": 27,
+    "merges_done": 6,
+    "issues_opened": 2,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 22:20:29+00:00"
+   },
+   {
+    "contributor": "derektriley",
+    "prs_opened": 6,
+    "reviews_given": 13,
+    "merges_done": 1,
+    "issues_opened": 6,
+    "labels_applied": 3,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 21:58:15+00:00"
+   },
+   {
+    "contributor": "ldintr",
+    "prs_opened": 4,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 2,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 21:37:40+00:00"
+   },
+   {
+    "contributor": "ashumahajan",
+    "prs_opened": 2,
+    "reviews_given": 20,
+    "merges_done": 0,
+    "issues_opened": 5,
+    "labels_applied": 10,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 21:28:26+00:00"
+   },
+   {
+    "contributor": "xin-hedera",
+    "prs_opened": 21,
+    "reviews_given": 86,
+    "merges_done": 27,
+    "issues_opened": 10,
+    "labels_applied": 22,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 21:19:18+00:00"
+   },
+   {
+    "contributor": "akugal",
+    "prs_opened": 7,
+    "reviews_given": 51,
+    "merges_done": 5,
+    "issues_opened": 19,
+    "labels_applied": 17,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 20:17:59+00:00"
+   },
+   {
+    "contributor": "berryware",
+    "prs_opened": 7,
+    "reviews_given": 106,
+    "merges_done": 15,
+    "issues_opened": 9,
+    "labels_applied": 7,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 19:05:55+00:00"
+   },
+   {
+    "contributor": "krishachra",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 19:03:50+00:00"
+   },
+   {
+    "contributor": "Neeharika-Sompalli",
+    "prs_opened": 6,
+    "reviews_given": 37,
+    "merges_done": 7,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 18:13:57+00:00"
+   },
+   {
+    "contributor": "Reccetech",
+    "prs_opened": 3,
+    "reviews_given": 2,
+    "merges_done": 1,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 5,
+    "last_active": "2026-10-16 18:04:33+00:00"
+   },
+   {
+    "contributor": "bilyana-gospodinova",
+    "prs_opened": 19,
+    "reviews_given": 56,
+    "merges_done": 12,
+    "issues_opened": 1,
+    "labels_applied": 2,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:59:17+00:00"
+   },
+   {
+    "contributor": "ericleponner",
+    "prs_opened": 0,
+    "reviews_given": 7,
+    "merges_done": 3,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:39:23+00:00"
+   },
+   {
+    "contributor": "Cybr0",
+    "prs_opened": 11,
+    "reviews_given": 16,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:38:42+00:00"
+   },
+   {
+    "contributor": "svienot",
+    "prs_opened": 6,
+    "reviews_given": 45,
+    "merges_done": 46,
+    "issues_opened": 1,
+    "labels_applied": 1,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 16:50:23+00:00"
+   },
+   {
+    "contributor": "AlexanderShenshin",
+    "prs_opened": 1,
+    "reviews_given": 20,
+    "merges_done": 15,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 16:35:48+00:00"
+   },
+   {
+    "contributor": "gkozyryatskyy",
+    "prs_opened": 1,
+    "reviews_given": 48,
+    "merges_done": 1,
+    "issues_opened": 3,
+    "labels_applied": 1,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 16:19:21+00:00"
+   },
+   {
+    "contributor": "viniciusjssouza",
+    "prs_opened": 6,
+    "reviews_given": 42,
+    "merges_done": 8,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 16:16:24+00:00"
+   },
+   {
+    "contributor": "natanasow",
+    "prs_opened": 9,
+    "reviews_given": 84,
+    "merges_done": 24,
+    "issues_opened": 4,
+    "labels_applied": 7,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:58:28+00:00"
+   },
+   {
+    "contributor": "ivannov",
+    "prs_opened": 11,
+    "reviews_given": 27,
+    "merges_done": 12,
+    "issues_opened": 11,
+    "labels_applied": 28,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:40:38+00:00"
+   },
+   {
+    "contributor": "JivkoKelchev",
+    "prs_opened": 7,
+    "reviews_given": 11,
+    "merges_done": 3,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:19:41+00:00"
+   },
+   {
+    "contributor": "ValentinVPK",
+    "prs_opened": 7,
+    "reviews_given": 85,
+    "merges_done": 43,
+    "issues_opened": 13,
+    "labels_applied": 14,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 15:11:56+00:00"
+   },
+   {
+    "contributor": "tgntr",
+    "prs_opened": 6,
+    "reviews_given": 43,
+    "merges_done": 6,
+    "issues_opened": 2,
+    "labels_applied": 8,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:11:10+00:00"
+   },
+   {
+    "contributor": "copilot-swe-agent",
+    "prs_opened": 7,
+    "reviews_given": 2,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:10:45+00:00"
+   },
+   {
+    "contributor": "Ferparishuertas",
+    "prs_opened": 0,
+    "reviews_given": 14,
+    "merges_done": 0,
+    "issues_opened": 2,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 15:06:58+00:00"
+   },
+   {
+    "contributor": "deshmukhpranali",
+    "prs_opened": 21,
+    "reviews_given": 9,
+    "merges_done": 8,
+    "issues_opened": 31,
+    "labels_applied": 46,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 15:05:31+00:00"
+   },
+   {
+    "contributor": "andrewb1269",
+    "prs_opened": 19,
+    "reviews_given": 98,
+    "merges_done": 33,
+    "issues_opened": 22,
+    "labels_applied": 30,
+    "repos_touched": 14,
+    "last_active": "2026-10-16 15:04:55+00:00"
+   },
+   {
+    "contributor": "martingeorgiev1",
+    "prs_opened": 4,
+    "reviews_given": 31,
+    "merges_done": 0,
+    "issues_opened": 4,
+    "labels_applied": 5,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:03:55+00:00"
+   },
+   {
+    "contributor": "petreze",
+    "prs_opened": 1,
+    "reviews_given": 31,
+    "merges_done": 1,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 14:51:55+00:00"
+   },
+   {
+    "contributor": "ata-nas",
+    "prs_opened": 7,
+    "reviews_given": 72,
+    "merges_done": 1,
+    "issues_opened": 3,
+    "labels_applied": 4,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 14:39:26+00:00"
+   },
+   {
+    "contributor": "Fantomasa",
+    "prs_opened": 48,
+    "reviews_given": 220,
+    "merges_done": 124,
+    "issues_opened": 49,
+    "labels_applied": 84,
+    "repos_touched": 11,
+    "last_active": "2026-10-16 14:04:46+00:00"
+   },
+   {
+    "contributor": "ddeskov-limechain",
+    "prs_opened": 57,
+    "reviews_given": 83,
+    "merges_done": 20,
+    "issues_opened": 39,
+    "labels_applied": 24,
+    "repos_touched": 10,
+    "last_active": "2026-10-16 13:59:36+00:00"
+   },
+   {
+    "contributor": "JeffreyDallas",
+    "prs_opened": 52,
+    "reviews_given": 92,
+    "merges_done": 1,
+    "issues_opened": 36,
+    "labels_applied": 54,
+    "repos_touched": 5,
+    "last_active": "2026-10-16 13:52:43+00:00"
+   },
+   {
+    "contributor": "mustafauzunn",
+    "prs_opened": 8,
+    "reviews_given": 36,
+    "merges_done": 32,
+    "issues_opened": 15,
+    "labels_applied": 2,
+    "repos_touched": 9,
+    "last_active": "2026-10-16 13:52:02+00:00"
    },
    {
     "contributor": "ibankov",
-    "prs_opened": 26,
-    "reviews_given": 40,
-    "merges_done": 26,
+    "prs_opened": 23,
+    "reviews_given": 35,
+    "merges_done": 23,
     "issues_opened": 2,
     "labels_applied": 1,
     "repos_touched": 2,
@@ -16066,53 +16805,13 @@
    },
    {
     "contributor": "Ivo-Yankov",
-    "prs_opened": 26,
-    "reviews_given": 46,
+    "prs_opened": 24,
+    "reviews_given": 45,
     "merges_done": 10,
     "issues_opened": 6,
-    "labels_applied": 12,
+    "labels_applied": 16,
     "repos_touched": 4,
     "last_active": "2026-10-16 13:33:25+00:00"
-   },
-   {
-    "contributor": "berryware",
-    "prs_opened": 5,
-    "reviews_given": 115,
-    "merges_done": 15,
-    "issues_opened": 9,
-    "labels_applied": 6,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 13:27:33+00:00"
-   },
-   {
-    "contributor": "gkozyryatskyy",
-    "prs_opened": 1,
-    "reviews_given": 47,
-    "merges_done": 0,
-    "issues_opened": 3,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 13:19:17+00:00"
-   },
-   {
-    "contributor": "ivannov",
-    "prs_opened": 13,
-    "reviews_given": 28,
-    "merges_done": 13,
-    "issues_opened": 11,
-    "labels_applied": 28,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 13:18:03+00:00"
-   },
-   {
-    "contributor": "Fantomasa",
-    "prs_opened": 48,
-    "reviews_given": 227,
-    "merges_done": 124,
-    "issues_opened": 49,
-    "labels_applied": 47,
-    "repos_touched": 12,
-    "last_active": "2026-10-16 13:15:26+00:00"
    },
    {
     "contributor": "abies",
@@ -16125,22 +16824,12 @@
     "last_active": "2026-10-16 13:11:27+00:00"
    },
    {
-    "contributor": "netopyr",
-    "prs_opened": 28,
-    "reviews_given": 52,
-    "merges_done": 25,
-    "issues_opened": 46,
-    "labels_applied": 3,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 12:41:17+00:00"
-   },
-   {
     "contributor": "jan-milenkov",
     "prs_opened": 3,
-    "reviews_given": 178,
-    "merges_done": 140,
+    "reviews_given": 170,
+    "merges_done": 130,
     "issues_opened": 7,
-    "labels_applied": 10,
+    "labels_applied": 17,
     "repos_touched": 3,
     "last_active": "2026-10-16 12:35:12+00:00"
    },
@@ -16155,74 +16844,14 @@
     "last_active": "2026-10-16 12:18:05+00:00"
    },
    {
-    "contributor": "ddeskov-limechain",
-    "prs_opened": 56,
-    "reviews_given": 88,
-    "merges_done": 20,
-    "issues_opened": 38,
-    "labels_applied": 17,
-    "repos_touched": 10,
-    "last_active": "2026-10-16 12:15:39+00:00"
-   },
-   {
     "contributor": "Dosik13",
     "prs_opened": 7,
-    "reviews_given": 31,
+    "reviews_given": 29,
     "merges_done": 29,
     "issues_opened": 0,
     "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 12:09:08+00:00"
-   },
-   {
-    "contributor": "ata-nas",
-    "prs_opened": 7,
-    "reviews_given": 70,
-    "merges_done": 1,
-    "issues_opened": 3,
-    "labels_applied": 4,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 11:57:44+00:00"
-   },
-   {
-    "contributor": "danielmarv",
-    "prs_opened": 16,
-    "reviews_given": 65,
-    "merges_done": 34,
-    "issues_opened": 13,
-    "labels_applied": 21,
-    "repos_touched": 13,
-    "last_active": "2026-10-16 11:55:46+00:00"
-   },
-   {
-    "contributor": "ValentinVPK",
-    "prs_opened": 8,
-    "reviews_given": 95,
-    "merges_done": 43,
-    "issues_opened": 14,
-    "labels_applied": 14,
     "repos_touched": 2,
-    "last_active": "2026-10-16 11:49:12+00:00"
-   },
-   {
-    "contributor": "svienot",
-    "prs_opened": 5,
-    "reviews_given": 53,
-    "merges_done": 54,
-    "issues_opened": 1,
-    "labels_applied": 1,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 11:41:36+00:00"
-   },
-   {
-    "contributor": "mustafauzunn",
-    "prs_opened": 8,
-    "reviews_given": 37,
-    "merges_done": 35,
-    "issues_opened": 15,
-    "labels_applied": 2,
-    "repos_touched": 9,
-    "last_active": "2026-10-16 11:23:46+00:00"
+    "last_active": "2026-10-16 12:09:08+00:00"
    },
    {
     "contributor": "ruslanvelkov-beep",
@@ -16235,44 +16864,14 @@
     "last_active": "2026-10-16 10:59:09+00:00"
    },
    {
-    "contributor": "martingeorgiev1",
-    "prs_opened": 6,
-    "reviews_given": 14,
-    "merges_done": 0,
-    "issues_opened": 4,
-    "labels_applied": 4,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 10:54:34+00:00"
-   },
-   {
-    "contributor": "natanasow",
-    "prs_opened": 9,
-    "reviews_given": 96,
-    "merges_done": 28,
-    "issues_opened": 4,
-    "labels_applied": 6,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 10:14:38+00:00"
-   },
-   {
     "contributor": "AlexKehayov",
     "prs_opened": 5,
-    "reviews_given": 9,
+    "reviews_given": 4,
     "merges_done": 3,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-16 09:55:41+00:00"
-   },
-   {
-    "contributor": "manishdait",
-    "prs_opened": 14,
-    "reviews_given": 122,
-    "merges_done": 35,
-    "issues_opened": 14,
-    "labels_applied": 30,
-    "repos_touched": 6,
-    "last_active": "2026-10-16 09:16:26+00:00"
    },
    {
     "contributor": "Aadarshrai1801",
@@ -16295,29 +16894,9 @@
     "last_active": "2026-10-16 08:17:30+00:00"
    },
    {
-    "contributor": "Jexsie",
-    "prs_opened": 5,
-    "reviews_given": 8,
-    "merges_done": 1,
-    "issues_opened": 1,
-    "labels_applied": 1,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 08:12:11+00:00"
-   },
-   {
-    "contributor": "bilyana-gospodinova",
-    "prs_opened": 19,
-    "reviews_given": 76,
-    "merges_done": 7,
-    "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 07:55:41+00:00"
-   },
-   {
     "contributor": "sdimitrov9",
-    "prs_opened": 14,
-    "reviews_given": 47,
+    "prs_opened": 11,
+    "reviews_given": 39,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
@@ -16333,46 +16912,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-16 05:58:10+00:00"
-   },
-   {
-    "contributor": "Nana-EC",
-    "prs_opened": 6,
-    "reviews_given": 76,
-    "merges_done": 12,
-    "issues_opened": 18,
-    "labels_applied": 3,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 03:28:16+00:00"
-   },
-   {
-    "contributor": "ashumahajan",
-    "prs_opened": 2,
-    "reviews_given": 16,
-    "merges_done": 0,
-    "issues_opened": 5,
-    "labels_applied": 4,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 02:18:33+00:00"
-   },
-   {
-    "contributor": "jsync-swirlds",
-    "prs_opened": 1,
-    "reviews_given": 121,
-    "merges_done": 5,
-    "issues_opened": 6,
-    "labels_applied": 2,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 02:06:59+00:00"
-   },
-   {
-    "contributor": "Ndacyayisenga-droid",
-    "prs_opened": 11,
-    "reviews_given": 51,
-    "merges_done": 25,
-    "issues_opened": 6,
-    "labels_applied": 4,
-    "repos_touched": 6,
-    "last_active": "2026-10-16 02:06:02+00:00"
    },
    {
     "contributor": "Jeffrey-morgan34",
@@ -16395,72 +16934,12 @@
     "last_active": "2026-10-16 00:45:22+00:00"
    },
    {
-    "contributor": "anthony-swirldslabs",
-    "prs_opened": 17,
-    "reviews_given": 62,
-    "merges_done": 18,
-    "issues_opened": 16,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 00:30:07+00:00"
-   },
-   {
-    "contributor": "viniciusjssouza",
-    "prs_opened": 6,
-    "reviews_given": 40,
-    "merges_done": 6,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 00:20:46+00:00"
-   },
-   {
-    "contributor": "joshmarinacci",
-    "prs_opened": 9,
-    "reviews_given": 22,
-    "merges_done": 8,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 00:08:09+00:00"
-   },
-   {
-    "contributor": "AlfredoG87",
-    "prs_opened": 9,
-    "reviews_given": 90,
-    "merges_done": 25,
-    "issues_opened": 24,
-    "labels_applied": 10,
-    "repos_touched": 3,
-    "last_active": "2026-10-15 23:49:21+00:00"
-   },
-   {
-    "contributor": "JeffreyDallas",
-    "prs_opened": 52,
-    "reviews_given": 107,
-    "merges_done": 1,
-    "issues_opened": 35,
-    "labels_applied": 40,
-    "repos_touched": 5,
-    "last_active": "2026-10-15 23:21:42+00:00"
-   },
-   {
-    "contributor": "xin-hedera",
-    "prs_opened": 20,
-    "reviews_given": 80,
-    "merges_done": 28,
-    "issues_opened": 9,
-    "labels_applied": 16,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 22:38:58+00:00"
-   },
-   {
     "contributor": "alex-kuzmin-hg",
     "prs_opened": 4,
     "reviews_given": 6,
     "merges_done": 3,
-    "issues_opened": 8,
-    "labels_applied": 1,
+    "issues_opened": 6,
+    "labels_applied": 0,
     "repos_touched": 2,
     "last_active": "2026-10-15 22:38:55+00:00"
    },
@@ -16475,134 +16954,24 @@
     "last_active": "2026-10-15 22:28:59+00:00"
    },
    {
-    "contributor": "mhess-swl",
-    "prs_opened": 5,
-    "reviews_given": 24,
-    "merges_done": 5,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 22:00:12+00:00"
-   },
-   {
-    "contributor": "aceppaluni",
-    "prs_opened": 5,
-    "reviews_given": 27,
-    "merges_done": 21,
-    "issues_opened": 1,
-    "labels_applied": 1,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 21:27:50+00:00"
-   },
-   {
     "contributor": "artemananiev",
     "prs_opened": 4,
     "reviews_given": 113,
     "merges_done": 4,
     "issues_opened": 19,
-    "labels_applied": 43,
+    "labels_applied": 52,
     "repos_touched": 1,
-    "last_active": "2026-10-15 21:21:20+00:00"
-   },
-   {
-    "contributor": "rockysingh",
-    "prs_opened": 7,
-    "reviews_given": 107,
-    "merges_done": 3,
-    "issues_opened": 15,
-    "labels_applied": 34,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 21:06:53+00:00"
-   },
-   {
-    "contributor": "akugal",
-    "prs_opened": 7,
-    "reviews_given": 50,
-    "merges_done": 5,
-    "issues_opened": 17,
-    "labels_applied": 5,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 20:36:28+00:00"
-   },
-   {
-    "contributor": "andrewb1269",
-    "prs_opened": 17,
-    "reviews_given": 92,
-    "merges_done": 33,
-    "issues_opened": 21,
-    "labels_applied": 23,
-    "repos_touched": 14,
-    "last_active": "2026-10-15 19:34:16+00:00"
-   },
-   {
-    "contributor": "derektriley",
-    "prs_opened": 6,
-    "reviews_given": 12,
-    "merges_done": 1,
-    "issues_opened": 6,
-    "labels_applied": 3,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 19:23:42+00:00"
-   },
-   {
-    "contributor": "imalygin",
-    "prs_opened": 12,
-    "reviews_given": 72,
-    "merges_done": 8,
-    "issues_opened": 9,
-    "labels_applied": 6,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 18:00:20+00:00"
-   },
-   {
-    "contributor": "rsinha",
-    "prs_opened": 10,
-    "reviews_given": 24,
-    "merges_done": 11,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 17:18:54+00:00"
-   },
-   {
-    "contributor": "Ferparishuertas",
-    "prs_opened": 0,
-    "reviews_given": 13,
-    "merges_done": 0,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-15 15:40:31+00:00"
+    "last_active": "2026-10-15 21:21:21+00:00"
    },
    {
     "contributor": "IvanKavaldzhiev",
-    "prs_opened": 10,
-    "reviews_given": 83,
+    "prs_opened": 9,
+    "reviews_given": 71,
     "merges_done": 0,
     "issues_opened": 2,
-    "labels_applied": 0,
+    "labels_applied": 4,
     "repos_touched": 1,
     "last_active": "2026-10-15 14:55:27+00:00"
-   },
-   {
-    "contributor": "hendrikebbers",
-    "prs_opened": 4,
-    "reviews_given": 22,
-    "merges_done": 13,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 8,
-    "last_active": "2026-10-15 14:08:47+00:00"
-   },
-   {
-    "contributor": "copilot-swe-agent",
-    "prs_opened": 6,
-    "reviews_given": 4,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 14:07:34+00:00"
    },
    {
     "contributor": "thenswan",
@@ -16615,16 +16984,6 @@
     "last_active": "2026-10-15 13:00:18+00:00"
    },
    {
-    "contributor": "tgntr",
-    "prs_opened": 10,
-    "reviews_given": 39,
-    "merges_done": 6,
-    "issues_opened": 2,
-    "labels_applied": 8,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 12:58:36+00:00"
-   },
-   {
     "contributor": "alex-au",
     "prs_opened": 0,
     "reviews_given": 0,
@@ -16633,16 +16992,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-15 12:25:34+00:00"
-   },
-   {
-    "contributor": "Lemeri123",
-    "prs_opened": 4,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 08:30:33+00:00"
    },
    {
     "contributor": "08abhinav",
@@ -16680,39 +17029,9 @@
     "reviews_given": 8,
     "merges_done": 1,
     "issues_opened": 1,
-    "labels_applied": 0,
-    "repos_touched": 4,
-    "last_active": "2026-10-15 03:36:56+00:00"
-   },
-   {
-    "contributor": "steven-sheehy",
-    "prs_opened": 19,
-    "reviews_given": 124,
-    "merges_done": 86,
-    "issues_opened": 6,
-    "labels_applied": 12,
-    "repos_touched": 3,
-    "last_active": "2026-10-15 00:37:39+00:00"
-   },
-   {
-    "contributor": "Neeharika-Sompalli",
-    "prs_opened": 5,
-    "reviews_given": 34,
-    "merges_done": 6,
-    "issues_opened": 1,
     "labels_applied": 1,
-    "repos_touched": 1,
-    "last_active": "2026-10-14 22:53:04+00:00"
-   },
-   {
-    "contributor": "tinker-michaelj",
-    "prs_opened": 4,
-    "reviews_given": 25,
-    "merges_done": 2,
-    "issues_opened": 4,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-14 22:36:00+00:00"
+    "repos_touched": 4,
+    "last_active": "2026-10-15 03:36:58+00:00"
    },
    {
     "contributor": "arturre",
@@ -16745,16 +17064,6 @@
     "last_active": "2026-10-14 18:33:41+00:00"
    },
    {
-    "contributor": "petreze",
-    "prs_opened": 2,
-    "reviews_given": 29,
-    "merges_done": 2,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-14 15:56:17+00:00"
-   },
-   {
     "contributor": "kantorcodes",
     "prs_opened": 0,
     "reviews_given": 3,
@@ -16767,8 +17076,8 @@
    {
     "contributor": "mgarbs",
     "prs_opened": 8,
-    "reviews_given": 22,
-    "merges_done": 25,
+    "reviews_given": 17,
+    "merges_done": 17,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 2,
@@ -16776,7 +17085,7 @@
    },
    {
     "contributor": "jeremie-olivier",
-    "prs_opened": 1,
+    "prs_opened": 0,
     "reviews_given": 8,
     "merges_done": 0,
     "issues_opened": 0,
@@ -16787,10 +17096,10 @@
    {
     "contributor": "rbarker-dev",
     "prs_opened": 4,
-    "reviews_given": 30,
-    "merges_done": 4,
+    "reviews_given": 29,
+    "merges_done": 3,
     "issues_opened": 6,
-    "labels_applied": 23,
+    "labels_applied": 29,
     "repos_touched": 4,
     "last_active": "2026-10-14 13:40:05+00:00"
    },
@@ -16819,7 +17128,7 @@
     "prs_opened": 4,
     "reviews_given": 6,
     "merges_done": 2,
-    "issues_opened": 5,
+    "issues_opened": 4,
     "labels_applied": 9,
     "repos_touched": 1,
     "last_active": "2026-10-13 22:32:53+00:00"
@@ -16835,16 +17144,6 @@
     "last_active": "2026-10-13 21:35:24+00:00"
    },
    {
-    "contributor": "MonaaEid",
-    "prs_opened": 2,
-    "reviews_given": 25,
-    "merges_done": 5,
-    "issues_opened": 2,
-    "labels_applied": 2,
-    "repos_touched": 2,
-    "last_active": "2026-10-13 21:23:18+00:00"
-   },
-   {
     "contributor": "poulok",
     "prs_opened": 11,
     "reviews_given": 44,
@@ -16853,16 +17152,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-13 18:16:34+00:00"
-   },
-   {
-    "contributor": "ShauryaBisht",
-    "prs_opened": 2,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-13 17:09:06+00:00"
    },
    {
     "contributor": "igor-kirichenko-DSR",
@@ -16875,16 +17164,6 @@
     "last_active": "2026-10-13 15:10:20+00:00"
    },
    {
-    "contributor": "AlexanderShenshin",
-    "prs_opened": 1,
-    "reviews_given": 17,
-    "merges_done": 12,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 14:56:16+00:00"
-   },
-   {
     "contributor": "Utkarsh-rwt",
     "prs_opened": 2,
     "reviews_given": 0,
@@ -16893,16 +17172,6 @@
     "labels_applied": 0,
     "repos_touched": 2,
     "last_active": "2026-10-13 14:37:10+00:00"
-   },
-   {
-    "contributor": "deshmukhpranali",
-    "prs_opened": 20,
-    "reviews_given": 9,
-    "merges_done": 8,
-    "issues_opened": 31,
-    "labels_applied": 44,
-    "repos_touched": 3,
-    "last_active": "2026-10-13 10:57:59+00:00"
    },
    {
     "contributor": "vrushank47",
@@ -16916,39 +17185,19 @@
    },
    {
     "contributor": "stoyanov-st",
-    "prs_opened": 5,
+    "prs_opened": 4,
     "reviews_given": 3,
     "merges_done": 3,
     "issues_opened": 1,
-    "labels_applied": 0,
+    "labels_applied": 1,
     "repos_touched": 1,
-    "last_active": "2026-10-13 10:19:52+00:00"
-   },
-   {
-    "contributor": "achintya2k5",
-    "prs_opened": 2,
-    "reviews_given": 1,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 07:57:49+00:00"
-   },
-   {
-    "contributor": "anchit-goel",
-    "prs_opened": 5,
-    "reviews_given": 2,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 07:56:50+00:00"
+    "last_active": "2026-10-13 10:19:53+00:00"
    },
    {
     "contributor": "jjohannes",
     "prs_opened": 5,
-    "reviews_given": 16,
-    "merges_done": 12,
+    "reviews_given": 12,
+    "merges_done": 9,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 3,
@@ -16963,6 +17212,16 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-12 08:55:11+00:00"
+   },
+   {
+    "contributor": "boris-bonin",
+    "prs_opened": 1,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 1,
+    "repos_touched": 1,
+    "last_active": "2026-10-12 07:53:43+00:00"
    },
    {
     "contributor": "yashthakur2008",
@@ -16983,26 +17242,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-11 19:28:42+00:00"
-   },
-   {
-    "contributor": "Jah-yee",
-    "prs_opened": 4,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-11 11:28:11+00:00"
-   },
-   {
-    "contributor": "Dhie-boop",
-    "prs_opened": 1,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-11 09:42:29+00:00"
    },
    {
     "contributor": "ch-ushasree",
@@ -17035,19 +17274,9 @@
     "last_active": "2026-10-10 10:35:27+00:00"
    },
    {
-    "contributor": "Cybr0",
-    "prs_opened": 10,
-    "reviews_given": 16,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-09 17:01:01+00:00"
-   },
-   {
     "contributor": "github-advanced-security",
     "prs_opened": 0,
-    "reviews_given": 14,
+    "reviews_given": 13,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
@@ -17057,7 +17286,7 @@
    {
     "contributor": "radkomih",
     "prs_opened": 0,
-    "reviews_given": 12,
+    "reviews_given": 10,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
@@ -17065,41 +17294,11 @@
     "last_active": "2026-10-09 10:46:38+00:00"
    },
    {
-    "contributor": "mayanksinha17",
-    "prs_opened": 3,
-    "reviews_given": 10,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-09 07:02:15+00:00"
-   },
-   {
-    "contributor": "ldintr",
-    "prs_opened": 3,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-08 17:26:35+00:00"
-   },
-   {
-    "contributor": "Neurone",
-    "prs_opened": 5,
-    "reviews_given": 12,
-    "merges_done": 0,
-    "issues_opened": 2,
-    "labels_applied": 3,
-    "repos_touched": 3,
-    "last_active": "2026-10-08 01:47:33+00:00"
-   },
-   {
     "contributor": "jwagantall",
     "prs_opened": 4,
     "reviews_given": 17,
     "merges_done": 17,
-    "issues_opened": 3,
+    "issues_opened": 2,
     "labels_applied": 1,
     "repos_touched": 5,
     "last_active": "2026-10-07 20:17:22+00:00"
@@ -17185,16 +17384,6 @@
     "last_active": "2026-10-07 07:58:04+00:00"
    },
    {
-    "contributor": "Reccetech",
-    "prs_opened": 3,
-    "reviews_given": 0,
-    "merges_done": 1,
-    "issues_opened": 1,
-    "labels_applied": 1,
-    "repos_touched": 5,
-    "last_active": "2026-10-07 03:09:20+00:00"
-   },
-   {
     "contributor": "git-vote",
     "prs_opened": 0,
     "reviews_given": 0,
@@ -17245,26 +17434,6 @@
     "last_active": "2026-10-05 11:46:26+00:00"
    },
    {
-    "contributor": "ericleponner",
-    "prs_opened": 0,
-    "reviews_given": 6,
-    "merges_done": 3,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-05 08:27:59+00:00"
-   },
-   {
-    "contributor": "boris-bonin",
-    "prs_opened": 1,
-    "reviews_given": 1,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-05 07:00:33+00:00"
-   },
-   {
     "contributor": "Github-Shashank",
     "prs_opened": 1,
     "reviews_given": 0,
@@ -17295,16 +17464,6 @@
     "last_active": "2026-10-02 17:38:07+00:00"
    },
    {
-    "contributor": "timfn-hg",
-    "prs_opened": 1,
-    "reviews_given": 1,
-    "merges_done": 0,
-    "issues_opened": 4,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-02 14:04:42+00:00"
-   },
-   {
     "contributor": "parvninama",
     "prs_opened": 0,
     "reviews_given": 1,
@@ -17326,8 +17485,8 @@
    },
    {
     "contributor": "pratyay85",
-    "prs_opened": 3,
-    "reviews_given": 1,
+    "prs_opened": 2,
+    "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
@@ -17403,16 +17562,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-09-29 03:51:58+00:00"
-   },
-   {
-    "contributor": "BikramBiswas786",
-    "prs_opened": 0,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 5,
-    "labels_applied": 4,
-    "repos_touched": 2,
-    "last_active": "2026-09-28 15:59:04+00:00"
    },
    {
     "contributor": "Ritesh-Gupta-op",
@@ -17553,73 +17702,653 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-09-20 22:54:59+00:00"
+   }
+  ],
+  "365d": [
+   {
+    "contributor": "Jexsie",
+    "prs_opened": 26,
+    "reviews_given": 49,
+    "merges_done": 5,
+    "issues_opened": 3,
+    "labels_applied": 3,
+    "repos_touched": 5,
+    "last_active": "2026-10-19 05:27:15+00:00"
    },
    {
-    "contributor": "koraygoktas",
-    "prs_opened": 0,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 1,
-    "labels_applied": 0,
+    "contributor": "netopyr",
+    "prs_opened": 253,
+    "reviews_given": 524,
+    "merges_done": 218,
+    "issues_opened": 296,
+    "labels_applied": 52,
     "repos_touched": 1,
-    "last_active": "2026-09-18 22:05:40+00:00"
+    "last_active": "2026-10-19 04:53:23+00:00"
    },
    {
-    "contributor": "jeffreytang",
-    "prs_opened": 0,
-    "reviews_given": 2,
+    "contributor": "tinker-michaelj",
+    "prs_opened": 138,
+    "reviews_given": 316,
+    "merges_done": 91,
+    "issues_opened": 81,
+    "labels_applied": 12,
+    "repos_touched": 5,
+    "last_active": "2026-10-19 02:42:19+00:00"
+   },
+   {
+    "contributor": "aceppaluni",
+    "prs_opened": 116,
+    "reviews_given": 705,
+    "merges_done": 146,
+    "issues_opened": 156,
+    "labels_applied": 222,
+    "repos_touched": 12,
+    "last_active": "2026-10-18 22:46:25+00:00"
+   },
+   {
+    "contributor": "BikramBiswas786",
+    "prs_opened": 4,
+    "reviews_given": 1,
+    "merges_done": 0,
+    "issues_opened": 36,
+    "labels_applied": 34,
+    "repos_touched": 3,
+    "last_active": "2026-10-18 20:03:23+00:00"
+   },
+   {
+    "contributor": "steven-sheehy",
+    "prs_opened": 228,
+    "reviews_given": 1759,
+    "merges_done": 1043,
+    "issues_opened": 125,
+    "labels_applied": 416,
+    "repos_touched": 11,
+    "last_active": "2026-10-18 18:11:10+00:00"
+   },
+   {
+    "contributor": "anchit-goel",
+    "prs_opened": 12,
+    "reviews_given": 7,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-09-18 15:57:35+00:00"
+    "last_active": "2026-10-18 17:21:51+00:00"
    },
    {
-    "contributor": "BartoszSolkaBD",
-    "prs_opened": 0,
-    "reviews_given": 3,
+    "contributor": "achintya2k5",
+    "prs_opened": 15,
+    "reviews_given": 10,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-18 17:01:18+00:00"
+   },
+   {
+    "contributor": "danielmarv",
+    "prs_opened": 91,
+    "reviews_given": 348,
+    "merges_done": 168,
+    "issues_opened": 34,
+    "labels_applied": 64,
+    "repos_touched": 15,
+    "last_active": "2026-10-18 15:28:26+00:00"
+   },
+   {
+    "contributor": "Jah-yee",
+    "prs_opened": 12,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-18 11:10:17+00:00"
+   },
+   {
+    "contributor": "mayanksinha17",
+    "prs_opened": 7,
+    "reviews_given": 10,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-09-18 11:50:05+00:00"
+    "last_active": "2026-10-18 10:49:49+00:00"
    },
    {
-    "contributor": "AgrimTawani",
-    "prs_opened": 0,
-    "reviews_given": 0,
+    "contributor": "Ndacyayisenga-droid",
+    "prs_opened": 44,
+    "reviews_given": 169,
+    "merges_done": 97,
+    "issues_opened": 27,
+    "labels_applied": 29,
+    "repos_touched": 9,
+    "last_active": "2026-10-18 08:58:01+00:00"
+   },
+   {
+    "contributor": "Dhie-boop",
+    "prs_opened": 1,
+    "reviews_given": 1,
     "merges_done": 0,
-    "issues_opened": 1,
+    "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-09-18 07:24:55+00:00"
+    "last_active": "2026-10-18 08:00:01+00:00"
    },
    {
-    "contributor": "Flanxiyum001",
+    "contributor": "Nana-EC",
+    "prs_opened": 107,
+    "reviews_given": 1105,
+    "merges_done": 163,
+    "issues_opened": 238,
+    "labels_applied": 179,
+    "repos_touched": 9,
+    "last_active": "2026-10-17 23:58:41+00:00"
+   },
+   {
+    "contributor": "Dheekshi-07",
     "prs_opened": 1,
     "reviews_given": 0,
     "merges_done": 0,
     "issues_opened": 0,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-09-17 02:39:11+00:00"
-   }
-  ],
-  "365d": [
+    "last_active": "2026-10-17 19:53:07+00:00"
+   },
    {
-    "contributor": "JivkoKelchev",
-    "prs_opened": 27,
-    "reviews_given": 82,
-    "merges_done": 9,
+    "contributor": "manishdait",
+    "prs_opened": 119,
+    "reviews_given": 1277,
+    "merges_done": 236,
+    "issues_opened": 147,
+    "labels_applied": 271,
+    "repos_touched": 9,
+    "last_active": "2026-10-17 19:03:35+00:00"
+   },
+   {
+    "contributor": "MonaaEid",
+    "prs_opened": 40,
+    "reviews_given": 273,
+    "merges_done": 44,
+    "issues_opened": 28,
+    "labels_applied": 53,
+    "repos_touched": 5,
+    "last_active": "2026-10-17 15:33:16+00:00"
+   },
+   {
+    "contributor": "Lemeri123",
+    "prs_opened": 7,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 13:41:07+00:00"
+   },
+   {
+    "contributor": "wized2",
+    "prs_opened": 2,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 13:06:23+00:00"
+   },
+   {
+    "contributor": "ShauryaBisht",
+    "prs_opened": 3,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 2,
+    "last_active": "2026-10-17 12:04:21+00:00"
+   },
+   {
+    "contributor": "hendrikebbers",
+    "prs_opened": 127,
+    "reviews_given": 313,
+    "merges_done": 129,
+    "issues_opened": 25,
+    "labels_applied": 14,
+    "repos_touched": 22,
+    "last_active": "2026-10-17 08:15:45+00:00"
+   },
+   {
+    "contributor": "Stackforge-07",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-17 05:05:36+00:00"
+   },
+   {
+    "contributor": "rockysingh",
+    "prs_opened": 119,
+    "reviews_given": 435,
+    "merges_done": 57,
+    "issues_opened": 143,
+    "labels_applied": 174,
+    "repos_touched": 5,
+    "last_active": "2026-10-17 01:26:33+00:00"
+   },
+   {
+    "contributor": "Neurone",
+    "prs_opened": 20,
+    "reviews_given": 29,
+    "merges_done": 0,
+    "issues_opened": 15,
+    "labels_applied": 17,
+    "repos_touched": 9,
+    "last_active": "2026-10-17 01:00:43+00:00"
+   },
+   {
+    "contributor": "joshmarinacci",
+    "prs_opened": 273,
+    "reviews_given": 535,
+    "merges_done": 224,
+    "issues_opened": 49,
+    "labels_applied": 2,
+    "repos_touched": 4,
+    "last_active": "2026-10-17 00:30:17+00:00"
+   },
+   {
+    "contributor": "anthony-swirldslabs",
+    "prs_opened": 99,
+    "reviews_given": 508,
+    "merges_done": 90,
+    "issues_opened": 114,
+    "labels_applied": 0,
+    "repos_touched": 5,
+    "last_active": "2026-10-17 00:05:18+00:00"
+   },
+   {
+    "contributor": "rsinha",
+    "prs_opened": 53,
+    "reviews_given": 133,
+    "merges_done": 57,
+    "issues_opened": 12,
+    "labels_applied": 0,
+    "repos_touched": 3,
+    "last_active": "2026-10-17 00:02:56+00:00"
+   },
+   {
+    "contributor": "jsync-swirlds",
+    "prs_opened": 52,
+    "reviews_given": 2570,
+    "merges_done": 104,
+    "issues_opened": 85,
+    "labels_applied": 34,
+    "repos_touched": 10,
+    "last_active": "2026-10-16 23:34:39+00:00"
+   },
+   {
+    "contributor": "AlfredoG87",
+    "prs_opened": 155,
+    "reviews_given": 1268,
+    "merges_done": 387,
+    "issues_opened": 176,
+    "labels_applied": 203,
+    "repos_touched": 6,
+    "last_active": "2026-10-16 23:31:55+00:00"
+   },
+   {
+    "contributor": "timfn-hg",
+    "prs_opened": 54,
+    "reviews_given": 315,
+    "merges_done": 38,
+    "issues_opened": 42,
+    "labels_applied": 1,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 23:00:52+00:00"
+   },
+   {
+    "contributor": "imalygin",
+    "prs_opened": 120,
+    "reviews_given": 849,
+    "merges_done": 106,
+    "issues_opened": 145,
+    "labels_applied": 150,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 22:49:44+00:00"
+   },
+   {
+    "contributor": "mhess-swl",
+    "prs_opened": 68,
+    "reviews_given": 645,
+    "merges_done": 48,
+    "issues_opened": 39,
+    "labels_applied": 18,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 22:20:29+00:00"
+   },
+   {
+    "contributor": "derektriley",
+    "prs_opened": 155,
+    "reviews_given": 494,
+    "merges_done": 80,
+    "issues_opened": 210,
+    "labels_applied": 53,
+    "repos_touched": 5,
+    "last_active": "2026-10-16 21:58:15+00:00"
+   },
+   {
+    "contributor": "ldintr",
+    "prs_opened": 6,
+    "reviews_given": 0,
+    "merges_done": 0,
     "issues_opened": 2,
     "labels_applied": 0,
     "repos_touched": 1,
-    "last_active": "2026-10-16 13:45:53+00:00"
+    "last_active": "2026-10-16 21:37:40+00:00"
+   },
+   {
+    "contributor": "ashumahajan",
+    "prs_opened": 52,
+    "reviews_given": 160,
+    "merges_done": 28,
+    "issues_opened": 11,
+    "labels_applied": 19,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 21:28:26+00:00"
+   },
+   {
+    "contributor": "xin-hedera",
+    "prs_opened": 245,
+    "reviews_given": 1098,
+    "merges_done": 390,
+    "issues_opened": 122,
+    "labels_applied": 246,
+    "repos_touched": 8,
+    "last_active": "2026-10-16 21:19:18+00:00"
+   },
+   {
+    "contributor": "akugal",
+    "prs_opened": 64,
+    "reviews_given": 282,
+    "merges_done": 53,
+    "issues_opened": 82,
+    "labels_applied": 85,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 20:17:59+00:00"
+   },
+   {
+    "contributor": "berryware",
+    "prs_opened": 77,
+    "reviews_given": 636,
+    "merges_done": 78,
+    "issues_opened": 94,
+    "labels_applied": 110,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 19:05:55+00:00"
+   },
+   {
+    "contributor": "krishachra",
+    "prs_opened": 1,
+    "reviews_given": 0,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 19:03:50+00:00"
+   },
+   {
+    "contributor": "Neeharika-Sompalli",
+    "prs_opened": 99,
+    "reviews_given": 737,
+    "merges_done": 69,
+    "issues_opened": 39,
+    "labels_applied": 8,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 18:13:57+00:00"
+   },
+   {
+    "contributor": "Reccetech",
+    "prs_opened": 37,
+    "reviews_given": 150,
+    "merges_done": 1,
+    "issues_opened": 167,
+    "labels_applied": 268,
+    "repos_touched": 20,
+    "last_active": "2026-10-16 18:04:33+00:00"
+   },
+   {
+    "contributor": "bilyana-gospodinova",
+    "prs_opened": 115,
+    "reviews_given": 730,
+    "merges_done": 21,
+    "issues_opened": 50,
+    "labels_applied": 99,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 17:59:17+00:00"
+   },
+   {
+    "contributor": "ericleponner",
+    "prs_opened": 13,
+    "reviews_given": 80,
+    "merges_done": 45,
+    "issues_opened": 9,
+    "labels_applied": 11,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:39:23+00:00"
+   },
+   {
+    "contributor": "Cybr0",
+    "prs_opened": 14,
+    "reviews_given": 19,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 17:38:42+00:00"
+   },
+   {
+    "contributor": "svienot",
+    "prs_opened": 77,
+    "reviews_given": 345,
+    "merges_done": 343,
+    "issues_opened": 24,
+    "labels_applied": 33,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 16:50:23+00:00"
+   },
+   {
+    "contributor": "AlexanderShenshin",
+    "prs_opened": 54,
+    "reviews_given": 140,
+    "merges_done": 144,
+    "issues_opened": 4,
+    "labels_applied": 2,
+    "repos_touched": 9,
+    "last_active": "2026-10-16 16:35:48+00:00"
+   },
+   {
+    "contributor": "gkozyryatskyy",
+    "prs_opened": 54,
+    "reviews_given": 312,
+    "merges_done": 26,
+    "issues_opened": 48,
+    "labels_applied": 49,
+    "repos_touched": 6,
+    "last_active": "2026-10-16 16:19:21+00:00"
+   },
+   {
+    "contributor": "viniciusjssouza",
+    "prs_opened": 20,
+    "reviews_given": 115,
+    "merges_done": 9,
+    "issues_opened": 2,
+    "labels_applied": 1,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 16:16:24+00:00"
+   },
+   {
+    "contributor": "natanasow",
+    "prs_opened": 66,
+    "reviews_given": 749,
+    "merges_done": 133,
+    "issues_opened": 53,
+    "labels_applied": 65,
+    "repos_touched": 4,
+    "last_active": "2026-10-16 15:58:28+00:00"
+   },
+   {
+    "contributor": "ivannov",
+    "prs_opened": 73,
+    "reviews_given": 235,
+    "merges_done": 32,
+    "issues_opened": 63,
+    "labels_applied": 167,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 15:40:38+00:00"
+   },
+   {
+    "contributor": "JivkoKelchev",
+    "prs_opened": 26,
+    "reviews_given": 83,
+    "merges_done": 10,
+    "issues_opened": 2,
+    "labels_applied": 0,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:19:41+00:00"
+   },
+   {
+    "contributor": "ValentinVPK",
+    "prs_opened": 33,
+    "reviews_given": 148,
+    "merges_done": 44,
+    "issues_opened": 27,
+    "labels_applied": 30,
+    "repos_touched": 3,
+    "last_active": "2026-10-16 15:11:56+00:00"
+   },
+   {
+    "contributor": "tgntr",
+    "prs_opened": 24,
+    "reviews_given": 69,
+    "merges_done": 10,
+    "issues_opened": 10,
+    "labels_applied": 19,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 15:11:10+00:00"
+   },
+   {
+    "contributor": "copilot-swe-agent",
+    "prs_opened": 122,
+    "reviews_given": 74,
+    "merges_done": 0,
+    "issues_opened": 0,
+    "labels_applied": 0,
+    "repos_touched": 7,
+    "last_active": "2026-10-16 15:10:45+00:00"
+   },
+   {
+    "contributor": "Ferparishuertas",
+    "prs_opened": 23,
+    "reviews_given": 257,
+    "merges_done": 21,
+    "issues_opened": 110,
+    "labels_applied": 39,
+    "repos_touched": 9,
+    "last_active": "2026-10-16 15:06:58+00:00"
+   },
+   {
+    "contributor": "deshmukhpranali",
+    "prs_opened": 206,
+    "reviews_given": 108,
+    "merges_done": 145,
+    "issues_opened": 107,
+    "labels_applied": 181,
+    "repos_touched": 6,
+    "last_active": "2026-10-16 15:05:31+00:00"
+   },
+   {
+    "contributor": "andrewb1269",
+    "prs_opened": 249,
+    "reviews_given": 1304,
+    "merges_done": 511,
+    "issues_opened": 223,
+    "labels_applied": 258,
+    "repos_touched": 39,
+    "last_active": "2026-10-16 15:04:55+00:00"
+   },
+   {
+    "contributor": "martingeorgiev1",
+    "prs_opened": 51,
+    "reviews_given": 98,
+    "merges_done": 0,
+    "issues_opened": 19,
+    "labels_applied": 22,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 15:03:55+00:00"
+   },
+   {
+    "contributor": "petreze",
+    "prs_opened": 163,
+    "reviews_given": 492,
+    "merges_done": 124,
+    "issues_opened": 48,
+    "labels_applied": 23,
+    "repos_touched": 2,
+    "last_active": "2026-10-16 14:51:55+00:00"
+   },
+   {
+    "contributor": "ata-nas",
+    "prs_opened": 53,
+    "reviews_given": 988,
+    "merges_done": 43,
+    "issues_opened": 96,
+    "labels_applied": 216,
+    "repos_touched": 1,
+    "last_active": "2026-10-16 14:39:26+00:00"
+   },
+   {
+    "contributor": "Fantomasa",
+    "prs_opened": 153,
+    "reviews_given": 394,
+    "merges_done": 216,
+    "issues_opened": 61,
+    "labels_applied": 102,
+    "repos_touched": 13,
+    "last_active": "2026-10-16 14:04:46+00:00"
+   },
+   {
+    "contributor": "ddeskov-limechain",
+    "prs_opened": 154,
+    "reviews_given": 195,
+    "merges_done": 41,
+    "issues_opened": 99,
+    "labels_applied": 50,
+    "repos_touched": 13,
+    "last_active": "2026-10-16 13:59:36+00:00"
+   },
+   {
+    "contributor": "JeffreyDallas",
+    "prs_opened": 340,
+    "reviews_given": 1093,
+    "merges_done": 47,
+    "issues_opened": 334,
+    "labels_applied": 570,
+    "repos_touched": 10,
+    "last_active": "2026-10-16 13:52:43+00:00"
+   },
+   {
+    "contributor": "mustafauzunn",
+    "prs_opened": 78,
+    "reviews_given": 298,
+    "merges_done": 217,
+    "issues_opened": 90,
+    "labels_applied": 48,
+    "repos_touched": 12,
+    "last_active": "2026-10-16 13:52:02+00:00"
    },
    {
     "contributor": "ibankov",
-    "prs_opened": 128,
-    "reviews_given": 489,
+    "prs_opened": 127,
+    "reviews_given": 482,
     "merges_done": 110,
     "issues_opened": 19,
     "labels_applied": 12,
@@ -17631,50 +18360,10 @@
     "prs_opened": 165,
     "reviews_given": 172,
     "merges_done": 22,
-    "issues_opened": 81,
-    "labels_applied": 161,
+    "issues_opened": 80,
+    "labels_applied": 163,
     "repos_touched": 11,
     "last_active": "2026-10-16 13:33:25+00:00"
-   },
-   {
-    "contributor": "berryware",
-    "prs_opened": 75,
-    "reviews_given": 636,
-    "merges_done": 78,
-    "issues_opened": 94,
-    "labels_applied": 109,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 13:27:33+00:00"
-   },
-   {
-    "contributor": "gkozyryatskyy",
-    "prs_opened": 54,
-    "reviews_given": 311,
-    "merges_done": 25,
-    "issues_opened": 48,
-    "labels_applied": 48,
-    "repos_touched": 6,
-    "last_active": "2026-10-16 13:19:17+00:00"
-   },
-   {
-    "contributor": "ivannov",
-    "prs_opened": 73,
-    "reviews_given": 233,
-    "merges_done": 32,
-    "issues_opened": 63,
-    "labels_applied": 167,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 13:18:03+00:00"
-   },
-   {
-    "contributor": "Fantomasa",
-    "prs_opened": 153,
-    "reviews_given": 394,
-    "merges_done": 213,
-    "issues_opened": 61,
-    "labels_applied": 65,
-    "repos_touched": 13,
-    "last_active": "2026-10-16 13:15:26+00:00"
    },
    {
     "contributor": "abies",
@@ -17687,44 +18376,24 @@
     "last_active": "2026-10-16 13:11:27+00:00"
    },
    {
-    "contributor": "netopyr",
-    "prs_opened": 251,
-    "reviews_given": 535,
-    "merges_done": 220,
-    "issues_opened": 275,
-    "labels_applied": 46,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 12:41:17+00:00"
-   },
-   {
     "contributor": "jan-milenkov",
-    "prs_opened": 121,
+    "prs_opened": 120,
     "reviews_given": 1055,
     "merges_done": 270,
     "issues_opened": 72,
-    "labels_applied": 128,
+    "labels_applied": 135,
     "repos_touched": 8,
     "last_active": "2026-10-16 12:35:12+00:00"
    },
    {
     "contributor": "mxtartaglia-sl",
     "prs_opened": 60,
-    "reviews_given": 269,
+    "reviews_given": 259,
     "merges_done": 47,
     "issues_opened": 59,
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-16 12:18:05+00:00"
-   },
-   {
-    "contributor": "ddeskov-limechain",
-    "prs_opened": 153,
-    "reviews_given": 195,
-    "merges_done": 41,
-    "issues_opened": 98,
-    "labels_applied": 43,
-    "repos_touched": 13,
-    "last_active": "2026-10-16 12:15:39+00:00"
    },
    {
     "contributor": "Dosik13",
@@ -17737,56 +18406,6 @@
     "last_active": "2026-10-16 12:09:08+00:00"
    },
    {
-    "contributor": "ata-nas",
-    "prs_opened": 53,
-    "reviews_given": 989,
-    "merges_done": 44,
-    "issues_opened": 97,
-    "labels_applied": 219,
-    "repos_touched": 1,
-    "last_active": "2026-10-16 11:57:44+00:00"
-   },
-   {
-    "contributor": "danielmarv",
-    "prs_opened": 90,
-    "reviews_given": 345,
-    "merges_done": 167,
-    "issues_opened": 34,
-    "labels_applied": 62,
-    "repos_touched": 15,
-    "last_active": "2026-10-16 11:55:46+00:00"
-   },
-   {
-    "contributor": "ValentinVPK",
-    "prs_opened": 33,
-    "reviews_given": 145,
-    "merges_done": 44,
-    "issues_opened": 27,
-    "labels_applied": 29,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 11:49:12+00:00"
-   },
-   {
-    "contributor": "svienot",
-    "prs_opened": 75,
-    "reviews_given": 345,
-    "merges_done": 343,
-    "issues_opened": 24,
-    "labels_applied": 33,
-    "repos_touched": 3,
-    "last_active": "2026-10-16 11:41:36+00:00"
-   },
-   {
-    "contributor": "mustafauzunn",
-    "prs_opened": 78,
-    "reviews_given": 299,
-    "merges_done": 218,
-    "issues_opened": 90,
-    "labels_applied": 48,
-    "repos_touched": 12,
-    "last_active": "2026-10-16 11:23:46+00:00"
-   },
-   {
     "contributor": "ruslanvelkov-beep",
     "prs_opened": 32,
     "reviews_given": 77,
@@ -17797,44 +18416,14 @@
     "last_active": "2026-10-16 10:59:09+00:00"
    },
    {
-    "contributor": "martingeorgiev1",
-    "prs_opened": 51,
-    "reviews_given": 80,
-    "merges_done": 0,
-    "issues_opened": 19,
-    "labels_applied": 21,
-    "repos_touched": 2,
-    "last_active": "2026-10-16 10:54:34+00:00"
-   },
-   {
-    "contributor": "natanasow",
-    "prs_opened": 65,
-    "reviews_given": 747,
-    "merges_done": 132,
-    "issues_opened": 53,
-    "labels_applied": 64,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 10:14:38+00:00"
-   },
-   {
     "contributor": "AlexKehayov",
     "prs_opened": 128,
-    "reviews_given": 151,
+    "reviews_given": 147,
     "merges_done": 84,
     "issues_opened": 55,
     "labels_applied": 42,
     "repos_touched": 1,
     "last_active": "2026-10-16 09:55:41+00:00"
-   },
-   {
-    "contributor": "manishdait",
-    "prs_opened": 119,
-    "reviews_given": 1277,
-    "merges_done": 236,
-    "issues_opened": 146,
-    "labels_applied": 264,
-    "repos_touched": 9,
-    "last_active": "2026-10-16 09:16:26+00:00"
    },
    {
     "contributor": "Aadarshrai1801",
@@ -17857,29 +18446,9 @@
     "last_active": "2026-10-16 08:17:30+00:00"
    },
    {
-    "contributor": "Jexsie",
-    "prs_opened": 25,
-    "reviews_given": 49,
-    "merges_done": 5,
-    "issues_opened": 3,
-    "labels_applied": 3,
-    "repos_touched": 5,
-    "last_active": "2026-10-16 08:12:11+00:00"
-   },
-   {
-    "contributor": "bilyana-gospodinova",
-    "prs_opened": 113,
-    "reviews_given": 734,
-    "merges_done": 16,
-    "issues_opened": 50,
-    "labels_applied": 97,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 07:55:41+00:00"
-   },
-   {
     "contributor": "sdimitrov9",
     "prs_opened": 72,
-    "reviews_given": 372,
+    "reviews_given": 370,
     "merges_done": 0,
     "issues_opened": 4,
     "labels_applied": 7,
@@ -17888,53 +18457,13 @@
    },
    {
     "contributor": "jnels124",
-    "prs_opened": 88,
-    "reviews_given": 413,
-    "merges_done": 105,
-    "issues_opened": 53,
-    "labels_applied": 78,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 05:58:10+00:00"
-   },
-   {
-    "contributor": "Nana-EC",
-    "prs_opened": 108,
-    "reviews_given": 1114,
-    "merges_done": 166,
-    "issues_opened": 240,
-    "labels_applied": 170,
-    "repos_touched": 9,
-    "last_active": "2026-10-16 03:28:16+00:00"
-   },
-   {
-    "contributor": "ashumahajan",
-    "prs_opened": 52,
-    "reviews_given": 156,
-    "merges_done": 28,
-    "issues_opened": 11,
-    "labels_applied": 13,
+    "prs_opened": 82,
+    "reviews_given": 402,
+    "merges_done": 101,
+    "issues_opened": 51,
+    "labels_applied": 76,
     "repos_touched": 3,
-    "last_active": "2026-10-16 02:18:33+00:00"
-   },
-   {
-    "contributor": "jsync-swirlds",
-    "prs_opened": 53,
-    "reviews_given": 2619,
-    "merges_done": 105,
-    "issues_opened": 85,
-    "labels_applied": 34,
-    "repos_touched": 10,
-    "last_active": "2026-10-16 02:06:59+00:00"
-   },
-   {
-    "contributor": "Ndacyayisenga-droid",
-    "prs_opened": 44,
-    "reviews_given": 168,
-    "merges_done": 97,
-    "issues_opened": 27,
-    "labels_applied": 28,
-    "repos_touched": 9,
-    "last_active": "2026-10-16 02:06:02+00:00"
+    "last_active": "2026-10-16 05:58:10+00:00"
    },
    {
     "contributor": "Jeffrey-morgan34",
@@ -17949,7 +18478,7 @@
    {
     "contributor": "nathanklick",
     "prs_opened": 47,
-    "reviews_given": 127,
+    "reviews_given": 124,
     "merges_done": 43,
     "issues_opened": 8,
     "labels_applied": 9,
@@ -17957,79 +18486,19 @@
     "last_active": "2026-10-16 00:45:22+00:00"
    },
    {
-    "contributor": "anthony-swirldslabs",
-    "prs_opened": 98,
-    "reviews_given": 513,
-    "merges_done": 88,
-    "issues_opened": 113,
-    "labels_applied": 0,
-    "repos_touched": 5,
-    "last_active": "2026-10-16 00:30:07+00:00"
-   },
-   {
-    "contributor": "viniciusjssouza",
-    "prs_opened": 20,
-    "reviews_given": 113,
-    "merges_done": 7,
-    "issues_opened": 2,
-    "labels_applied": 1,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 00:20:46+00:00"
-   },
-   {
-    "contributor": "joshmarinacci",
-    "prs_opened": 263,
-    "reviews_given": 531,
-    "merges_done": 224,
-    "issues_opened": 49,
-    "labels_applied": 2,
-    "repos_touched": 4,
-    "last_active": "2026-10-16 00:08:09+00:00"
-   },
-   {
-    "contributor": "AlfredoG87",
-    "prs_opened": 158,
-    "reviews_given": 1295,
-    "merges_done": 389,
-    "issues_opened": 174,
-    "labels_applied": 170,
-    "repos_touched": 5,
-    "last_active": "2026-10-15 23:49:21+00:00"
-   },
-   {
-    "contributor": "JeffreyDallas",
-    "prs_opened": 341,
-    "reviews_given": 1097,
-    "merges_done": 47,
-    "issues_opened": 333,
-    "labels_applied": 556,
-    "repos_touched": 10,
-    "last_active": "2026-10-15 23:21:42+00:00"
-   },
-   {
-    "contributor": "xin-hedera",
-    "prs_opened": 244,
-    "reviews_given": 1102,
-    "merges_done": 396,
-    "issues_opened": 122,
-    "labels_applied": 243,
-    "repos_touched": 8,
-    "last_active": "2026-10-15 22:38:58+00:00"
-   },
-   {
     "contributor": "alex-kuzmin-hg",
     "prs_opened": 59,
-    "reviews_given": 145,
+    "reviews_given": 144,
     "merges_done": 47,
-    "issues_opened": 163,
-    "labels_applied": 54,
+    "issues_opened": 157,
+    "labels_applied": 52,
     "repos_touched": 3,
     "last_active": "2026-10-15 22:38:55+00:00"
    },
    {
     "contributor": "aderevets",
     "prs_opened": 127,
-    "reviews_given": 205,
+    "reviews_given": 203,
     "merges_done": 73,
     "issues_opened": 36,
     "labels_applied": 6,
@@ -18037,104 +18506,14 @@
     "last_active": "2026-10-15 22:28:59+00:00"
    },
    {
-    "contributor": "mhess-swl",
-    "prs_opened": 67,
-    "reviews_given": 650,
-    "merges_done": 49,
-    "issues_opened": 43,
-    "labels_applied": 19,
-    "repos_touched": 3,
-    "last_active": "2026-10-15 22:00:12+00:00"
-   },
-   {
-    "contributor": "aceppaluni",
-    "prs_opened": 116,
-    "reviews_given": 699,
-    "merges_done": 146,
-    "issues_opened": 156,
-    "labels_applied": 222,
-    "repos_touched": 12,
-    "last_active": "2026-10-15 21:27:50+00:00"
-   },
-   {
     "contributor": "artemananiev",
-    "prs_opened": 58,
-    "reviews_given": 834,
-    "merges_done": 44,
-    "issues_opened": 126,
-    "labels_applied": 380,
+    "prs_opened": 54,
+    "reviews_given": 831,
+    "merges_done": 42,
+    "issues_opened": 124,
+    "labels_applied": 379,
     "repos_touched": 3,
-    "last_active": "2026-10-15 21:21:20+00:00"
-   },
-   {
-    "contributor": "rockysingh",
-    "prs_opened": 118,
-    "reviews_given": 430,
-    "merges_done": 55,
-    "issues_opened": 143,
-    "labels_applied": 172,
-    "repos_touched": 5,
-    "last_active": "2026-10-15 21:06:53+00:00"
-   },
-   {
-    "contributor": "akugal",
-    "prs_opened": 64,
-    "reviews_given": 281,
-    "merges_done": 53,
-    "issues_opened": 80,
-    "labels_applied": 73,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 20:36:28+00:00"
-   },
-   {
-    "contributor": "andrewb1269",
-    "prs_opened": 249,
-    "reviews_given": 1313,
-    "merges_done": 513,
-    "issues_opened": 224,
-    "labels_applied": 252,
-    "repos_touched": 39,
-    "last_active": "2026-10-15 19:34:16+00:00"
-   },
-   {
-    "contributor": "derektriley",
-    "prs_opened": 156,
-    "reviews_given": 503,
-    "merges_done": 83,
-    "issues_opened": 210,
-    "labels_applied": 53,
-    "repos_touched": 5,
-    "last_active": "2026-10-15 19:23:42+00:00"
-   },
-   {
-    "contributor": "imalygin",
-    "prs_opened": 121,
-    "reviews_given": 858,
-    "merges_done": 110,
-    "issues_opened": 145,
-    "labels_applied": 151,
-    "repos_touched": 2,
-    "last_active": "2026-10-15 18:00:20+00:00"
-   },
-   {
-    "contributor": "rsinha",
-    "prs_opened": 53,
-    "reviews_given": 132,
-    "merges_done": 57,
-    "issues_opened": 12,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-15 17:18:54+00:00"
-   },
-   {
-    "contributor": "Ferparishuertas",
-    "prs_opened": 23,
-    "reviews_given": 255,
-    "merges_done": 21,
-    "issues_opened": 110,
-    "labels_applied": 39,
-    "repos_touched": 9,
-    "last_active": "2026-10-15 15:40:31+00:00"
+    "last_active": "2026-10-15 21:21:21+00:00"
    },
    {
     "contributor": "IvanKavaldzhiev",
@@ -18142,49 +18521,19 @@
     "reviews_given": 734,
     "merges_done": 6,
     "issues_opened": 32,
-    "labels_applied": 56,
+    "labels_applied": 60,
     "repos_touched": 3,
     "last_active": "2026-10-15 14:55:27+00:00"
    },
    {
-    "contributor": "hendrikebbers",
-    "prs_opened": 127,
-    "reviews_given": 313,
-    "merges_done": 128,
-    "issues_opened": 25,
-    "labels_applied": 14,
-    "repos_touched": 22,
-    "last_active": "2026-10-15 14:08:47+00:00"
-   },
-   {
-    "contributor": "copilot-swe-agent",
-    "prs_opened": 119,
-    "reviews_given": 74,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 7,
-    "last_active": "2026-10-15 14:07:34+00:00"
-   },
-   {
     "contributor": "thenswan",
-    "prs_opened": 65,
-    "reviews_given": 705,
+    "prs_opened": 62,
+    "reviews_given": 695,
     "merges_done": 51,
-    "issues_opened": 56,
-    "labels_applied": 65,
+    "issues_opened": 55,
+    "labels_applied": 61,
     "repos_touched": 2,
     "last_active": "2026-10-15 13:00:18+00:00"
-   },
-   {
-    "contributor": "tgntr",
-    "prs_opened": 24,
-    "reviews_given": 65,
-    "merges_done": 10,
-    "issues_opened": 10,
-    "labels_applied": 19,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 12:58:36+00:00"
    },
    {
     "contributor": "alex-au",
@@ -18195,16 +18544,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-15 12:25:34+00:00"
-   },
-   {
-    "contributor": "Lemeri123",
-    "prs_opened": 6,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-15 08:30:33+00:00"
    },
    {
     "contributor": "08abhinav",
@@ -18218,11 +18557,11 @@
    },
    {
     "contributor": "exploreriii",
-    "prs_opened": 179,
-    "reviews_given": 2461,
-    "merges_done": 705,
-    "issues_opened": 719,
-    "labels_applied": 1479,
+    "prs_opened": 178,
+    "reviews_given": 2448,
+    "merges_done": 701,
+    "issues_opened": 708,
+    "labels_applied": 1448,
     "repos_touched": 17,
     "last_active": "2026-10-15 07:24:34+00:00"
    },
@@ -18242,39 +18581,9 @@
     "reviews_given": 11,
     "merges_done": 1,
     "issues_opened": 1,
-    "labels_applied": 0,
+    "labels_applied": 1,
     "repos_touched": 5,
-    "last_active": "2026-10-15 03:36:56+00:00"
-   },
-   {
-    "contributor": "steven-sheehy",
-    "prs_opened": 229,
-    "reviews_given": 1764,
-    "merges_done": 1036,
-    "issues_opened": 126,
-    "labels_applied": 414,
-    "repos_touched": 11,
-    "last_active": "2026-10-15 00:37:39+00:00"
-   },
-   {
-    "contributor": "Neeharika-Sompalli",
-    "prs_opened": 98,
-    "reviews_given": 734,
-    "merges_done": 68,
-    "issues_opened": 39,
-    "labels_applied": 8,
-    "repos_touched": 4,
-    "last_active": "2026-10-14 22:53:04+00:00"
-   },
-   {
-    "contributor": "tinker-michaelj",
-    "prs_opened": 139,
-    "reviews_given": 314,
-    "merges_done": 91,
-    "issues_opened": 81,
-    "labels_applied": 10,
-    "repos_touched": 5,
-    "last_active": "2026-10-14 22:36:00+00:00"
+    "last_active": "2026-10-15 03:36:58+00:00"
    },
    {
     "contributor": "arturre",
@@ -18291,30 +18600,20 @@
     "prs_opened": 18,
     "reviews_given": 64,
     "merges_done": 0,
-    "issues_opened": 68,
-    "labels_applied": 49,
+    "issues_opened": 67,
+    "labels_applied": 47,
     "repos_touched": 16,
     "last_active": "2026-10-14 20:09:07+00:00"
    },
    {
     "contributor": "OlegMazurov",
     "prs_opened": 4,
-    "reviews_given": 62,
+    "reviews_given": 59,
     "merges_done": 4,
-    "issues_opened": 11,
+    "issues_opened": 10,
     "labels_applied": 10,
     "repos_touched": 2,
     "last_active": "2026-10-14 18:33:41+00:00"
-   },
-   {
-    "contributor": "petreze",
-    "prs_opened": 163,
-    "reviews_given": 494,
-    "merges_done": 124,
-    "issues_opened": 48,
-    "labels_applied": 23,
-    "repos_touched": 2,
-    "last_active": "2026-10-14 15:56:17+00:00"
    },
    {
     "contributor": "kantorcodes",
@@ -18328,7 +18627,7 @@
    },
    {
     "contributor": "mgarbs",
-    "prs_opened": 120,
+    "prs_opened": 119,
     "reviews_given": 151,
     "merges_done": 171,
     "issues_opened": 15,
@@ -18348,11 +18647,11 @@
    },
    {
     "contributor": "rbarker-dev",
-    "prs_opened": 185,
-    "reviews_given": 814,
-    "merges_done": 261,
-    "issues_opened": 165,
-    "labels_applied": 216,
+    "prs_opened": 179,
+    "reviews_given": 794,
+    "merges_done": 250,
+    "issues_opened": 158,
+    "labels_applied": 210,
     "repos_touched": 35,
     "last_active": "2026-10-14 13:40:05+00:00"
    },
@@ -18369,7 +18668,7 @@
    {
     "contributor": "akdev",
     "prs_opened": 40,
-    "reviews_given": 135,
+    "reviews_given": 134,
     "merges_done": 16,
     "issues_opened": 11,
     "labels_applied": 11,
@@ -18382,7 +18681,7 @@
     "reviews_given": 40,
     "merges_done": 23,
     "issues_opened": 27,
-    "labels_applied": 48,
+    "labels_applied": 50,
     "repos_touched": 1,
     "last_active": "2026-10-13 22:32:53+00:00"
    },
@@ -18397,34 +18696,14 @@
     "last_active": "2026-10-13 21:35:24+00:00"
    },
    {
-    "contributor": "MonaaEid",
-    "prs_opened": 40,
-    "reviews_given": 266,
-    "merges_done": 41,
-    "issues_opened": 28,
-    "labels_applied": 53,
-    "repos_touched": 5,
-    "last_active": "2026-10-13 21:23:18+00:00"
-   },
-   {
     "contributor": "poulok",
-    "prs_opened": 189,
-    "reviews_given": 884,
-    "merges_done": 168,
-    "issues_opened": 203,
-    "labels_applied": 112,
+    "prs_opened": 184,
+    "reviews_given": 873,
+    "merges_done": 164,
+    "issues_opened": 199,
+    "labels_applied": 108,
     "repos_touched": 2,
     "last_active": "2026-10-13 18:16:34+00:00"
-   },
-   {
-    "contributor": "ShauryaBisht",
-    "prs_opened": 2,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-13 17:09:06+00:00"
    },
    {
     "contributor": "igor-kirichenko-DSR",
@@ -18437,16 +18716,6 @@
     "last_active": "2026-10-13 15:10:20+00:00"
    },
    {
-    "contributor": "AlexanderShenshin",
-    "prs_opened": 54,
-    "reviews_given": 137,
-    "merges_done": 141,
-    "issues_opened": 4,
-    "labels_applied": 2,
-    "repos_touched": 9,
-    "last_active": "2026-10-13 14:56:16+00:00"
-   },
-   {
     "contributor": "Utkarsh-rwt",
     "prs_opened": 2,
     "reviews_given": 0,
@@ -18455,16 +18724,6 @@
     "labels_applied": 0,
     "repos_touched": 2,
     "last_active": "2026-10-13 14:37:10+00:00"
-   },
-   {
-    "contributor": "deshmukhpranali",
-    "prs_opened": 205,
-    "reviews_given": 108,
-    "merges_done": 145,
-    "issues_opened": 107,
-    "labels_applied": 179,
-    "repos_touched": 6,
-    "last_active": "2026-10-13 10:57:59+00:00"
    },
    {
     "contributor": "vrushank47",
@@ -18480,38 +18739,18 @@
     "contributor": "stoyanov-st",
     "prs_opened": 42,
     "reviews_given": 236,
-    "merges_done": 35,
+    "merges_done": 34,
     "issues_opened": 10,
-    "labels_applied": 9,
+    "labels_applied": 10,
     "repos_touched": 4,
-    "last_active": "2026-10-13 10:19:52+00:00"
-   },
-   {
-    "contributor": "achintya2k5",
-    "prs_opened": 15,
-    "reviews_given": 7,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 2,
-    "last_active": "2026-10-13 07:57:49+00:00"
-   },
-   {
-    "contributor": "anchit-goel",
-    "prs_opened": 12,
-    "reviews_given": 6,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-13 07:56:50+00:00"
+    "last_active": "2026-10-13 10:19:53+00:00"
    },
    {
     "contributor": "jjohannes",
-    "prs_opened": 88,
-    "reviews_given": 225,
-    "merges_done": 208,
-    "issues_opened": 25,
+    "prs_opened": 87,
+    "reviews_given": 224,
+    "merges_done": 206,
+    "issues_opened": 22,
     "labels_applied": 22,
     "repos_touched": 7,
     "last_active": "2026-10-13 07:17:56+00:00"
@@ -18525,6 +18764,16 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-12 08:55:11+00:00"
+   },
+   {
+    "contributor": "boris-bonin",
+    "prs_opened": 28,
+    "reviews_given": 43,
+    "merges_done": 0,
+    "issues_opened": 24,
+    "labels_applied": 39,
+    "repos_touched": 2,
+    "last_active": "2026-10-12 07:53:43+00:00"
    },
    {
     "contributor": "yashthakur2008",
@@ -18545,26 +18794,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-11 19:28:42+00:00"
-   },
-   {
-    "contributor": "Jah-yee",
-    "prs_opened": 11,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 3,
-    "last_active": "2026-10-11 11:28:11+00:00"
-   },
-   {
-    "contributor": "Dhie-boop",
-    "prs_opened": 1,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-11 09:42:29+00:00"
    },
    {
     "contributor": "ch-ushasree",
@@ -18597,16 +18826,6 @@
     "last_active": "2026-10-10 10:35:27+00:00"
    },
    {
-    "contributor": "Cybr0",
-    "prs_opened": 13,
-    "reviews_given": 19,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-09 17:01:01+00:00"
-   },
-   {
     "contributor": "github-advanced-security",
     "prs_opened": 0,
     "reviews_given": 80,
@@ -18627,49 +18846,19 @@
     "last_active": "2026-10-09 10:46:38+00:00"
    },
    {
-    "contributor": "mayanksinha17",
-    "prs_opened": 6,
-    "reviews_given": 10,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-09 07:02:15+00:00"
-   },
-   {
-    "contributor": "ldintr",
-    "prs_opened": 5,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 2,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2026-10-08 17:26:35+00:00"
-   },
-   {
-    "contributor": "Neurone",
-    "prs_opened": 20,
-    "reviews_given": 29,
-    "merges_done": 0,
-    "issues_opened": 14,
-    "labels_applied": 17,
-    "repos_touched": 9,
-    "last_active": "2026-10-08 01:47:33+00:00"
-   },
-   {
     "contributor": "jwagantall",
-    "prs_opened": 160,
+    "prs_opened": 155,
     "reviews_given": 228,
-    "merges_done": 171,
-    "issues_opened": 24,
-    "labels_applied": 21,
+    "merges_done": 170,
+    "issues_opened": 22,
+    "labels_applied": 20,
     "repos_touched": 39,
     "last_active": "2026-10-07 20:17:22+00:00"
    },
    {
     "contributor": "lukasz-hashgraph",
     "prs_opened": 31,
-    "reviews_given": 203,
+    "reviews_given": 201,
     "merges_done": 21,
     "issues_opened": 19,
     "labels_applied": 16,
@@ -18708,9 +18897,9 @@
    },
    {
     "contributor": "jeromy-cannon",
-    "prs_opened": 113,
-    "reviews_given": 1314,
-    "merges_done": 589,
+    "prs_opened": 112,
+    "reviews_given": 1306,
+    "merges_done": 583,
     "issues_opened": 277,
     "labels_applied": 999,
     "repos_touched": 13,
@@ -18745,16 +18934,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-10-07 07:58:04+00:00"
-   },
-   {
-    "contributor": "Reccetech",
-    "prs_opened": 38,
-    "reviews_given": 151,
-    "merges_done": 1,
-    "issues_opened": 167,
-    "labels_applied": 268,
-    "repos_touched": 20,
-    "last_active": "2026-10-07 03:09:20+00:00"
    },
    {
     "contributor": "git-vote",
@@ -18807,26 +18986,6 @@
     "last_active": "2026-10-05 11:46:26+00:00"
    },
    {
-    "contributor": "ericleponner",
-    "prs_opened": 13,
-    "reviews_given": 78,
-    "merges_done": 44,
-    "issues_opened": 9,
-    "labels_applied": 11,
-    "repos_touched": 1,
-    "last_active": "2026-10-05 08:27:59+00:00"
-   },
-   {
-    "contributor": "boris-bonin",
-    "prs_opened": 28,
-    "reviews_given": 43,
-    "merges_done": 0,
-    "issues_opened": 24,
-    "labels_applied": 38,
-    "repos_touched": 2,
-    "last_active": "2026-10-05 07:00:33+00:00"
-   },
-   {
     "contributor": "Github-Shashank",
     "prs_opened": 1,
     "reviews_given": 0,
@@ -18855,16 +19014,6 @@
     "labels_applied": 0,
     "repos_touched": 3,
     "last_active": "2026-10-02 17:38:07+00:00"
-   },
-   {
-    "contributor": "timfn-hg",
-    "prs_opened": 53,
-    "reviews_given": 332,
-    "merges_done": 38,
-    "issues_opened": 42,
-    "labels_applied": 1,
-    "repos_touched": 4,
-    "last_active": "2026-10-02 14:04:42+00:00"
    },
    {
     "contributor": "parvninama",
@@ -18899,10 +19048,10 @@
    {
     "contributor": "rwalworth",
     "prs_opened": 97,
-    "reviews_given": 863,
+    "reviews_given": 862,
     "merges_done": 392,
     "issues_opened": 300,
-    "labels_applied": 1199,
+    "labels_applied": 1207,
     "repos_touched": 13,
     "last_active": "2026-10-01 00:08:04+00:00"
    },
@@ -18918,7 +19067,7 @@
    },
    {
     "contributor": "jasperpotts",
-    "prs_opened": 16,
+    "prs_opened": 15,
     "reviews_given": 95,
     "merges_done": 14,
     "issues_opened": 17,
@@ -18965,16 +19114,6 @@
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2026-09-29 03:51:58+00:00"
-   },
-   {
-    "contributor": "BikramBiswas786",
-    "prs_opened": 0,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 35,
-    "labels_applied": 34,
-    "repos_touched": 2,
-    "last_active": "2026-09-28 15:59:04+00:00"
    },
    {
     "contributor": "Ritesh-Gupta-op",
@@ -19039,8 +19178,8 @@
    {
     "contributor": "lpetrovic05",
     "prs_opened": 36,
-    "reviews_given": 348,
-    "merges_done": 37,
+    "reviews_given": 334,
+    "merges_done": 35,
     "issues_opened": 47,
     "labels_applied": 2,
     "repos_touched": 4,
@@ -19748,11 +19887,11 @@
    },
    {
     "contributor": "timo0",
-    "prs_opened": 29,
-    "reviews_given": 78,
+    "prs_opened": 28,
+    "reviews_given": 77,
     "merges_done": 10,
-    "issues_opened": 11,
-    "labels_applied": 1,
+    "issues_opened": 10,
+    "labels_applied": 0,
     "repos_touched": 4,
     "last_active": "2026-08-17 16:51:34+00:00"
    },
@@ -20029,7 +20168,7 @@
    {
     "contributor": "ivaylonikolov7",
     "prs_opened": 54,
-    "reviews_given": 254,
+    "reviews_given": 250,
     "merges_done": 205,
     "issues_opened": 5,
     "labels_applied": 3,
@@ -20049,7 +20188,7 @@
    {
     "contributor": "gsstoykov",
     "prs_opened": 42,
-    "reviews_given": 187,
+    "reviews_given": 186,
     "merges_done": 118,
     "issues_opened": 27,
     "labels_applied": 43,
@@ -20091,8 +20230,8 @@
     "prs_opened": 0,
     "reviews_given": 0,
     "merges_done": 0,
-    "issues_opened": 4,
-    "labels_applied": 4,
+    "issues_opened": 3,
+    "labels_applied": 3,
     "repos_touched": 2,
     "last_active": "2026-07-17 01:40:00+00:00"
    },
@@ -20249,7 +20388,7 @@
    {
     "contributor": "simzzz",
     "prs_opened": 34,
-    "reviews_given": 473,
+    "reviews_given": 471,
     "merges_done": 76,
     "issues_opened": 31,
     "labels_applied": 37,
@@ -20299,10 +20438,10 @@
    {
     "contributor": "quiet-node",
     "prs_opened": 77,
-    "reviews_given": 570,
-    "merges_done": 153,
-    "issues_opened": 73,
-    "labels_applied": 105,
+    "reviews_given": 560,
+    "merges_done": 150,
+    "issues_opened": 71,
+    "labels_applied": 102,
     "repos_touched": 6,
     "last_active": "2026-07-02 20:54:46+00:00"
    },
@@ -20578,7 +20717,7 @@
    },
    {
     "contributor": "mariodimitrovv",
-    "prs_opened": 53,
+    "prs_opened": 52,
     "reviews_given": 37,
     "merges_done": 36,
     "issues_opened": 14,
@@ -20738,8 +20877,8 @@
    },
    {
     "contributor": "venilinvasilev",
-    "prs_opened": 65,
-    "reviews_given": 217,
+    "prs_opened": 64,
+    "reviews_given": 205,
     "merges_done": 98,
     "issues_opened": 98,
     "labels_applied": 127,
@@ -21558,8 +21697,8 @@
    },
    {
     "contributor": "prajeeta15",
-    "prs_opened": 13,
-    "reviews_given": 36,
+    "prs_opened": 11,
+    "reviews_given": 35,
     "merges_done": 0,
     "issues_opened": 1,
     "labels_applied": 1,
@@ -21778,12 +21917,12 @@
    },
    {
     "contributor": "0xivanov",
-    "prs_opened": 36,
-    "reviews_given": 160,
-    "merges_done": 98,
+    "prs_opened": 34,
+    "reviews_given": 149,
+    "merges_done": 92,
     "issues_opened": 16,
     "labels_applied": 18,
-    "repos_touched": 9,
+    "repos_touched": 8,
     "last_active": "2026-04-15 13:08:37+00:00"
    },
    {
@@ -22141,9 +22280,9 @@
     "prs_opened": 2,
     "reviews_given": 0,
     "merges_done": 0,
-    "issues_opened": 1,
+    "issues_opened": 0,
     "labels_applied": 0,
-    "repos_touched": 3,
+    "repos_touched": 2,
     "last_active": "2026-04-02 12:57:39+00:00"
    },
    {
@@ -22481,8 +22620,8 @@
     "prs_opened": 12,
     "reviews_given": 119,
     "merges_done": 8,
-    "issues_opened": 15,
-    "labels_applied": 15,
+    "issues_opened": 14,
+    "labels_applied": 14,
     "repos_touched": 3,
     "last_active": "2026-03-16 14:33:42+00:00"
    },
@@ -23289,7 +23428,7 @@
    {
     "contributor": "konstantinabl",
     "prs_opened": 9,
-    "reviews_given": 197,
+    "reviews_given": 180,
     "merges_done": 33,
     "issues_opened": 16,
     "labels_applied": 24,
@@ -23299,7 +23438,7 @@
    {
     "contributor": "emiliyank",
     "prs_opened": 39,
-    "reviews_given": 9,
+    "reviews_given": 8,
     "merges_done": 15,
     "issues_opened": 8,
     "labels_applied": 8,
@@ -23399,7 +23538,7 @@
    {
     "contributor": "nadineloepfe",
     "prs_opened": 9,
-    "reviews_given": 120,
+    "reviews_given": 119,
     "merges_done": 15,
     "issues_opened": 1,
     "labels_applied": 2,
@@ -23498,7 +23637,7 @@
    },
    {
     "contributor": "drtoxic69",
-    "prs_opened": 7,
+    "prs_opened": 6,
     "reviews_given": 10,
     "merges_done": 0,
     "issues_opened": 0,
@@ -24408,7 +24547,7 @@
    },
    {
     "contributor": "Om7035",
-    "prs_opened": 16,
+    "prs_opened": 13,
     "reviews_given": 5,
     "merges_done": 0,
     "issues_opened": 9,
@@ -24491,7 +24630,7 @@
     "prs_opened": 0,
     "reviews_given": 0,
     "merges_done": 0,
-    "issues_opened": 21,
+    "issues_opened": 19,
     "labels_applied": 0,
     "repos_touched": 1,
     "last_active": "2025-11-18 13:56:48+00:00"
@@ -24601,7 +24740,7 @@
     "prs_opened": 0,
     "reviews_given": 0,
     "merges_done": 0,
-    "issues_opened": 13,
+    "issues_opened": 11,
     "labels_applied": 2,
     "repos_touched": 1,
     "last_active": "2025-11-06 09:51:53+00:00"
@@ -25045,18 +25184,9 @@
     "labels_applied": 1,
     "repos_touched": 1,
     "last_active": "2025-10-19 12:27:02+00:00"
-   },
-   {
-    "contributor": "Akshat1931",
-    "prs_opened": 1,
-    "reviews_given": 0,
-    "merges_done": 0,
-    "issues_opened": 0,
-    "labels_applied": 0,
-    "repos_touched": 1,
-    "last_active": "2025-10-18 20:39:11+00:00"
    }
   ]
  },
+ "group": "All contributors",
  "macro": "Contributors"
 }

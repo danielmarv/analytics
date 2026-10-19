@@ -1,0 +1,194 @@
+{
+ "schema_version": 1,
+ "id": "release_timeline_7d",
+ "kind": "events",
+ "org": "hiero-ledger",
+ "source": "release_timeline.csv",
+ "metric": "releases",
+ "unit": "Published releases",
+ "population": "Each published GitHub release, by repository and publication time (UTC). Drafts are excluded; prereleases are marked. Repositories with no release in the window are not shown.",
+ "dimensions": [
+  "repo",
+  "type"
+ ],
+ "category": {
+  "key": "repo",
+  "label": "Repository"
+ },
+ "label": {
+  "key": "tag_name",
+  "label": "Tag"
+ },
+ "types": [
+  {
+   "key": "release",
+   "label": "Release",
+   "color": "var(--chart-2)"
+  },
+  {
+   "key": "prerelease",
+   "label": "Prerelease",
+   "color": "var(--chart-1)"
+  }
+ ],
+ "categories": [
+  "hiero-cryptography",
+  "hiero-mirror-node",
+  "hiero-consensus-node",
+  "hiero-json-rpc-relay",
+  "hiero-sdk-js",
+  "hiero-block-node",
+  "hiero-sdk-java",
+  "hiero-sdk-tck",
+  "hiero-solo-action",
+  "solo",
+  "solo-charts"
+ ],
+ "window": {
+  "kind": "trailing",
+  "days": 7,
+  "end": "2026-10-19T05:50:31.430027+00:00"
+ },
+ "rows": [
+  {
+   "repo": "hiero-sdk-tck",
+   "time": "2026-10-12T13:01:37Z",
+   "tag_name": "v0.14.0",
+   "type": "release"
+  },
+  {
+   "repo": "solo-charts",
+   "time": "2026-10-12T15:48:07Z",
+   "tag_name": "v0.67.0",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-consensus-node",
+   "time": "2026-10-12T18:47:08Z",
+   "tag_name": "v0.77.3",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-consensus-node",
+   "time": "2026-10-12T18:48:56Z",
+   "tag_name": "v0.77.4",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-consensus-node",
+   "time": "2026-10-12T18:51:52Z",
+   "tag_name": "v0.77.5",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-cryptography",
+   "time": "2026-10-12T18:55:10Z",
+   "tag_name": "v3.20.0",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-cryptography",
+   "time": "2026-10-12T23:04:37Z",
+   "tag_name": "v3.20.1",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-mirror-node",
+   "time": "2026-10-13T03:28:15Z",
+   "tag_name": "v0.164.1",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-solo-action",
+   "time": "2026-10-13T06:46:32Z",
+   "tag_name": "v0.26.0",
+   "type": "release"
+  },
+  {
+   "repo": "solo",
+   "time": "2026-10-13T14:21:25Z",
+   "tag_name": "v0.93.0",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-cryptography",
+   "time": "2026-10-13T19:14:33Z",
+   "tag_name": "v3.21.0",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-mirror-node",
+   "time": "2026-10-13T21:46:02Z",
+   "tag_name": "v0.164.2",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-sdk-java",
+   "time": "2026-10-14T10:40:55Z",
+   "tag_name": "v2.79.0",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-sdk-js",
+   "time": "2026-10-14T11:05:07Z",
+   "tag_name": "v2.90.0",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-json-rpc-relay",
+   "time": "2026-10-14T12:11:25Z",
+   "tag_name": "v0.80.0-rc1",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-block-node",
+   "time": "2026-10-14T21:42:45Z",
+   "tag_name": "v0.45.0-rc1",
+   "type": "prerelease"
+  },
+  {
+   "repo": "hiero-mirror-node",
+   "time": "2026-10-15T11:40:56Z",
+   "tag_name": "v0.165.0-alpha1",
+   "type": "prerelease"
+  },
+  {
+   "repo": "hiero-sdk-js",
+   "time": "2026-10-15T12:08:17Z",
+   "tag_name": "v2.90.1",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-json-rpc-relay",
+   "time": "2026-10-15T12:59:18Z",
+   "tag_name": "v0.80.1",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-cryptography",
+   "time": "2026-10-15T17:26:32Z",
+   "tag_name": "v3.21.1",
+   "type": "release"
+  },
+  {
+   "repo": "hiero-mirror-node",
+   "time": "2026-10-15T18:32:00Z",
+   "tag_name": "v0.165.0-alpha2",
+   "type": "prerelease"
+  },
+  {
+   "repo": "hiero-mirror-node",
+   "time": "2026-10-16T17:51:45Z",
+   "tag_name": "v0.165.0-rc1",
+   "type": "prerelease"
+  },
+  {
+   "repo": "hiero-cryptography",
+   "time": "2026-10-17T00:10:56Z",
+   "tag_name": "v3.22.0",
+   "type": "release"
+  }
+ ],
+ "generated_at": "2026-10-19T05:50:31.430027+00:00",
+ "stale": false
+}
