@@ -391,10 +391,10 @@
  "issues_url": "https://github.com/hiero-hackers/analytics/issues",
  "wip": true,
  "version": "v1",
- "generated_at": "2026-10-19T05:52:31.007113+00:00",
+ "generated_at": "2026-10-20T05:49:07.479806+00:00",
  "provenance": {
   "git_sha": "07bbad9",
-  "data_as_of": "2026-10-19T05:44:20.343466+00:00"
+  "data_as_of": "2026-10-20T05:40:22.336616+00:00"
  },
  "orgs": {
   "hiero-ledger": {
@@ -405,7 +405,7 @@
      "id": "profiles",
      "macro": "Contributors",
      "title": "All contributors",
-     "row_count": 1503,
+     "row_count": 1505,
      "path": "hiero-ledger/profiles.json"
     },
     {
@@ -461,7 +461,7 @@
      "id": "teamrepo",
      "macro": "Governance",
      "title": "Team activity by repo",
-     "row_count": 2862,
+     "row_count": 2865,
      "path": "hiero-ledger/teamrepo.json"
     },
     {
@@ -1186,7 +1186,7 @@
      "download": {
       "name": "hip_adoption_funnel.csv",
       "path": "hiero-ledger/hip_adoption_funnel.csv",
-      "generated_at": "2026-10-19T05:51:06.649396+00:00"
+      "generated_at": "2026-10-20T05:47:45.996518+00:00"
      }
     },
     {
@@ -1262,7 +1262,7 @@
      "download": {
       "name": "hip_repo_engagement.csv",
       "path": "hiero-ledger/hip_repo_engagement.csv",
-      "generated_at": "2026-10-19T05:51:06.645991+00:00"
+      "generated_at": "2026-10-20T05:47:45.992011+00:00"
      }
     },
     {
@@ -1556,7 +1556,7 @@
     "Contributors": [
      {
       "label": "contributors",
-      "value": 1503,
+      "value": 1505,
       "note": "Distinct people with any tracked activity in the organisation, all-time. The denominator for every percentage tile on this tab.",
       "methodology": [
        "Collect every tracked activity event: PRs opened, reviews, merges, issues opened, labels applied.",
@@ -1584,7 +1584,7 @@
      },
      {
       "label": "file issues %",
-      "value": "52%",
+      "value": "51%",
       "note": "The share of contributors who have opened at least one issue.",
       "methodology": [
        "Count contributors whose all-time issues-opened total is above zero.",
@@ -1731,7 +1731,7 @@
     },
     "contributors": {
      "path": "hiero-ledger/entities/contributors.json",
-     "count": 1503
+     "count": 1505
     }
    }
   },

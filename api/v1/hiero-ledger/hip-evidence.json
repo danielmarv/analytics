@@ -1506,8 +1506,8 @@
    "repo": "hiero-ledger/hiero-sdk-js",
    "pr_number": 4536,
    "pr_title": "test: surface the last error on request timeout and fail HIP-1300 tests fast",
-   "pr_state": "OPEN",
-   "pr_merged_at": null,
+   "pr_state": "MERGED",
+   "pr_merged_at": "2026-10-19 07:57:23+00:00",
    "match_sources": "title|branch|body",
    "qualifier": null,
    "counted": true,
@@ -12086,7 +12086,7 @@
   }
  ],
  "row_count": 859,
- "generated_at": "2026-10-19T05:51:06.642343+00:00",
+ "generated_at": "2026-10-20T05:47:45.986918+00:00",
  "stale": false,
  "group": "Evidence",
  "macro": "HIPs"

@@ -34,7 +34,7 @@
  "window": {
   "kind": "snapshot",
   "days": null,
-  "end": "2026-10-19T05:50:22.562003+00:00"
+  "end": "2026-10-20T05:46:59.323888+00:00"
  },
  "series": [
   {
@@ -99,7 +99,7 @@
   },
   {
    "repo": "hiero-consensus-node",
-   "Self-Hosted": 282,
+   "Self-Hosted": 283,
    "Standard": 0,
    "Indeterminate": 8
   },
@@ -290,6 +290,6 @@
    "Indeterminate": 0
   }
  ],
- "generated_at": "2026-10-19T05:50:22.562003+00:00",
+ "generated_at": "2026-10-20T05:46:59.323888+00:00",
  "stale": false
 }
