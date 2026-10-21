@@ -133,13 +133,13 @@
   },
   {
    "bucket": "2026",
-   "general_user": 492,
+   "general_user": 494,
    "triage": 7,
    "committer": 66,
    "maintainer": 79,
    "partial": true
   }
  ],
- "generated_at": "2026-10-20T05:42:22.116383+00:00",
+ "generated_at": "2026-10-21T05:45:56.323300+00:00",
  "stale": false
 }
