@@ -151,13 +151,13 @@
   },
   {
    "bucket": "2026-10",
-   "general_user": 50,
+   "general_user": 52,
    "triage": 2,
    "committer": 36,
    "maintainer": 52,
    "partial": true
   }
  ],
- "generated_at": "2026-10-21T05:45:56.327525+00:00",
+ "generated_at": "2026-10-22T05:47:51.655691+00:00",
  "stale": false
 }
